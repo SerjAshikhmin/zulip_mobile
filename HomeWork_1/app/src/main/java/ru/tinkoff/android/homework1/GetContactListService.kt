@@ -32,11 +32,12 @@ class GetContactListService : Service() {
             null, null, null, null
         )
 
-        if (cursor == null || cursor?.count == null) {
+        if (cursor == null) {
             Log.e(TAG, "No contacts found", IllegalStateException())
+            return
         }
 
-        if (cursor?.count != null && cursor.count > 0) {
+        if (cursor.count > 0) {
             while (cursor.moveToNext()) {
                 contact = Contact()
                 val id: String = cursor.getString(
