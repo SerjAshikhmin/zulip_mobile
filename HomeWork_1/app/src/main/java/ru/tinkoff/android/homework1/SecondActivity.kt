@@ -1,5 +1,6 @@
 package ru.tinkoff.android.homework1
 
+import android.app.Activity
 import android.content.*
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -8,10 +9,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import ru.tinkoff.android.homework1.GetContactListService.Companion.CONTRACT_LIST_EXTRA
 
 class SecondActivity : AppCompatActivity() {
 
-    lateinit var contactListService: GetContactListService
+    private lateinit var contactListService: GetContactListService
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(componentName: ComponentName, binder: IBinder) {
             contactListService = (binder as GetContactListService.ContactListBinder).getContactList()
@@ -26,10 +28,10 @@ class SecondActivity : AppCompatActivity() {
 
         val contactsReceiver = object: BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                val contactList = intent?.getSerializableExtra("contactList") as ArrayList<*>?
+                val contactList = intent?.getSerializableExtra(CONTRACT_LIST_EXTRA) as ArrayList<*>?
                 val firstActivityIntent = Intent(context, FirstActivity::class.java)
-                firstActivityIntent.putExtra("contactList", contactList)
-                startActivity(firstActivityIntent)
+                firstActivityIntent.putExtra(CONTRACT_LIST_EXTRA, contactList)
+                setResult(Activity.RESULT_OK, firstActivityIntent)
                 finish()
             }
         }
@@ -63,8 +65,8 @@ class SecondActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             PERMISSION_CODE_READ_CONTACTS -> {
-                if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                ) {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                {
                     val intent = Intent(this, GetContactListService::class.java)
                     bindService(intent, connection, Context.BIND_AUTO_CREATE)
                 }
@@ -73,9 +75,9 @@ class SecondActivity : AppCompatActivity() {
     }
 
     companion object {
-        const val PERMISSION_READ_CONTACTS = android.Manifest.permission.READ_CONTACTS
-        const val PERMISSION_CODE_READ_CONTACTS = 698
-        const val CONTACT_READ = "SINGLE_CONTACT_READ"
+        private const val PERMISSION_READ_CONTACTS = android.Manifest.permission.READ_CONTACTS
+        private const val PERMISSION_CODE_READ_CONTACTS = 698
+        internal const val CONTACT_READ = "SINGLE_CONTACT_READ"
     }
 
 }
