@@ -60,7 +60,7 @@ class GetContactListService : Service() {
                 contactList.add(contact.name + phoneStr)
             }
         }
-        cursor?.close()
+        cursor.close()
         val intent = Intent(CONTACT_READ)
         intent.putExtra(CONTRACT_LIST_EXTRA, contactList)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
@@ -82,8 +82,8 @@ class GetContactListService : Service() {
                     phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
                 )
             }
+            phoneCursor.close()
         }
-        phoneCursor?.close()
         return phone
     }
 

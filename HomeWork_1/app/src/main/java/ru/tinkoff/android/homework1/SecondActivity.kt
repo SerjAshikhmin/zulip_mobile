@@ -52,8 +52,7 @@ class SecondActivity : AppCompatActivity() {
                 PERMISSION_CODE_READ_CONTACTS
             )
         } else {
-            val intent = Intent(this, GetContactListService::class.java)
-            bindService(intent, connection, Context.BIND_AUTO_CREATE)
+            bindContactListService()
         }
     }
 
@@ -67,11 +66,15 @@ class SecondActivity : AppCompatActivity() {
             PERMISSION_CODE_READ_CONTACTS -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 {
-                    val intent = Intent(this, GetContactListService::class.java)
-                    bindService(intent, connection, Context.BIND_AUTO_CREATE)
+                    bindContactListService()
                 }
             }
         }
+    }
+
+    private fun bindContactListService() {
+        val intent = Intent(this, GetContactListService::class.java)
+        bindService(intent, connection, BIND_AUTO_CREATE)
     }
 
     companion object {
