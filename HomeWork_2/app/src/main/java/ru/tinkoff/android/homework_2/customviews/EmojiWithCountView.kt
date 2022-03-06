@@ -14,7 +14,13 @@ class EmojiWithCountView @JvmOverloads constructor(
 ) : View(context, attrs) {
 
     var emojiCount = 0
-    private var emojiCode = "\uD83D\uDE05"
+        set(value) {
+            if (field.toString().length != value.toString().length) {
+                requestLayout()
+            }
+            field = value
+        }
+    var emojiCode = "\uD83D\uDE05"
     private val paint = TextPaint().apply {
         style = Paint.Style.FILL
         isAntiAlias = true
@@ -29,10 +35,6 @@ class EmojiWithCountView @JvmOverloads constructor(
         paint.color = typedArray.getColor(R.styleable.EmojiWithCountView_emojiCountColor, Color.BLACK)
         paint.textSize = typedArray.getDimension(R.styleable.EmojiWithCountView_emojiCountTextSize, 30f)
         typedArray.recycle()
-    }
-
-    fun setEmojiCode(code: String) {
-        emojiCode = code
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {

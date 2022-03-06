@@ -1,0 +1,12 @@
+<ru.tinkoff.android.homework_2.customviews.EmojiWithCountView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/emoji"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    android:padding="10dp"
+    android:background="@drawable/bg_emoji_with_count"
+    app:emojiCount="0"
+    app:emojiCode="😀"
+    app:emojiCountTextSize="20sp"/>
