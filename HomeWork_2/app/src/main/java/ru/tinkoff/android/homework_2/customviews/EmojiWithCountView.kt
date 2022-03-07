@@ -15,10 +15,11 @@ class EmojiWithCountView @JvmOverloads constructor(
 
     var emojiCount = 0
         set(value) {
-            if (field.toString().length != value.toString().length) {
+            val oldValue = field
+            field = value
+            if (oldValue.toString().length != value.toString().length) {
                 requestLayout()
             }
-            field = value
         }
     var emojiCode = "\uD83D\uDE05"
     private val paint = TextPaint().apply {

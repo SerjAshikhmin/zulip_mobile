@@ -25,8 +25,8 @@ class MainActivity : AppCompatActivity() {
             false
         ) as EmojiWithCountView
         newEmoji.setOnClickListener(emojiClickFunc)
-        //newEmoji.emojiCode = "\uD83E\uDD76"
-        //newEmoji.emojiCount = 9
+        newEmoji.emojiCode = "\uD83E\uDD76"
+        newEmoji.emojiCount = 9
         flexBoxView.addView(newEmoji, flexBoxView.childCount - 1)
     }
 
