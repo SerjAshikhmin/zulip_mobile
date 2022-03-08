@@ -4,9 +4,9 @@
     android:id="@+id/emoji"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_margin="10dp"
-    android:padding="10dp"
+    android:layout_margin="5dp"
+    android:padding="5dp"
     android:background="@drawable/bg_emoji_with_count"
     app:emojiCount="0"
     app:emojiCode="😀"
-    app:emojiCountTextSize="20sp"/>
+    app:emojiCountTextSize="15sp"/>

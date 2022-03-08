@@ -6,89 +6,15 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <ru.tinkoff.android.homework_2.customviews.FlexBoxLayout
-        android:layout_width="match_parent"
+    <ru.tinkoff.android.homework_2.customviews.MessageViewGroup
+        android:id="@+id/message_group"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_margin="10dp" />
 
-        <ru.tinkoff.android.homework_2.customviews.EmojiWithCountView
-            android:id="@+id/emoji"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:background="@drawable/bg_emoji_with_count"
-            android:padding="10dp"
-            app:emojiCode="😀"
-            app:emojiCount="9"
-            app:emojiCountTextSize="20sp" />
-
-        <ru.tinkoff.android.homework_2.customviews.EmojiWithCountView
-            android:id="@+id/emoji2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:background="@drawable/bg_emoji_with_count"
-            android:padding="10dp"
-            app:emojiCode="🤣"
-            app:emojiCount="9"
-            app:emojiCountTextSize="20sp" />
-
-        <ru.tinkoff.android.homework_2.customviews.EmojiWithCountView
-            android:id="@+id/emoji3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:background="@drawable/bg_emoji_with_count"
-            android:padding="10dp"
-            app:emojiCode="🤐"
-            app:emojiCount="10"
-            app:emojiCountTextSize="20sp" />
-
-        <ru.tinkoff.android.homework_2.customviews.EmojiWithCountView
-            android:id="@+id/emoji4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:background="@drawable/bg_emoji_with_count"
-            android:padding="10dp"
-            app:emojiCode="😱"
-            app:emojiCount="9"
-            app:emojiCountTextSize="20sp" />
-
-        <ru.tinkoff.android.homework_2.customviews.EmojiWithCountView
-            android:id="@+id/emoji5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:background="@drawable/bg_emoji_with_count"
-            android:padding="10dp"
-            app:emojiCode="😡"
-            app:emojiCount="3"
-            app:emojiCountTextSize="20sp" />
-
-        <ru.tinkoff.android.homework_2.customviews.EmojiWithCountView
-            android:id="@+id/emoji6"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:background="@drawable/bg_emoji_with_count"
-            android:padding="10dp"
-            app:emojiCode="🤢"
-            app:emojiCount="3"
-            app:emojiCountTextSize="20sp" />
-
-        <ImageView
-            android:id="@+id/add_emoji"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:background="@drawable/bg_emoji_with_count"
-            android:padding="10dp"
-            android:src="@drawable/baseline_add_24" />
-
-    </ru.tinkoff.android.homework_2.customviews.FlexBoxLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

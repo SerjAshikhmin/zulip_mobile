@@ -13,6 +13,14 @@ class EmojiWithCountView @JvmOverloads constructor(
     attrs: AttributeSet? = null
 ) : View(context, attrs) {
 
+    private val paint = TextPaint().apply {
+        style = Paint.Style.FILL
+        isAntiAlias = true
+    }
+
+    private val tempBounds = Rect()
+    private val tempTextPoint = PointF()
+
     var emojiCount = 0
         set(value) {
             val oldValue = field
@@ -21,13 +29,8 @@ class EmojiWithCountView @JvmOverloads constructor(
                 requestLayout()
             }
         }
+
     var emojiCode = "\uD83D\uDE05"
-    private val paint = TextPaint().apply {
-        style = Paint.Style.FILL
-        isAntiAlias = true
-    }
-    private val tempBounds = Rect()
-    private val tempTextPoint = PointF()
 
     init {
         val typedArray: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.EmojiWithCountView)
