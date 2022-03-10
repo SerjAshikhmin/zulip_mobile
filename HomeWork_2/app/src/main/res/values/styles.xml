@@ -1,0 +1,12 @@
+<resources>
+    <style name="EmojiWithCountView">
+        <item name="emojiCount">"0"</item>
+        <item name="emojiCode">"😀"</item>
+        <item name="emojiCountTextSize">15sp</item>
+        <item name="android:layout_margin">5dp</item>
+        <item name="android:padding">5dp</item>
+        <item name="android:background">@drawable/bg_emoji_with_count</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+</resources>
