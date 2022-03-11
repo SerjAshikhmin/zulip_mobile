@@ -1,5 +1,7 @@
 <resources>
-    <style name="Widget.HomeWork_2.EmojiWithCountView.Primary" parent = "Widget.AppCompat.TextView">
+    <style name="Widget.HomeWork_2" parent="android:Widget"/>
+
+    <style name="Widget.HomeWork_2.EmojiWithCountView">
         <item name="emojiCount">"0"</item>
         <item name="emojiCode">"😀"</item>
         <item name="emojiCountTextSize">15sp</item>
