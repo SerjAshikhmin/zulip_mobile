@@ -10,7 +10,7 @@ import ru.tinkoff.android.homework_2.R
 
 class FlexBoxLayout @JvmOverloads constructor(
     context: Context,
-    attrs: AttributeSet? = null,
+    attrs: AttributeSet? = null
 ) : ViewGroup(context, attrs) {
 
     private val emojiClickFunc: (v: View) -> Unit = { view ->

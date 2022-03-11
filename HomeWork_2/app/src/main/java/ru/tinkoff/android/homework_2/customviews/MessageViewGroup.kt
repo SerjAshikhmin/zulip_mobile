@@ -13,7 +13,7 @@ import kotlin.math.abs
 
 class MessageViewGroup @JvmOverloads constructor(
     context: Context,
-    attrs: AttributeSet? = null,
+    attrs: AttributeSet? = null
 ) : ViewGroup(context, attrs) {
 
     private var binding: MessageViewGroupLayoutBinding =

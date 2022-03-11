@@ -33,37 +33,37 @@
         android:layout_height="wrap_content" >
 
         <ru.tinkoff.android.homework_2.customviews.EmojiWithCountView
-            style="@style/EmojiWithCountView"
+            style="@style/Widget.HomeWork_2.EmojiWithCountView.Primary"
             android:id="@+id/emoji"
             app:emojiCode="😀"
             app:emojiCount="9" />
 
         <ru.tinkoff.android.homework_2.customviews.EmojiWithCountView
-            style="@style/EmojiWithCountView"
+            style="@style/Widget.HomeWork_2.EmojiWithCountView.Primary"
             android:id="@+id/emoji2"
             app:emojiCode="🤣"
             app:emojiCount="9" />
 
         <ru.tinkoff.android.homework_2.customviews.EmojiWithCountView
-            style="@style/EmojiWithCountView"
+            style="@style/Widget.HomeWork_2.EmojiWithCountView.Primary"
             android:id="@+id/emoji3"
             app:emojiCode="🤐"
             app:emojiCount="10" />
 
         <ru.tinkoff.android.homework_2.customviews.EmojiWithCountView
-            style="@style/EmojiWithCountView"
+            style="@style/Widget.HomeWork_2.EmojiWithCountView.Primary"
             android:id="@+id/emoji4"
             app:emojiCode="😱"
             app:emojiCount="9" />
 
         <ru.tinkoff.android.homework_2.customviews.EmojiWithCountView
-            style="@style/EmojiWithCountView"
+            style="@style/Widget.HomeWork_2.EmojiWithCountView.Primary"
             android:id="@+id/emoji5"
             app:emojiCode="😡"
             app:emojiCount="3" />
 
         <ru.tinkoff.android.homework_2.customviews.EmojiWithCountView
-            style="@style/EmojiWithCountView"
+            style="@style/Widget.HomeWork_2.EmojiWithCountView.Primary"
             android:id="@+id/emoji6"
             app:emojiCode="🤢"
             app:emojiCount="2" />
