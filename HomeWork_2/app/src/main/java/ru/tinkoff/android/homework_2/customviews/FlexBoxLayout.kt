@@ -1,11 +1,13 @@
 package ru.tinkoff.android.homework_2.customviews
 
 import android.content.Context
+import android.content.res.TypedArray
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.core.view.*
 import ru.tinkoff.android.homework_2.R
 
 class FlexBoxLayout @JvmOverloads constructor(
@@ -13,23 +15,31 @@ class FlexBoxLayout @JvmOverloads constructor(
     attrs: AttributeSet? = null
 ) : ViewGroup(context, attrs) {
 
+    private var mMaxWidth: Int? = null
+
     private val emojiClickFunc: (v: View) -> Unit = { view ->
         view.isSelected = !view.isSelected
-        val emojiView = view as EmojiWithCountView
-        emojiView.emojiCount =
-            if (view.isSelected) ++emojiView.emojiCount else --emojiView.emojiCount
+        (view as EmojiWithCountView).apply {
+            if (view.isSelected) emojiCount++ else emojiCount--
+        }
     }
 
-    private val addEmojiClickFunc: (v: View) -> Unit = { view ->
+    private val addEmojiClickFunc: (v: View) -> Unit = {
         val newEmoji = LayoutInflater.from(context).inflate(
             R.layout.emoji_with_count_view_layout,
             this,
             false
-        )as EmojiWithCountView
+        ) as EmojiWithCountView
         newEmoji.setOnClickListener(emojiClickFunc)
         newEmoji.emojiCode = "\uD83E\uDD76"
         newEmoji.emojiCount = 9
         this.addView(newEmoji, childCount - 1)
+    }
+
+    init {
+        val a: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.FlexBoxLayout)
+        mMaxWidth = a.getDimensionPixelSize(a.getIndex(0), 0)
+        a.recycle()
     }
 
     override fun onViewAdded(child: View?) {
@@ -48,7 +58,7 @@ class FlexBoxLayout @JvmOverloads constructor(
             val child = getChildAt(i)
             measureChild(child, widthMeasureSpec, heightMeasureSpec)
             if (totalWidth + child.measuredWidthWithMargins >
-                MeasureSpec.getSize(widthMeasureSpec)
+                mMaxWidth ?: MeasureSpec.getSize(widthMeasureSpec)
             ) {
                 maxWidth = maxOf(totalWidth + child.measuredWidthWithMargins, maxWidth)
                 totalWidth = child.measuredWidthWithMargins
@@ -91,29 +101,4 @@ class FlexBoxLayout @JvmOverloads constructor(
     override fun generateLayoutParams(p: LayoutParams): LayoutParams {
         return MarginLayoutParams(p)
     }
-
-    private val View.marginTop: Int
-        get() = (layoutParams as MarginLayoutParams).topMargin
-
-    private val View.marginBottom: Int
-        get() = (layoutParams as MarginLayoutParams).bottomMargin
-
-    private val View.marginEnd: Int
-        get() = (layoutParams as MarginLayoutParams).rightMargin
-
-    private val View.marginStart: Int
-        get() = (layoutParams as MarginLayoutParams).leftMargin
-
-    private val View.measuredWidthWithMargins: Int
-        get() {
-            val params = layoutParams as MarginLayoutParams
-            return measuredWidth + params.rightMargin + params.leftMargin
-        }
-
-    private val View.measuredHeightWithMargins: Int
-        get() {
-            val params = layoutParams as MarginLayoutParams
-            return measuredHeight + params.topMargin + params.bottomMargin
-        }
-
 }

@@ -1,15 +1,11 @@
 package ru.tinkoff.android.homework_2.customviews
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.*
 import ru.tinkoff.android.homework_2.databinding.MessageViewGroupLayoutBinding
-import kotlin.math.abs
 
 class MessageViewGroup @JvmOverloads constructor(
     context: Context,
@@ -19,12 +15,10 @@ class MessageViewGroup @JvmOverloads constructor(
     private var binding: MessageViewGroupLayoutBinding =
         MessageViewGroupLayoutBinding.inflate(LayoutInflater.from(context), this)
 
-    private var messageTop = 0
-    private var usernameStart = 0
+    private var messageStart = 0
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val avatar = binding.avatar
-        val username = binding.username
         val message = binding.message
         val emojiBox = binding.emojiBox
 
@@ -37,17 +31,6 @@ class MessageViewGroup @JvmOverloads constructor(
         )
 
         measureChildWithMargins(
-            username,
-            widthMeasureSpec,
-            avatar.measuredWidth,
-            heightMeasureSpec,
-            0
-        )
-
-        var contentWidth = avatar.measuredWidthWithMargins + username.measuredWidthWithMargins
-        var contentHeight = maxOf(avatar.measuredHeightWithMargins, username.measuredHeightWithMargins)
-
-        measureChildWithMargins(
             message,
             widthMeasureSpec,
             avatar.measuredWidth,
@@ -55,8 +38,8 @@ class MessageViewGroup @JvmOverloads constructor(
             0
         )
 
-        contentWidth += abs(message.measuredWidthWithMargins - username.measuredWidthWithMargins)
-        contentHeight += message.measuredHeightWithMargins
+        var contentWidth = avatar.measuredWidthWithMargins + message.measuredWidthWithMargins
+        var contentHeight = avatar.measuredHeightWithMargins + message.measuredHeightWithMargins
 
         measureChildWithMargins(
             emojiBox,
@@ -66,7 +49,9 @@ class MessageViewGroup @JvmOverloads constructor(
             0
         )
 
-        contentWidth += abs(emojiBox.measuredWidthWithMargins - message.measuredWidthWithMargins)
+        if (emojiBox.measuredWidthWithMargins > message.measuredWidthWithMargins) {
+            contentWidth += emojiBox.measuredWidthWithMargins - message.measuredWidthWithMargins
+        }
         contentHeight += emojiBox.measuredHeightWithMargins
 
         setMeasuredDimension(
@@ -77,7 +62,6 @@ class MessageViewGroup @JvmOverloads constructor(
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         val avatar = binding.avatar
-        val username = binding.username
         val message = binding.message
         val emojiBox = binding.emojiBox
 
@@ -88,46 +72,21 @@ class MessageViewGroup @JvmOverloads constructor(
             avatar.marginTop + avatar.measuredHeight
         )
 
-        usernameStart = avatar.right + avatar.marginStart + avatar.marginEnd
-        username.layout(
-            usernameStart + username.marginStart,
-            username.marginTop,
-            usernameStart + username.measuredWidthWithMargins,
-            username.marginTop + username.measuredHeight
-        )
-
-        messageTop = maxOf(avatar.measuredHeightWithMargins, username.measuredHeightWithMargins)
+        messageStart = avatar.right + avatar.marginStart + avatar.marginEnd
         message.layout(
-            usernameStart + message.marginStart,
-            messageTop,
-            usernameStart + message.measuredWidth + message.marginEnd,
-            messageTop + message.marginBottom + message.measuredHeight
+            messageStart + message.marginStart,
+            0,
+            messageStart + message.measuredWidth + message.marginEnd,
+            message.marginBottom + message.measuredHeight
         )
 
-        val emojiBoxTop = messageTop + message.measuredHeightWithMargins
+        val emojiBoxTop = message.measuredHeightWithMargins
         emojiBox.layout(
-            usernameStart,
+            messageStart,
             emojiBoxTop,
-            usernameStart + emojiBox.measuredWidthWithMargins,
+            messageStart + emojiBox.measuredWidthWithMargins,
             emojiBoxTop + emojiBox.marginBottom + emojiBox.measuredHeight
         )
-    }
-
-    private val paint = Paint().apply {
-        color = Color.GRAY
-    }
-
-    override fun dispatchDraw(canvas: Canvas) {
-        canvas.drawRoundRect(
-            usernameStart.toFloat(),
-            binding.username.marginTop.toFloat() / 2,
-            usernameStart.toFloat() + binding.message.measuredWidthWithMargins,
-            messageTop.toFloat() + binding.message.measuredHeightWithMargins,
-            20f,
-            20f,
-            paint
-        )
-        super.dispatchDraw(canvas)
     }
 
     override fun generateLayoutParams(attrs: AttributeSet?): LayoutParams {
@@ -141,29 +100,5 @@ class MessageViewGroup @JvmOverloads constructor(
     override fun generateLayoutParams(p: LayoutParams): LayoutParams {
         return MarginLayoutParams(p)
     }
-
-    private val View.marginTop: Int
-        get() = (layoutParams as MarginLayoutParams).topMargin
-
-    private val View.marginBottom: Int
-        get() = (layoutParams as MarginLayoutParams).bottomMargin
-
-    private val View.marginEnd: Int
-        get() = (layoutParams as MarginLayoutParams).rightMargin
-
-    private val View.marginStart: Int
-        get() = (layoutParams as MarginLayoutParams).leftMargin
-
-    private val View.measuredWidthWithMargins: Int
-        get() {
-            val params = layoutParams as MarginLayoutParams
-            return measuredWidth + params.rightMargin + params.leftMargin
-        }
-
-    private val View.measuredHeightWithMargins: Int
-        get() {
-            val params = layoutParams as MarginLayoutParams
-            return measuredHeight + params.topMargin + params.bottomMargin
-        }
 
 }

@@ -30,19 +30,24 @@ class EmojiWithCountView @JvmOverloads constructor(
             }
         }
 
-    var emojiCode = "\uD83D\uDE05"
+    var emojiCode = ""
+
+    private val resultText: String
+        get() = "$emojiCode $emojiCount"
 
     init {
         val typedArray: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.EmojiWithCountView)
         emojiCount = typedArray.getInt(R.styleable.EmojiWithCountView_emojiCount, 0)
-        emojiCode = typedArray.getString(R.styleable.EmojiWithCountView_emojiCode).orEmpty()
+        emojiCode = typedArray.getString(R.styleable.EmojiWithCountView_emojiCode) ?: "\uD83D\uDE05"
         paint.color = typedArray.getColor(R.styleable.EmojiWithCountView_emojiCountColor, Color.BLACK)
-        paint.textSize = typedArray.getDimension(R.styleable.EmojiWithCountView_emojiCountTextSize, 30f)
+        paint.textSize = typedArray.getDimension(
+            R.styleable.EmojiWithCountView_emojiCountTextSize,
+            DEFAULT_TEXT_SIZE_SP * resources.displayMetrics.density
+        )
         typedArray.recycle()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val resultText = "$emojiCode $emojiCount"
         paint.getTextBounds(resultText, 0, resultText.length, tempBounds)
 
         val textWidth = tempBounds.width()
@@ -51,10 +56,10 @@ class EmojiWithCountView @JvmOverloads constructor(
         val sumWidth = textWidth + paddingLeft + paddingRight
         val sumHeight = textHeight + paddingTop + paddingBottom
 
-        val resultWidth = resolveSize(sumWidth, widthMeasureSpec)
-        val resultHeight = resolveSize(sumHeight, heightMeasureSpec)
-
-        setMeasuredDimension(resultWidth, resultHeight)
+        setMeasuredDimension(
+            resolveSize(sumWidth, widthMeasureSpec),
+            resolveSize(sumHeight, heightMeasureSpec)
+        )
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -71,11 +76,12 @@ class EmojiWithCountView @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas) {
-        canvas.drawText("$emojiCode $emojiCount", tempTextPoint.x, tempTextPoint.y, paint)
+        canvas.drawText(resultText, tempTextPoint.x, tempTextPoint.y, paint)
     }
 
     companion object {
-        private val SUPPORTED_DRAWABLE_STATE = intArrayOf(android.R.attr.state_selected)
-    }
 
+        private val SUPPORTED_DRAWABLE_STATE = intArrayOf(android.R.attr.state_selected)
+        private const val DEFAULT_TEXT_SIZE_SP = 15
+    }
 }
