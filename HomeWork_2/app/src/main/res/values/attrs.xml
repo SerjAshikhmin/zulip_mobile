@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="EmojiWithCountView">
+        <attr name="emojiCountColor" format="color" />
+        <attr name="emojiCount" format="string" />
+        <attr name="emojiCode" format="string" />
+        <attr name="emojiCountTextSize" format="dimension" />
+    </declare-styleable>
+    <declare-styleable name="FlexBoxLayout">
+        <attr name="flexBoxMaxWidth" format="dimension" />
+    </declare-styleable>
+</resources>
