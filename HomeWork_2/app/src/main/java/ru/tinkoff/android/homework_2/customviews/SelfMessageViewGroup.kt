@@ -4,47 +4,39 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.view.*
-import ru.tinkoff.android.homework_2.databinding.MessageViewGroupLayoutBinding
+import androidx.core.view.marginBottom
+import androidx.core.view.marginEnd
+import androidx.core.view.marginStart
+import ru.tinkoff.android.homework_2.databinding.SelfMessageViewGroupLayoutBinding
 
-class MessageViewGroup @JvmOverloads constructor(
+class SelfMessageViewGroup @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : ViewGroup(context, attrs) {
 
-    private var binding: MessageViewGroupLayoutBinding =
-        MessageViewGroupLayoutBinding.inflate(LayoutInflater.from(context), this)
-
-    private var messageStart = 0
+    private var binding: SelfMessageViewGroupLayoutBinding =
+        SelfMessageViewGroupLayoutBinding.inflate(LayoutInflater.from(context), this)
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val avatar = binding.avatar
         val message = binding.message
         val emojiBox = binding.emojiBox
 
+
         measureChildWithMargins(
-            avatar,
+            message,
             widthMeasureSpec,
             0,
             heightMeasureSpec,
             0
         )
 
-        measureChildWithMargins(
-            message,
-            widthMeasureSpec,
-            avatar.measuredWidth,
-            heightMeasureSpec,
-            0
-        )
-
-        var contentWidth = avatar.measuredWidthWithMargins + message.measuredWidthWithMargins
-        var contentHeight = avatar.measuredHeightWithMargins + message.measuredHeightWithMargins
+        var contentWidth = message.measuredWidthWithMargins
+        var contentHeight = message.measuredHeightWithMargins
 
         measureChildWithMargins(
             emojiBox,
             widthMeasureSpec,
-            avatar.measuredWidth,
+            0,
             heightMeasureSpec,
             0
         )
@@ -61,30 +53,21 @@ class MessageViewGroup @JvmOverloads constructor(
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        val avatar = binding.avatar
         val message = binding.message
         val emojiBox = binding.emojiBox
 
-        avatar.layout(
-            avatar.marginStart,
-            avatar.marginTop,
-            avatar.marginStart + avatar.measuredWidth,
-            avatar.marginTop + avatar.measuredHeight
-        )
-
-        messageStart = avatar.right + avatar.marginStart + avatar.marginEnd
         message.layout(
-            messageStart + message.marginStart,
+            message.marginStart,
             0,
-            messageStart + message.measuredWidth + message.marginEnd,
+            message.measuredWidth + message.marginEnd,
             message.marginBottom + message.measuredHeight
         )
 
         val emojiBoxTop = message.measuredHeightWithMargins
         emojiBox.layout(
-            messageStart,
+            0,
             emojiBoxTop,
-            messageStart + emojiBox.measuredWidthWithMargins,
+            emojiBox.measuredWidthWithMargins,
             emojiBoxTop + emojiBox.marginBottom + emojiBox.measuredHeight
         )
     }
@@ -100,5 +83,4 @@ class MessageViewGroup @JvmOverloads constructor(
     override fun generateLayoutParams(p: LayoutParams): LayoutParams {
         return MarginLayoutParams(p)
     }
-
 }

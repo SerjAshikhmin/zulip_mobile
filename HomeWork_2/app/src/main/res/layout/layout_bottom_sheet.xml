@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/bottom_sheet_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bottom_sheet_background"
+    android:orientation="vertical">
+
+    <ImageView
+        android:layout_width="60dp"
+        android:layout_height="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bottom_sheet_slider_background"
+        android:layout_gravity="center|top"/>
+
+    <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/emoji_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        app:layout_behavior="@string/bottom_sheet_behavior"
+        app:flexWrap="wrap">
+
+    </com.google.android.flexbox.FlexboxLayout>
+
+</LinearLayout>

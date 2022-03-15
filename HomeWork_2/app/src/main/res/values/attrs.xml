@@ -6,4 +6,7 @@
         <attr name="emojiCode" format="string" />
         <attr name="emojiCountTextSize" format="dimension" />
     </declare-styleable>
+    <declare-styleable name="FlexBoxLayout">
+        <attr name="flexBoxMaxWidth" format="dimension" />
+    </declare-styleable>
 </resources>

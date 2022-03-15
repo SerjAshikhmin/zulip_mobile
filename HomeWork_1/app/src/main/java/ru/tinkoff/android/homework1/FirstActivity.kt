@@ -31,5 +31,4 @@ class FirstActivity : AppCompatActivity() {
             secondActivityLauncher.launch("")
         }
     }
-
 }

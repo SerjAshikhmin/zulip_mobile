@@ -92,8 +92,8 @@ class GetContactListService : Service() {
     }
 
     companion object {
+
         private const val TAG = "GetContactListService"
         internal const val CONTRACT_LIST_EXTRA = "contactList"
     }
-
 }

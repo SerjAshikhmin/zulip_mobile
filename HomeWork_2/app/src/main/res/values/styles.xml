@@ -5,10 +5,28 @@
         <item name="emojiCount">"0"</item>
         <item name="emojiCode">"😀"</item>
         <item name="emojiCountTextSize">15sp</item>
+        <item name="emojiCountColor">@color/grey_300</item>
         <item name="android:layout_margin">5dp</item>
         <item name="android:padding">5dp</item>
         <item name="android:background">@drawable/bg_emoji_with_count</item>
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
     </style>
+
+    <style name="Widget.HomeWork_2.BottomSheetEmoji">
+        <item name="android:textSize">40sp</item>
+        <item name="android:layout_margin">4dp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="BottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/BottomSheetStyle</item>
+    </style>
+
+    <style name="BottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
+
 </resources>
