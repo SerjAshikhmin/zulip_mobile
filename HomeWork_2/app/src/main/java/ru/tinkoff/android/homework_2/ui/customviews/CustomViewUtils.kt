@@ -1,4 +1,4 @@
-package ru.tinkoff.android.homework_2.customviews
+package ru.tinkoff.android.homework_2.ui.customviews
 
 import android.view.View
 import androidx.core.view.marginBottom

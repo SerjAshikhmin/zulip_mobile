@@ -1,19 +1,19 @@
-package ru.tinkoff.android.homework_2.customviews
+package ru.tinkoff.android.homework_2.ui.customviews
 
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.*
-import ru.tinkoff.android.homework_2.databinding.MessageViewGroupLayoutBinding
+import ru.tinkoff.android.homework_2.databinding.LayoutMessageViewGroupBinding
 
 class MessageViewGroup @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : ViewGroup(context, attrs) {
 
-    private var binding: MessageViewGroupLayoutBinding =
-        MessageViewGroupLayoutBinding.inflate(LayoutInflater.from(context), this)
+    var binding: LayoutMessageViewGroupBinding =
+        LayoutMessageViewGroupBinding.inflate(LayoutInflater.from(context), this)
 
     private var messageStart = 0
 

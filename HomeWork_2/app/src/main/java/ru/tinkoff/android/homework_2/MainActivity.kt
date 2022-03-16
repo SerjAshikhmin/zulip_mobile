@@ -9,14 +9,18 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.children
 import androidx.core.widget.doAfterTextChanged
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import ru.tinkoff.android.homework_2.data.EmojiCodes
+import ru.tinkoff.android.homework_2.data.Messages
 import ru.tinkoff.android.homework_2.databinding.ActivityMainBinding
+import ru.tinkoff.android.homework_2.ui.ChatMessagesAdapter
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var dialog: BottomSheetDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,6 +29,13 @@ class MainActivity : AppCompatActivity() {
 
         createAndConfigureBottomSheet()
         configureEnterMessageSection()
+        configureChatRecycler()
+    }
+
+    private fun configureChatRecycler() {
+        val chatRecycler = binding.chat
+        chatRecycler.layoutManager = LinearLayoutManager(this)
+        chatRecycler.adapter = ChatMessagesAdapter(Messages.messages, dialog)
     }
 
     private fun configureEnterMessageSection() {
@@ -48,7 +59,6 @@ class MainActivity : AppCompatActivity() {
             if (enterMessage.text.isNotEmpty()) {
                 println(enterMessage.text)
                 enterMessage.text.clear()
-                //enterMessage.onEditorAction(EditorInfo.IME_ACTION_DONE);
                 val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(enterMessage.windowToken, 0)
             }
@@ -66,18 +76,8 @@ class MainActivity : AppCompatActivity() {
             (bottomSheet.getChildAt(1) as FlexboxLayout).addView(emojiView)
         }
 
-        val dialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
+        dialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
         dialog.setContentView(bottomSheet)
-
-        val messageGroup = binding.messageGroup
-        messageGroup.setOnLongClickListener {
-            return@setOnLongClickListener messageOnClickFunc(dialog)
-        }
-
-        val selfMessageGroup = binding.selfMessageGroup
-        selfMessageGroup.setOnLongClickListener {
-            return@setOnLongClickListener messageOnClickFunc(dialog)
-        }
 
         bottomSheet.children
             .filter { child -> child is TextView }
@@ -91,10 +91,5 @@ class MainActivity : AppCompatActivity() {
         bottomSheet.setOnClickListener {
             dialog.dismiss()
         }
-    }
-
-    private fun messageOnClickFunc(dialog: BottomSheetDialog): Boolean {
-        dialog.show()
-        return true
     }
 }

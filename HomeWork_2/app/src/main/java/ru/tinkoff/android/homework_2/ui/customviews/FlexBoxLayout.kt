@@ -1,4 +1,4 @@
-package ru.tinkoff.android.homework_2.customviews
+package ru.tinkoff.android.homework_2.ui.customviews
 
 import android.content.Context
 import android.content.res.TypedArray
@@ -26,7 +26,7 @@ class FlexBoxLayout @JvmOverloads constructor(
 
     private val addEmojiClickFunc: (v: View) -> Unit = {
         val newEmoji = LayoutInflater.from(context).inflate(
-            R.layout.emoji_with_count_view_layout,
+            R.layout.layout_emoji_with_count_view,
             this,
             false
         ) as EmojiWithCountView
@@ -38,7 +38,7 @@ class FlexBoxLayout @JvmOverloads constructor(
 
     init {
         val a: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.FlexBoxLayout)
-        mMaxWidth = a.getDimensionPixelSize(a.getIndex(0), 0)
+        mMaxWidth = a.getDimensionPixelSize(a.getIndex(0), 250)
         a.recycle()
     }
 

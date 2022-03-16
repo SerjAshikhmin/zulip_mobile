@@ -10,6 +10,7 @@ class Messages {
 
         internal const val SELF_USER_NAME = "Сергей Ашихмин"
         internal val messages = listOf(
+            null,
             Message(
                 1,
                 "Дмитрий Макаров",
@@ -29,15 +30,20 @@ class Messages {
                     Reaction(8, "👍"),
                     Reaction(9, "👍"),
                 ),
-                LocalDateTime.now()
+                LocalDateTime.now().minusDays(1)
             ),
             Message(
                 2,
                 "Сергей Ашихмин",
-                "Практический опыт показывает, что социально-экономическое развитие напрямую зависит от форм воздействия",
+                "Like the technical community as a whole, the Zulip team and community is made up of a mixture of professionals and volunteers from all over the world, working on every aspect of the mission, including mentorship, teaching, and connecting people.\n" +
+                        "\n" +
+                        "Diversity is one of our huge strengths, but it can also lead to communication issues and unhappiness. To that end, we have a few ground rules that we ask people to adhere to. This code applies equally to founders, mentors, and those seeking help and guidance.\n" +
+                        "\n" +
+                        "This isn’t an exhaustive list of things that you can’t do. Rather, take it in the spirit in which it’s intended — a guide to make it easier to enrich all of us and the technical communities in which we participate.",
                 listOf(),
-                LocalDateTime.now()
+                LocalDateTime.now().minusDays(1)
             ),
+            null,
             Message(
                 3,
                 "Дмитрий Макаров",

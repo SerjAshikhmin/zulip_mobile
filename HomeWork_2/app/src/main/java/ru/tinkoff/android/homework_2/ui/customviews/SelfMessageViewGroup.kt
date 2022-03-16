@@ -1,4 +1,4 @@
-package ru.tinkoff.android.homework_2.customviews
+package ru.tinkoff.android.homework_2.ui.customviews
 
 import android.content.Context
 import android.util.AttributeSet
@@ -7,20 +7,19 @@ import android.view.ViewGroup
 import androidx.core.view.marginBottom
 import androidx.core.view.marginEnd
 import androidx.core.view.marginStart
-import ru.tinkoff.android.homework_2.databinding.SelfMessageViewGroupLayoutBinding
+import ru.tinkoff.android.homework_2.databinding.LayoutSelfMessageViewGroupBinding
 
 class SelfMessageViewGroup @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : ViewGroup(context, attrs) {
 
-    private var binding: SelfMessageViewGroupLayoutBinding =
-        SelfMessageViewGroupLayoutBinding.inflate(LayoutInflater.from(context), this)
+    var binding: LayoutSelfMessageViewGroupBinding =
+        LayoutSelfMessageViewGroupBinding.inflate(LayoutInflater.from(context), this)
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val message = binding.message
         val emojiBox = binding.emojiBox
-
 
         measureChildWithMargins(
             message,
@@ -57,17 +56,17 @@ class SelfMessageViewGroup @JvmOverloads constructor(
         val emojiBox = binding.emojiBox
 
         message.layout(
-            message.marginStart,
+            r - (message.measuredWidthWithMargins + message.paddingStart + message.paddingEnd),
             0,
-            message.measuredWidth + message.marginEnd,
-            message.marginBottom + message.measuredHeight
+            r - (message.marginStart + message.marginEnd + message.paddingStart + message.paddingEnd),
+            message.measuredHeight
         )
 
         val emojiBoxTop = message.measuredHeightWithMargins
         emojiBox.layout(
-            0,
+            r - emojiBox.measuredWidthWithMargins,
             emojiBoxTop,
-            emojiBox.measuredWidthWithMargins,
+            r - emojiBox.marginEnd * 2,
             emojiBoxTop + emojiBox.marginBottom + emojiBox.measuredHeight
         )
     }
