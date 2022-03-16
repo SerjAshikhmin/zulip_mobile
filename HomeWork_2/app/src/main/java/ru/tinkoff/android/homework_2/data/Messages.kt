@@ -9,7 +9,7 @@ class Messages {
     companion object {
 
         internal const val SELF_USER_NAME = "Сергей Ашихмин"
-        internal val messages = listOf(
+        internal var messages = mutableListOf(
             null,
             Message(
                 1,

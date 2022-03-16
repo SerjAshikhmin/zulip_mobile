@@ -10,17 +10,21 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.children
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import ru.tinkoff.android.homework_2.data.EmojiCodes
 import ru.tinkoff.android.homework_2.data.Messages
 import ru.tinkoff.android.homework_2.databinding.ActivityMainBinding
+import ru.tinkoff.android.homework_2.model.Message
 import ru.tinkoff.android.homework_2.ui.ChatMessagesAdapter
+import java.time.LocalDateTime
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var dialog: BottomSheetDialog
+    private lateinit var chatRecycler: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,8 +37,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun configureChatRecycler() {
-        val chatRecycler = binding.chat
-        chatRecycler.layoutManager = LinearLayoutManager(this)
+        chatRecycler = binding.chat
+        val layoutManager = LinearLayoutManager(this)
+        layoutManager.stackFromEnd = true
+        chatRecycler.layoutManager = layoutManager
         chatRecycler.adapter = ChatMessagesAdapter(Messages.messages, dialog)
     }
 
@@ -57,7 +63,14 @@ class MainActivity : AppCompatActivity() {
 
         sendButton.setOnClickListener {
             if (enterMessage.text.isNotEmpty()) {
-                println(enterMessage.text)
+                Messages.messages.add(Message(
+                    (Messages.messages.size + 1).toLong(),
+                    "Сергей Ашихмин",
+                    enterMessage.text.toString(),
+                    listOf(),
+                    LocalDateTime.now()
+                ))
+                chatRecycler.layoutManager?.scrollToPosition(chatRecycler.childCount)
                 enterMessage.text.clear()
                 val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(enterMessage.windowToken, 0)
