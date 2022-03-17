@@ -50,54 +50,6 @@
         android:id="@+id/emoji_box"
         android:layout_width="wrap_content"
         app:flexBoxMaxWidth="250dp"
-        android:layout_height="wrap_content" >
-
-        <ru.tinkoff.android.homework_2.ui.customviews.EmojiWithCountView
-            style="@style/Widget.HomeWork_2.EmojiWithCountView"
-            android:id="@+id/emoji"
-            app:emojiCode="😀"
-            app:emojiCount="9" />
-
-        <ru.tinkoff.android.homework_2.ui.customviews.EmojiWithCountView
-            style="@style/Widget.HomeWork_2.EmojiWithCountView"
-            android:id="@+id/emoji2"
-            app:emojiCode="🤣"
-            app:emojiCount="9" />
-
-        <ru.tinkoff.android.homework_2.ui.customviews.EmojiWithCountView
-            style="@style/Widget.HomeWork_2.EmojiWithCountView"
-            android:id="@+id/emoji3"
-            app:emojiCode="🤐"
-            app:emojiCount="10" />
-
-        <ru.tinkoff.android.homework_2.ui.customviews.EmojiWithCountView
-            style="@style/Widget.HomeWork_2.EmojiWithCountView"
-            android:id="@+id/emoji4"
-            app:emojiCode="😱"
-            app:emojiCount="9" />
-
-        <ru.tinkoff.android.homework_2.ui.customviews.EmojiWithCountView
-            style="@style/Widget.HomeWork_2.EmojiWithCountView"
-            android:id="@+id/emoji5"
-            app:emojiCode="😡"
-            app:emojiCount="3" />
-
-        <ru.tinkoff.android.homework_2.ui.customviews.EmojiWithCountView
-            style="@style/Widget.HomeWork_2.EmojiWithCountView"
-            android:id="@+id/emoji6"
-            app:emojiCode="🤢"
-            app:emojiCount="2" />
-
-        <ImageView
-            android:id="@+id/add_emoji"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:layout_margin="5dp"
-            android:background="@drawable/bg_emoji_with_count"
-            android:padding="5dp"
-            android:src="@drawable/baseline_add_20"
-            app:tint="@color/white"/>
-
-    </ru.tinkoff.android.homework_2.ui.customviews.FlexBoxLayout>
+        android:layout_height="wrap_content" />
 
 </merge>

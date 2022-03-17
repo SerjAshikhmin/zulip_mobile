@@ -12,10 +12,10 @@ import androidx.core.view.setMargins
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import ru.tinkoff.android.homework_2.R
-import ru.tinkoff.android.homework_2.data.Messages
+import ru.tinkoff.android.homework_2.data.SELF_USER_NAME
+import ru.tinkoff.android.homework_2.data.getEmojisForMessage
 import ru.tinkoff.android.homework_2.model.Message
-import ru.tinkoff.android.homework_2.ui.customviews.MessageViewGroup
-import ru.tinkoff.android.homework_2.ui.customviews.SelfMessageViewGroup
+import ru.tinkoff.android.homework_2.ui.customviews.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
@@ -24,57 +24,17 @@ private const val TYPE_MESSAGE = 0
 private const val TYPE_SELF_MESSAGE = 1
 private const val TYPE_SEND_DATE = 2
 
-class ChatMessagesAdapter(private val messages: List<Message?>, val dialog: BottomSheetDialog)
+class ChatMessagesAdapter(private val messages: List<Message?>, private val dialog: BottomSheetDialog)
     : RecyclerView.Adapter<ChatMessagesAdapter.BaseViewHolder>() {
 
     override fun getItemViewType(position: Int): Int {
-        /*if (position == 0 || (position != messages.size - 1 &&
-            messages[position].sendDateTime.toLocalDate() !=
-            messages[position + 1].sendDateTime.toLocalDate())*/
         if (messages[position] == null) {
             return TYPE_SEND_DATE
         }
-        return if (messages[position]?.userName == Messages.SELF_USER_NAME) {
+        return if (messages[position]?.userName == SELF_USER_NAME) {
             TYPE_SELF_MESSAGE
         } else {
             TYPE_MESSAGE
-        }
-    }
-
-    sealed class BaseViewHolder(view: View) : RecyclerView.ViewHolder(view)
-
-    class MessageViewHolder(messageView: MessageViewGroup) : BaseViewHolder(messageView) {
-        private val avatar = messageView.binding.avatarImage
-        private val username = messageView.binding.username
-        private val messageView = messageView.binding.messageText
-        private val emojiBox = messageView.binding.emojiBox
-
-        fun bind(message: Message?) {
-            message?.let {
-                username.text = it.userName
-                messageView.text = it.content
-            }
-        }
-    }
-
-    class SelfMessageViewHolder(selfMessageView: SelfMessageViewGroup) : BaseViewHolder(selfMessageView) {
-        private val messageView = selfMessageView.binding.message
-        private val emojiBox = selfMessageView.binding.emojiBox
-
-        fun bind(message: Message?) {
-            message?.let {
-                messageView.text = it.content
-            }
-        }
-    }
-
-    class SendDateViewHolder(sendDateView: FrameLayout) : BaseViewHolder(sendDateView) {
-        private val sendDateView = sendDateView
-
-        fun bind(sendDate: LocalDate?) {
-            val sendDateStr = sendDate?.format(DateTimeFormatter.ofPattern("dd MMM"))?.replace(".", "")
-                //sendDateStr[sendDateStr.length - 2] = sendDateStr[sendDateStr.length - 2].uppercaseChar()
-            (sendDateView.getChildAt(0) as TextView).text = sendDateStr
         }
     }
 
@@ -130,14 +90,87 @@ class ChatMessagesAdapter(private val messages: List<Message?>, val dialog: Bott
 
     override fun getItemCount(): Int = messages.size
 
-    private fun dpToPx(dp: Int, context: Context): Int {
-        val displayMetrics: DisplayMetrics = context.resources.displayMetrics
-        return (dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT)).roundToInt()
+    sealed class BaseViewHolder(view: View) : RecyclerView.ViewHolder(view)
+
+    inner class MessageViewHolder(messageView: MessageViewGroup) : BaseViewHolder(messageView) {
+        private val avatar = messageView.binding.avatarImage
+        private val username = messageView.binding.username
+        private val messageView = messageView.binding.messageText
+        private val emojiBox = messageView.binding.emojiBox
+
+        fun bind(message: Message?) {
+            message?.let {
+                username.text = it.userName
+                messageView.text = it.content
+                fillEmojiBox(it, emojiBox)
+            }
+        }
+    }
+
+    inner class SelfMessageViewHolder(selfMessageView: SelfMessageViewGroup) :
+        BaseViewHolder(selfMessageView) {
+        private val messageView = selfMessageView.binding.message
+        private val emojiBox = selfMessageView.binding.emojiBox
+
+        fun bind(message: Message?) {
+            message?.let {
+                messageView.text = it.content
+                fillEmojiBox(it, emojiBox)
+            }
+        }
+    }
+
+    class SendDateViewHolder(private val sendDateView: FrameLayout) : BaseViewHolder(sendDateView) {
+
+        fun bind(sendDate: LocalDate?) {
+            val sendDateStr =
+                sendDate?.format(DateTimeFormatter.ofPattern("dd MMM"))?.replace(".", "")
+            //sendDateStr[sendDateStr.length - 2] = sendDateStr[sendDateStr.length - 2].uppercaseChar()
+            (sendDateView.getChildAt(0) as TextView).text = sendDateStr
+        }
     }
 
     private fun messageOnClickFunc(dialog: BottomSheetDialog): Boolean {
         dialog.show()
         return true
+    }
+
+    private val emojiClickFunc: (v: View) -> Unit = { view ->
+        view.isSelected = !view.isSelected
+        (view as EmojiWithCountView).apply {
+            if (view.isSelected) emojiCount++ else emojiCount--
+        }
+    }
+
+    private fun fillEmojiBox(message: Message, emojiBox: FlexBoxLayout) {
+        val emojis = getEmojisForMessage(message.id)
+        if (emojis.isNotEmpty()) {
+            emojis.forEach { emoji ->
+                val emojiView = LayoutInflater.from(emojiBox.context).inflate(
+                    R.layout.layout_emoji_with_count_view,
+                    emojiBox,
+                    false
+                ) as EmojiWithCountView
+                emojiView.setOnClickListener(this@ChatMessagesAdapter.emojiClickFunc)
+                emojiView.emojiCode = emoji.code
+                emojiView.emojiCount = emoji.count.toString()
+                emojiBox.addView(emojiView)
+            }
+            val addEmojiView = LayoutInflater.from(emojiBox.context).inflate(
+                R.layout.view_image_add_emoji,
+                emojiBox,
+                false
+            ) as ImageView
+            addEmojiView.setOnClickListener {
+                this@ChatMessagesAdapter.dialog.show()
+            }
+            emojiBox.addView(addEmojiView)
+        }
+    }
+
+    private fun dpToPx(dp: Int, context: Context): Int {
+        val displayMetrics: DisplayMetrics = context.resources.displayMetrics
+        return (dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT)).roundToInt()
     }
 
     companion object {

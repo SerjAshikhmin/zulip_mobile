@@ -5,6 +5,7 @@
         <attr name="emojiCount" format="string" />
         <attr name="emojiCode" format="string" />
         <attr name="emojiCountTextSize" format="dimension" />
+        <attr name="emojiMinWidth" format="dimension" />
     </declare-styleable>
     <declare-styleable name="FlexBoxLayout">
         <attr name="flexBoxMaxWidth" format="dimension" />

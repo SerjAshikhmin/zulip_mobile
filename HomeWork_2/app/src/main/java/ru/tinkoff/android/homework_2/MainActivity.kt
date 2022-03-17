@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import ru.tinkoff.android.homework_2.data.EmojiCodes
-import ru.tinkoff.android.homework_2.data.Messages
+import ru.tinkoff.android.homework_2.data.messages
 import ru.tinkoff.android.homework_2.databinding.ActivityMainBinding
 import ru.tinkoff.android.homework_2.model.Message
 import ru.tinkoff.android.homework_2.ui.ChatMessagesAdapter
@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         val layoutManager = LinearLayoutManager(this)
         layoutManager.stackFromEnd = true
         chatRecycler.layoutManager = layoutManager
-        chatRecycler.adapter = ChatMessagesAdapter(Messages.messages, dialog)
+        chatRecycler.adapter = ChatMessagesAdapter(messages, dialog)
     }
 
     private fun configureEnterMessageSection() {
@@ -63,14 +63,14 @@ class MainActivity : AppCompatActivity() {
 
         sendButton.setOnClickListener {
             if (enterMessage.text.isNotEmpty()) {
-                Messages.messages.add(Message(
-                    (Messages.messages.size + 1).toLong(),
+                messages.add(Message(
+                    (messages.size + 1).toLong(),
                     "Сергей Ашихмин",
                     enterMessage.text.toString(),
                     listOf(),
                     LocalDateTime.now()
                 ))
-                chatRecycler.layoutManager?.scrollToPosition(chatRecycler.childCount)
+                //chatRecycler.layoutManager?.scrollToPosition(chatRecycler.childCount)
                 enterMessage.text.clear()
                 val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(enterMessage.windowToken, 0)
