@@ -7,24 +7,26 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.children
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexboxLayout
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import ru.tinkoff.android.homework_2.data.EmojiCodes
 import ru.tinkoff.android.homework_2.data.messages
 import ru.tinkoff.android.homework_2.databinding.ActivityMainBinding
 import ru.tinkoff.android.homework_2.model.Message
+import ru.tinkoff.android.homework_2.ui.BottomSheetCallback
 import ru.tinkoff.android.homework_2.ui.ChatMessagesAdapter
+import ru.tinkoff.android.homework_2.ui.customviews.EmojiBottomSheetDialog
 import java.time.LocalDateTime
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), BottomSheetCallback {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var dialog: BottomSheetDialog
+    private lateinit var dialog: EmojiBottomSheetDialog
     private lateinit var chatRecycler: RecyclerView
+    private lateinit var bottomSheetCallback: BottomSheetCallback
+    private var chosenEmojiCode = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,23 +88,16 @@ class MainActivity : AppCompatActivity() {
                 R.layout.layout_bottom_sheet_emoji, null
             ) as TextView
             emojiView.text = emojiCode
+            emojiView.setOnClickListener {
+                chosenEmojiCode = emojiView.text.toString()
+                dialog.dismiss()
+            }
             (bottomSheet.getChildAt(1) as FlexboxLayout).addView(emojiView)
         }
-
-        dialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
+        bottomSheetCallback = this
+        dialog = EmojiBottomSheetDialog(this, R.style.BottomSheetDialogTheme, bottomSheetCallback)
         dialog.setContentView(bottomSheet)
-
-        bottomSheet.children
-            .filter { child -> child is TextView }
-            .forEach { child ->
-                child.setOnClickListener {
-                    println((child as TextView).text)
-                    dialog.dismiss()
-                }
-            }
-
-        bottomSheet.setOnClickListener {
-            dialog.dismiss()
-        }
     }
+
+    override fun callbackMethod() = chosenEmojiCode
 }

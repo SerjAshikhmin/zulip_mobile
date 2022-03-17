@@ -5,8 +5,10 @@ import android.content.res.TypedArray
 import android.graphics.*
 import android.text.TextPaint
 import android.util.AttributeSet
+import android.view.LayoutInflater
 import android.view.View
 import ru.tinkoff.android.homework_2.R
+import ru.tinkoff.android.homework_2.model.EmojiWithCount
 
 class EmojiWithCountView @JvmOverloads constructor(
     context: Context,
@@ -23,11 +25,8 @@ class EmojiWithCountView @JvmOverloads constructor(
 
     var emojiCount = ""
         set(value) {
-            val oldValue = field
             field = if ( value == "1") "" else value
-            if (oldValue.length != value.length || field.isEmpty()) {
-                requestLayout()
-            }
+            requestLayout()
         }
 
     var emojiCode = ""
@@ -87,6 +86,28 @@ class EmojiWithCountView @JvmOverloads constructor(
 
         private val SUPPORTED_DRAWABLE_STATE = intArrayOf(android.R.attr.state_selected)
         private const val DEFAULT_TEXT_SIZE_SP = 15
+
+        private val emojiClickFunc: (v: View) -> Unit = { view ->
+            view.isSelected = !view.isSelected
+            (view as EmojiWithCountView).apply {
+                if (view.isSelected) emojiCount++ else emojiCount--
+            }
+        }
+
+        fun createEmojiWithCountView(
+            emojiBox: FlexBoxLayout,
+            emoji: EmojiWithCount
+        ): EmojiWithCountView {
+            val emojiView = LayoutInflater.from(emojiBox.context).inflate(
+                R.layout.layout_emoji_with_count_view,
+                emojiBox,
+                false
+            ) as EmojiWithCountView
+            emojiView.setOnClickListener(emojiClickFunc)
+            emojiView.emojiCode = emoji.code
+            emojiView.emojiCount = emoji.count.toString()
+            return emojiView
+        }
     }
 }
 

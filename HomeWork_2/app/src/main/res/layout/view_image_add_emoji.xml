@@ -8,6 +8,7 @@
     android:background="@drawable/bg_emoji_with_count"
     android:padding="5dp"
     android:src="@drawable/baseline_add_20"
+    android:visibility="gone"
     app:tint="@color/white">
 
 </ImageView>

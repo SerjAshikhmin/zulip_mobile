@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.core.view.setMargins
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import ru.tinkoff.android.homework_2.R
 import ru.tinkoff.android.homework_2.data.SELF_USER_NAME
 import ru.tinkoff.android.homework_2.data.getEmojisForMessage
@@ -24,7 +23,7 @@ private const val TYPE_MESSAGE = 0
 private const val TYPE_SELF_MESSAGE = 1
 private const val TYPE_SEND_DATE = 2
 
-class ChatMessagesAdapter(private val messages: List<Message?>, private val dialog: BottomSheetDialog)
+class ChatMessagesAdapter(private val messages: List<Message?>, private val dialog: EmojiBottomSheetDialog)
     : RecyclerView.Adapter<ChatMessagesAdapter.BaseViewHolder>() {
 
     override fun getItemViewType(position: Int): Int {
@@ -49,7 +48,7 @@ class ChatMessagesAdapter(private val messages: List<Message?>, private val dial
                 layoutParams.setMargins(dpToPx(DEFAULT_MARGIN_DP, parent.context))
                 messageView.layoutParams = layoutParams
                 messageView.setOnLongClickListener {
-                    return@setOnLongClickListener messageOnClickFunc(dialog)
+                    return@setOnLongClickListener messageOnClickFunc(dialog, messageView)
                 }
                 MessageViewHolder(messageView)
             }
@@ -64,7 +63,7 @@ class ChatMessagesAdapter(private val messages: List<Message?>, private val dial
                 parent.layoutParams.resolveLayoutDirection(LayoutDirection.RTL)
                 selfMessageView.layoutParams = layoutParams
                 selfMessageView.setOnLongClickListener {
-                    return@setOnLongClickListener messageOnClickFunc(dialog)
+                    return@setOnLongClickListener messageOnClickFunc(dialog, selfMessageView)
                 }
                 SelfMessageViewHolder(selfMessageView)
             }
@@ -130,41 +129,30 @@ class ChatMessagesAdapter(private val messages: List<Message?>, private val dial
         }
     }
 
-    private fun messageOnClickFunc(dialog: BottomSheetDialog): Boolean {
-        dialog.show()
+    private fun messageOnClickFunc(dialog: EmojiBottomSheetDialog, view: View): Boolean {
+        dialog.show(view)
         return true
-    }
-
-    private val emojiClickFunc: (v: View) -> Unit = { view ->
-        view.isSelected = !view.isSelected
-        (view as EmojiWithCountView).apply {
-            if (view.isSelected) emojiCount++ else emojiCount--
-        }
     }
 
     private fun fillEmojiBox(message: Message, emojiBox: FlexBoxLayout) {
         val emojis = getEmojisForMessage(message.id)
+
+        val addEmojiView = LayoutInflater.from(emojiBox.context).inflate(
+            R.layout.view_image_add_emoji,
+            emojiBox,
+            false
+        ) as ImageView
+        addEmojiView.setOnClickListener {
+            this@ChatMessagesAdapter.dialog.show(addEmojiView)
+        }
+        emojiBox.addView(addEmojiView)
+
         if (emojis.isNotEmpty()) {
             emojis.forEach { emoji ->
-                val emojiView = LayoutInflater.from(emojiBox.context).inflate(
-                    R.layout.layout_emoji_with_count_view,
-                    emojiBox,
-                    false
-                ) as EmojiWithCountView
-                emojiView.setOnClickListener(this@ChatMessagesAdapter.emojiClickFunc)
-                emojiView.emojiCode = emoji.code
-                emojiView.emojiCount = emoji.count.toString()
-                emojiBox.addView(emojiView)
+                val emojiView = EmojiWithCountView.createEmojiWithCountView(emojiBox, emoji)
+                emojiBox.addView(emojiView, emojiBox.childCount - 1)
             }
-            val addEmojiView = LayoutInflater.from(emojiBox.context).inflate(
-                R.layout.view_image_add_emoji,
-                emojiBox,
-                false
-            ) as ImageView
-            addEmojiView.setOnClickListener {
-                this@ChatMessagesAdapter.dialog.show()
-            }
-            emojiBox.addView(addEmojiView)
+            addEmojiView.visibility = View.VISIBLE
         }
     }
 
