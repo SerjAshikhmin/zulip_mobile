@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexboxLayout
 import ru.tinkoff.android.homework_2.data.EmojiCodes
+import ru.tinkoff.android.homework_2.data.SELF_USER_ID
 import ru.tinkoff.android.homework_2.data.messages
 import ru.tinkoff.android.homework_2.databinding.ActivityMainBinding
 import ru.tinkoff.android.homework_2.model.Message
@@ -54,6 +55,7 @@ class MainActivity : AppCompatActivity(), BottomSheetCallback {
         val sendButton = binding.sendButton
 
         enterMessage.doAfterTextChanged {
+            // TODO сделать кнопку с "+" с прозрачным бэкграундом и менять цвет при вводе
             if (enterMessage.text.isEmpty()) {
                 sendButton.setImageResource(R.drawable.baseline_add_20)
                 //sendButton.backgroundTintList =
@@ -70,7 +72,7 @@ class MainActivity : AppCompatActivity(), BottomSheetCallback {
             if (enterMessage.text.isNotEmpty()) {
                 messages.add(Message(
                     (messages.size + 1).toLong(),
-                    "Сергей Ашихмин",
+                    SELF_USER_ID,
                     enterMessage.text.toString(),
                     listOf(),
                     LocalDateTime.now()

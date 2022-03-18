@@ -27,7 +27,7 @@ class FlexBoxLayout @JvmOverloads constructor(
         val widthSize = MeasureSpec.getSize(widthMeasureSpec)
         for (i in 0 until childCount) {
             val child = getChildAt(i)
-            measureChild(child, widthMeasureSpec, heightMeasureSpec)
+            measureChildWithMargins(child, widthMeasureSpec, 0, heightMeasureSpec, 0)
             if (currentStringWidth + child.measuredWidthWithMargins >
                 mMaxWidth ?: widthSize
             ) {

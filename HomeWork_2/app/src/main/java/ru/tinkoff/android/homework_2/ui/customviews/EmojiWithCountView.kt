@@ -7,6 +7,7 @@ import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.ImageView
 import ru.tinkoff.android.homework_2.R
 import ru.tinkoff.android.homework_2.model.EmojiWithCount
 
@@ -90,7 +91,14 @@ class EmojiWithCountView @JvmOverloads constructor(
         private val emojiClickFunc: (v: View) -> Unit = { view ->
             view.isSelected = !view.isSelected
             (view as EmojiWithCountView).apply {
-                if (view.isSelected) emojiCount++ else emojiCount--
+                if (isSelected) emojiCount++ else emojiCount--
+                if (emojiCount == "0") {
+                    val emojiBox = (parent as FlexBoxLayout)
+                    emojiBox.removeView(this)
+                    if (emojiBox.childCount == 1) {
+                        emojiBox.getChildAt(0).visibility = GONE
+                    }
+                }
             }
         }
 

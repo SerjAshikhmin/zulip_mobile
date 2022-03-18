@@ -40,12 +40,18 @@ class EmojiBottomSheetDialog(
         val emoji = emojiBox?.children?.firstOrNull {
             it is EmojiWithCountView && it.emojiCode == emojiCode
         }
-        if (emoji is EmojiWithCountView) emoji.emojiCount++ else {
+        if (emoji is EmojiWithCountView) {
+            if (!emoji.isSelected) {
+                emoji.isSelected = true
+                emoji.emojiCount++
+            }
+        } else {
             if (emojiBox != null) {
                 val emojiView = EmojiWithCountView.createEmojiWithCountView(
                     emojiBox,
                     EmojiWithCount(emojiCode, 1)
                 )
+                emojiView.isSelected = true
                 emojiBox.addView(emojiView, emojiBox.childCount - 1)
                 if (emojiBox.childCount > 1) {
                     emojiBox.getChildAt(emojiBox.childCount - 1).visibility = View.VISIBLE

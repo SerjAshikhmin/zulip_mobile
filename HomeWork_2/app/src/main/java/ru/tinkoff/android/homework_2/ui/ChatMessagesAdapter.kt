@@ -13,8 +13,9 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import ru.tinkoff.android.homework_2.R
-import ru.tinkoff.android.homework_2.data.SELF_USER_NAME
+import ru.tinkoff.android.homework_2.data.SELF_USER_ID
 import ru.tinkoff.android.homework_2.data.getEmojisForMessage
+import ru.tinkoff.android.homework_2.data.getUserById
 import ru.tinkoff.android.homework_2.model.Message
 import ru.tinkoff.android.homework_2.ui.customviews.*
 import java.time.LocalDate
@@ -61,7 +62,7 @@ class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
         if (item is LocalDate) {
             return TYPE_SEND_DATE
         }
-        return if (item is Message && item.userName == SELF_USER_NAME) {
+        return if (item is Message && item.userId == SELF_USER_ID) {
             TYPE_SELF_MESSAGE
         } else {
             TYPE_MESSAGE
@@ -130,7 +131,8 @@ class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
 
         fun bind(message: Message?) {
             message?.let {
-                username.text = it.userName
+                val user = getUserById(it.userId)
+                username.text = user?.name
                 messageView.text = it.content
                 fillEmojiBox(it, emojiBox)
             }
@@ -153,9 +155,11 @@ class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
     class SendDateViewHolder(private val sendDateView: FrameLayout) : BaseViewHolder(sendDateView) {
 
         fun bind(sendDate: LocalDate?) {
-            val sendDateStr =
+            var sendDateStr =
                 sendDate?.format(DateTimeFormatter.ofPattern("dd MMM"))?.replace(".", "")
-            //sendDateStr[sendDateStr.length - 2] = sendDateStr[sendDateStr.length - 2].uppercaseChar()
+            sendDateStr?.let {
+                sendDateStr = it.replaceRange(it.length - 3, it.length - 2, it[it.length - 3].uppercaseChar().toString())
+            }
             (sendDateView.getChildAt(0) as TextView).text = sendDateStr
         }
     }
@@ -181,6 +185,7 @@ class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
         if (emojis.isNotEmpty()) {
             emojis.forEach { emoji ->
                 val emojiView = EmojiWithCountView.createEmojiWithCountView(emojiBox, emoji)
+                if (emoji.selectedByCurrentUser) emojiView.isSelected = true
                 emojiBox.addView(emojiView, emojiBox.childCount - 1)
             }
             addEmojiView.visibility = View.VISIBLE
