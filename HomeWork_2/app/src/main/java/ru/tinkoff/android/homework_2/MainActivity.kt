@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity(), BottomSheetCallback {
     private lateinit var binding: ActivityMainBinding
     private lateinit var dialog: EmojiBottomSheetDialog
     private lateinit var chatRecycler: RecyclerView
+    private lateinit var adapter: ChatMessagesAdapter
     private lateinit var bottomSheetCallback: BottomSheetCallback
     private var chosenEmojiCode = ""
 
@@ -43,7 +44,9 @@ class MainActivity : AppCompatActivity(), BottomSheetCallback {
         val layoutManager = LinearLayoutManager(this)
         layoutManager.stackFromEnd = true
         chatRecycler.layoutManager = layoutManager
-        chatRecycler.adapter = ChatMessagesAdapter(messages, dialog)
+        adapter = ChatMessagesAdapter(dialog)
+        adapter.messages = messages
+        chatRecycler.adapter = adapter
     }
 
     private fun configureEnterMessageSection() {
@@ -72,7 +75,7 @@ class MainActivity : AppCompatActivity(), BottomSheetCallback {
                     listOf(),
                     LocalDateTime.now()
                 ))
-                //chatRecycler.layoutManager?.scrollToPosition(chatRecycler.childCount)
+                chatRecycler.layoutManager?.scrollToPosition(adapter.messages.size - 1)
                 enterMessage.text.clear()
                 val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(enterMessage.windowToken, 0)

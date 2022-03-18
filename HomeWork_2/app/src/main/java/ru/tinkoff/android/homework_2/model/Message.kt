@@ -2,7 +2,7 @@ package ru.tinkoff.android.homework_2.model
 
 import java.time.LocalDateTime
 
-class Message (
+data class Message (
     val id: Long,
     val userName: String,
     val content: String,

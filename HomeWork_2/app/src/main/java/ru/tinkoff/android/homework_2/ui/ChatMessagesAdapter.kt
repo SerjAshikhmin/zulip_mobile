@@ -9,6 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.core.view.setMargins
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import ru.tinkoff.android.homework_2.R
 import ru.tinkoff.android.homework_2.data.SELF_USER_NAME
@@ -23,8 +25,36 @@ private const val TYPE_MESSAGE = 0
 private const val TYPE_SELF_MESSAGE = 1
 private const val TYPE_SEND_DATE = 2
 
-class ChatMessagesAdapter(private val messages: List<Any>, private val dialog: EmojiBottomSheetDialog)
+class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
     : RecyclerView.Adapter<ChatMessagesAdapter.BaseViewHolder>() {
+
+    var messages: List<Any>
+        set(value) = differ.submitList(value)
+        get() = differ.currentList
+
+    private val differ = AsyncListDiffer(this, DiffCallback())
+
+    class DiffCallback: DiffUtil.ItemCallback<Any>() {
+        override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
+            if (oldItem is Message && newItem is Message) {
+                return oldItem.id == newItem.id
+            }
+            if (oldItem is LocalDate && newItem is LocalDate) {
+                return oldItem == newItem
+            }
+            return false
+        }
+
+        override fun areContentsTheSame(oldItem: Any, newItem: Any): Boolean {
+            if (oldItem is Message && newItem is Message) {
+                return oldItem == newItem
+            }
+            if (oldItem is LocalDate && newItem is LocalDate) {
+                return oldItem == newItem
+            }
+            return false
+        }
+    }
 
     override fun getItemViewType(position: Int): Int {
         val item = messages[position]
