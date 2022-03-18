@@ -3,11 +3,12 @@ package ru.tinkoff.android.homework_2.data
 import ru.tinkoff.android.homework_2.model.EmojiWithCount
 import ru.tinkoff.android.homework_2.model.Message
 import ru.tinkoff.android.homework_2.model.Reaction
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 fun getEmojisForMessage(messageId: Long): List<EmojiWithCount> {
-    val message = messages.first { it?.id == messageId }
-    return if (message != null) {
+    val message = messages.first { it is Message && it.id == messageId }
+    return if (message is Message) {
         val emojiList = mutableListOf<EmojiWithCount>()
         message.reactions
             .groupBy { reaction -> reaction.code }
@@ -18,13 +19,9 @@ fun getEmojisForMessage(messageId: Long): List<EmojiWithCount> {
     }
 }
 
-fun getMessagesWithSendDateSeparators() {
-
-}
-
 internal const val SELF_USER_NAME = "Сергей Ашихмин"
 internal var messages = mutableListOf(
-    null,
+    LocalDate.now().minusDays(1),
     Message(
         1,
         "Дмитрий Макаров",
@@ -61,7 +58,7 @@ internal var messages = mutableListOf(
         ),
         LocalDateTime.now().minusDays(1)
     ),
-    null,
+    LocalDate.now(),
     Message(
         3,
         "Дмитрий Макаров",

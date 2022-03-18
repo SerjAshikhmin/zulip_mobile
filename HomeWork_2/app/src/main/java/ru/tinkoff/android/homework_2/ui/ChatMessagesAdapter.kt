@@ -23,14 +23,15 @@ private const val TYPE_MESSAGE = 0
 private const val TYPE_SELF_MESSAGE = 1
 private const val TYPE_SEND_DATE = 2
 
-class ChatMessagesAdapter(private val messages: List<Message?>, private val dialog: EmojiBottomSheetDialog)
+class ChatMessagesAdapter(private val messages: List<Any>, private val dialog: EmojiBottomSheetDialog)
     : RecyclerView.Adapter<ChatMessagesAdapter.BaseViewHolder>() {
 
     override fun getItemViewType(position: Int): Int {
-        if (messages[position] == null) {
+        val item = messages[position]
+        if (item is LocalDate) {
             return TYPE_SEND_DATE
         }
-        return if (messages[position]?.userName == SELF_USER_NAME) {
+        return if (item is Message && item.userName == SELF_USER_NAME) {
             TYPE_SELF_MESSAGE
         } else {
             TYPE_MESSAGE
@@ -81,9 +82,9 @@ class ChatMessagesAdapter(private val messages: List<Message?>, private val dial
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         return when(holder) {
-            is MessageViewHolder -> holder.bind(messages[position])
-            is SelfMessageViewHolder -> holder.bind(messages[position])
-            is SendDateViewHolder -> holder.bind(messages[position + 1]?.sendDateTime?.toLocalDate())
+            is MessageViewHolder -> holder.bind(messages[position] as Message)
+            is SelfMessageViewHolder -> holder.bind(messages[position] as Message)
+            is SendDateViewHolder -> holder.bind(messages[position] as LocalDate)
         }
     }
 
