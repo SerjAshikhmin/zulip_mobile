@@ -47,39 +47,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
-        <!--<ru.tinkoff.android.homework_2.ui.customviews.MessageViewGroup
-            android:id="@+id/message_group"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/message_group1"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_margin="10dp" />
-
-        <ru.tinkoff.android.homework_2.ui.customviews.MessageViewGroup
-            android:id="@+id/message_group1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintHorizontal_bias="1"
-            app:layout_constraintTop_toBottomOf="@id/message_group"
-            app:layout_constraintBottom_toTopOf="@id/self_message_group"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_margin="10dp" />
-
-        <ru.tinkoff.android.homework_2.ui.customviews.SelfMessageViewGroup
-            android:id="@+id/self_message_group"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintHorizontal_bias="1"
-            app:layout_constraintTop_toBottomOf="@id/message_group1"
-            app:layout_constraintBottom_toTopOf="@id/enter_message_section"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_margin="10dp" />-->
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/enter_message_section"
         android:layout_width="match_parent"
