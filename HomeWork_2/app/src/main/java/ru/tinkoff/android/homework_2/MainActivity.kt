@@ -77,6 +77,7 @@ class MainActivity : AppCompatActivity(), BottomSheetCallback {
                     listOf(),
                     LocalDateTime.now()
                 ))
+                adapter.update(messages, messages.size - 1)
                 chatRecycler.layoutManager?.scrollToPosition(adapter.messages.size - 1)
                 enterMessage.text.clear()
                 val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager

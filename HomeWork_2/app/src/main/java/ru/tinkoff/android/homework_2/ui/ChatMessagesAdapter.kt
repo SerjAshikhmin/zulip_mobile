@@ -119,6 +119,11 @@ class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
         }
     }
 
+    fun update(newMessages: List<Any>, position: Int) {
+        messages = newMessages
+        notifyItemInserted(position)
+    }
+
     override fun getItemCount(): Int = messages.size
 
     sealed class BaseViewHolder(view: View) : RecyclerView.ViewHolder(view)
