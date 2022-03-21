@@ -18,8 +18,8 @@ import ru.tinkoff.android.homework_2.data.messages
 import ru.tinkoff.android.homework_2.databinding.ActivityChatBinding
 import ru.tinkoff.android.homework_2.model.Message
 import ru.tinkoff.android.homework_2.ui.BottomSheetCallback
-import ru.tinkoff.android.homework_2.ui.ChatMessagesAdapter
 import ru.tinkoff.android.homework_2.ui.customviews.EmojiBottomSheetDialog
+import ru.tinkoff.android.homework_2.ui.screens.adapters.ChatMessagesAdapter
 import java.time.LocalDateTime
 
 class ChatActivity : AppCompatActivity(), BottomSheetCallback {

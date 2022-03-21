@@ -65,9 +65,10 @@
         app:layout_constraintVertical_bias="0.2">
 
         <ImageView
+            android:id="@+id/profile_avatar_img"
             android:layout_width="185dp"
             android:layout_height="185dp"
-            android:src="@drawable/profile_image"/>
+            android:src="@drawable/self_avatar"/>
 
     </androidx.cardview.widget.CardView>
 

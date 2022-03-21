@@ -1,6 +1,9 @@
 package ru.tinkoff.android.homework_2.model
 
-class User (
+data class User (
     val id: Long,
-    val name: String
+    val name: String,
+    val email: String,
+    val status: String,
+    val onlineStatus: Boolean = false
 )

@@ -11,10 +11,15 @@ fun getUserById(userId: Long): User? {
 internal var users = mutableListOf(
     User(
         1,
-        "Сергей Ашихмин"
+        "Sergey Ashikhmin",
+        "ashihmin@yandex.ru",
+        "Learning Android",
+        true
     ),
     User(
         2,
-        "Дмитрий Макаров"
+        "Darrel Steward",
+        "darrel@company.com",
+        "In a meeting",
     )
 )

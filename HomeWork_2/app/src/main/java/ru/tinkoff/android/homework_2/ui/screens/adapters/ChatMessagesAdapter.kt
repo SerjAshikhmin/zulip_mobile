@@ -1,4 +1,4 @@
-package ru.tinkoff.android.homework_2.ui
+package ru.tinkoff.android.homework_2.ui.screens.adapters
 
 import android.content.Context
 import android.util.DisplayMetrics
