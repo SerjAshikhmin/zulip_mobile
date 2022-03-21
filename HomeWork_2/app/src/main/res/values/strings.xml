@@ -7,4 +7,6 @@
     <string name="channels_menu_title">Channels</string>
     <string name="people_menu_title">People</string>
     <string name="profile_menu_title">Profile</string>
+    <string name="search_hint">Search...</string>
+    <string name="users_search_hint">Users...</string>
 </resources>
