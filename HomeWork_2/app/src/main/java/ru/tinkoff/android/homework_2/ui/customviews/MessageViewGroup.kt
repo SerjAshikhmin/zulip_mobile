@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.core.view.*
 import ru.tinkoff.android.homework_2.databinding.LayoutMessageViewGroupBinding
 
-class MessageViewGroup @JvmOverloads constructor(
+internal class MessageViewGroup @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : ViewGroup(context, attrs) {

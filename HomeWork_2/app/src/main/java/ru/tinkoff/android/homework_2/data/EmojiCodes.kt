@@ -1,6 +1,6 @@
 package ru.tinkoff.android.homework_2.data
 
-class EmojiCodes {
+internal class EmojiCodes {
 
     companion object {
 

@@ -26,7 +26,7 @@ private const val TYPE_MESSAGE = 0
 private const val TYPE_SELF_MESSAGE = 1
 private const val TYPE_SEND_DATE = 2
 
-class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
+internal class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
     : RecyclerView.Adapter<ChatMessagesAdapter.BaseViewHolder>() {
 
     var messages: List<Any>

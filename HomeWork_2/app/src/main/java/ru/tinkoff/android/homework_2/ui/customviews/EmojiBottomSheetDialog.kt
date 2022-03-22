@@ -9,7 +9,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import ru.tinkoff.android.homework_2.model.EmojiWithCount
 import ru.tinkoff.android.homework_2.ui.BottomSheetCallback
 
-class EmojiBottomSheetDialog(
+internal class EmojiBottomSheetDialog(
     context: Context,
     @StyleRes theme: Int,
     private val bottomSheetCallback: BottomSheetCallback

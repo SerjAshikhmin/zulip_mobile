@@ -10,7 +10,7 @@ import ru.tinkoff.android.homework_2.data.users
 import ru.tinkoff.android.homework_2.databinding.FragmentPeopleBinding
 import ru.tinkoff.android.homework_2.ui.screens.adapters.PeopleListAdapter
 
-class PeopleFragment: Fragment() {
+internal class PeopleFragment: Fragment() {
 
     private lateinit var binding: FragmentPeopleBinding
 

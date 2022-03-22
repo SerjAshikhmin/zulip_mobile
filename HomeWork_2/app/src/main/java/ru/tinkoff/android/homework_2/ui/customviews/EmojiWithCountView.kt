@@ -7,11 +7,10 @@ import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.ImageView
 import ru.tinkoff.android.homework_2.R
 import ru.tinkoff.android.homework_2.model.EmojiWithCount
 
-class EmojiWithCountView @JvmOverloads constructor(
+internal class EmojiWithCountView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : View(context, attrs) {

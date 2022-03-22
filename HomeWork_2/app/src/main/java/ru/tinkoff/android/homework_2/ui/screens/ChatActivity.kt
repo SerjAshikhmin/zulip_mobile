@@ -8,6 +8,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.widget.doAfterTextChanged
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexboxLayout
@@ -15,14 +16,16 @@ import ru.tinkoff.android.homework_2.R
 import ru.tinkoff.android.homework_2.data.EmojiCodes
 import ru.tinkoff.android.homework_2.data.SELF_USER_ID
 import ru.tinkoff.android.homework_2.data.messages
+import ru.tinkoff.android.homework_2.data.topics
 import ru.tinkoff.android.homework_2.databinding.ActivityChatBinding
 import ru.tinkoff.android.homework_2.model.Message
+import ru.tinkoff.android.homework_2.model.Topic
 import ru.tinkoff.android.homework_2.ui.BottomSheetCallback
 import ru.tinkoff.android.homework_2.ui.customviews.EmojiBottomSheetDialog
 import ru.tinkoff.android.homework_2.ui.screens.adapters.ChatMessagesAdapter
 import java.time.LocalDateTime
 
-class ChatActivity : AppCompatActivity(), BottomSheetCallback {
+internal class ChatActivity : AppCompatActivity(), BottomSheetCallback {
 
     private lateinit var binding: ActivityChatBinding
     private lateinit var dialog: EmojiBottomSheetDialog
@@ -30,6 +33,7 @@ class ChatActivity : AppCompatActivity(), BottomSheetCallback {
     private lateinit var adapter: ChatMessagesAdapter
     private lateinit var bottomSheetCallback: BottomSheetCallback
     private var chosenEmojiCode = ""
+    private var topic: Topic = topics[0]
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +43,24 @@ class ChatActivity : AppCompatActivity(), BottomSheetCallback {
         createAndConfigureBottomSheet()
         configureEnterMessageSection()
         configureChatRecycler()
+        configureToolbar()
+    }
+
+    private fun configureToolbar() {
+        binding.backIcon.setOnClickListener {
+            val navController = findNavController(R.id.nav_chat)
+            navController.navigateUp()
+        }
+
+        binding.topicName.text = resources.getString(
+            R.string.topic_name_text,
+            intent.getStringExtra("topicName")?.lowercase()
+        )
+
+        binding.channelName.text = resources.getString(
+            R.string.channel_name_text,
+            intent.getStringExtra("channelName")
+        )
     }
 
     private fun configureChatRecycler() {
@@ -73,11 +95,12 @@ class ChatActivity : AppCompatActivity(), BottomSheetCallback {
             if (enterMessage.text.isNotEmpty()) {
                 messages.add(
                     Message(
-                    (messages.size + 1).toLong(),
-                    SELF_USER_ID,
-                    enterMessage.text.toString(),
-                    listOf(),
-                    LocalDateTime.now()
+                    id = (messages.size + 1).toLong(),
+                    userId = SELF_USER_ID,
+                    topicName = topic.name,
+                    content = enterMessage.text.toString(),
+                    reactions = listOf(),
+                    sendDateTime = LocalDateTime.now()
                 )
                 )
                 adapter.update(messages, messages.size - 1)

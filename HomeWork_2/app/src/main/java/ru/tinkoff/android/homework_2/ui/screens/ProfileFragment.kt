@@ -11,7 +11,7 @@ import ru.tinkoff.android.homework_2.data.SELF_USER_ID
 import ru.tinkoff.android.homework_2.data.getUserById
 import ru.tinkoff.android.homework_2.databinding.FragmentProfileBinding
 
-class ProfileFragment: Fragment() {
+internal class ProfileFragment: Fragment() {
 
     private lateinit var binding: FragmentProfileBinding
 
@@ -39,7 +39,7 @@ class ProfileFragment: Fragment() {
                 binding.username.text = user.name
                 binding.userStatus.text = user.status
                 binding.profileAvatarImg.setImageResource(R.drawable.self_avatar)
-                if (user.onlineStatus) {
+                if (user.isOnline) {
                     binding.userOnlineStatus.visibility = View.VISIBLE
                 }
                 binding.toolbar.visibility = View.GONE

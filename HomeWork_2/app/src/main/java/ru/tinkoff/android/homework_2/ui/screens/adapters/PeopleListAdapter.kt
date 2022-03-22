@@ -14,7 +14,7 @@ import ru.tinkoff.android.homework_2.R
 import ru.tinkoff.android.homework_2.data.SELF_USER_ID
 import ru.tinkoff.android.homework_2.model.User
 
-class PeopleListAdapter: RecyclerView.Adapter<PeopleListAdapter.PeopleListViewHolder>() {
+internal class PeopleListAdapter: RecyclerView.Adapter<PeopleListAdapter.PeopleListViewHolder>() {
 
     var users: List<User>
         set(value) = differ.submitList(value)
@@ -45,15 +45,16 @@ class PeopleListAdapter: RecyclerView.Adapter<PeopleListAdapter.PeopleListViewHo
             } else {
                 avatar.setImageResource(R.drawable.avatar)
             }
+            initListener(user)
         }
 
-        fun initListener(user: User) {
+        private fun initListener(user: User) {
             view.setOnClickListener {
                 val bundle = bundleOf(
                     "id" to user.id,
                     "username" to user.name,
                     "status" to user.status,
-                    "onlineStatus" to user.onlineStatus
+                    "onlineStatus" to user.isOnline
                 )
                 view.findNavController().navigate(R.id.nav_profile, bundle)
             }
@@ -67,9 +68,7 @@ class PeopleListAdapter: RecyclerView.Adapter<PeopleListAdapter.PeopleListViewHo
     }
 
     override fun onBindViewHolder(holder: PeopleListViewHolder, position: Int) {
-        val user = users[position]
-        holder.bind(user)
-        holder.initListener(user)
+        holder.bind(users[position])
     }
 
     override fun getItemCount(): Int = users.size

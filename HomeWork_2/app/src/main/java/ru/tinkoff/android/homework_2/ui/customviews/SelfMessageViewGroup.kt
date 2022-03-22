@@ -9,7 +9,7 @@ import androidx.core.view.marginEnd
 import androidx.core.view.marginStart
 import ru.tinkoff.android.homework_2.databinding.LayoutSelfMessageViewGroupBinding
 
-class SelfMessageViewGroup @JvmOverloads constructor(
+internal class SelfMessageViewGroup @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : ViewGroup(context, attrs) {

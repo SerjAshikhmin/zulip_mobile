@@ -21,7 +21,7 @@
 
         <action
             android:id="@+id/action_nav_people_to_nav_profile"
-            app:destination="@id/nav_people"/>
+            app:destination="@id/nav_profile"/>
 
     </fragment>
 
@@ -32,5 +32,12 @@
         tools:layout="@layout/fragment_profile">
 
     </fragment>
+
+    <activity
+        android:id="@+id/nav_chat"
+        android:name="ru.tinkoff.android.homework_2.ui.screens.ChatActivity"
+        tools:layout="@layout/activity_chat">
+
+    </activity>
 
 </navigation>

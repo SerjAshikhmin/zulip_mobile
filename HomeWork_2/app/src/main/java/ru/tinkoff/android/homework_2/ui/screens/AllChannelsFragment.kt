@@ -5,9 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import ru.tinkoff.android.homework_2.data.channels
 import ru.tinkoff.android.homework_2.databinding.FragmentAllChannelsBinding
+import ru.tinkoff.android.homework_2.ui.screens.adapters.ChannelsListAdapter
 
-class AllChannelsFragment: Fragment() {
+internal class AllChannelsFragment: Fragment() {
 
     private lateinit var binding: FragmentAllChannelsBinding
 
@@ -17,6 +20,17 @@ class AllChannelsFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentAllChannelsBinding.inflate(inflater,container,false)
+
+        configureChannelListRecycler()
         return binding.root
+    }
+
+    private fun configureChannelListRecycler() {
+        val channelListRecycle = binding.channelsList
+        val layoutManager = LinearLayoutManager(context)
+        channelListRecycle.layoutManager = layoutManager
+        val adapter = ChannelsListAdapter()
+        adapter.channels = channels
+        channelListRecycle.adapter = adapter
     }
 }

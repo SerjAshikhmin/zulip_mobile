@@ -1,6 +1,6 @@
 package ru.tinkoff.android.homework_2.ui
 
-interface BottomSheetCallback {
+internal interface BottomSheetCallback {
 
     fun callbackMethod(): String
 }

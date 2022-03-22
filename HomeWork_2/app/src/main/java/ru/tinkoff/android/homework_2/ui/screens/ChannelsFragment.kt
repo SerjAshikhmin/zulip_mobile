@@ -15,7 +15,7 @@ import ru.tinkoff.android.homework_2.databinding.FragmentChannelsBinding
 import ru.tinkoff.android.homework_2.ui.screens.adapters.ChannelsListPagerAdapter
 import java.lang.Exception
 
-class ChannelsFragment: Fragment() {
+internal class ChannelsFragment: Fragment() {
 
     private lateinit var binding: FragmentChannelsBinding
 

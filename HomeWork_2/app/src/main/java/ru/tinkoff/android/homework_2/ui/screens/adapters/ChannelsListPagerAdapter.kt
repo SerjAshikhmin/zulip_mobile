@@ -5,7 +5,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import ru.tinkoff.android.homework_2.ui.screens.AllChannelsFragment
 import ru.tinkoff.android.homework_2.ui.screens.SubscribedFragment
 
-class ChannelsListPagerAdapter(
+internal class ChannelsListPagerAdapter(
     fragment: Fragment
 ) : FragmentStateAdapter(fragment) {
 

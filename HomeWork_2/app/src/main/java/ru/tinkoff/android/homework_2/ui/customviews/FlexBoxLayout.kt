@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.core.view.*
 import ru.tinkoff.android.homework_2.R
 
-class FlexBoxLayout @JvmOverloads constructor(
+internal class FlexBoxLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : ViewGroup(context, attrs) {
