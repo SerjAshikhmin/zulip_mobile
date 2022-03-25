@@ -12,11 +12,12 @@ class FlexBoxLayout @JvmOverloads constructor(
     attrs: AttributeSet? = null
 ) : ViewGroup(context, attrs) {
 
-    private var maxWidth: Int? = null
+    private var maxWidth: Int?
 
     init {
         val a: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.FlexBoxLayout)
-        maxWidth = a.getDimensionPixelSize(R.styleable.FlexBoxLayout_flexBoxMaxWidth, 250)
+        maxWidth = a.getDimensionPixelSize(R.styleable.FlexBoxLayout_flexBoxMaxWidth, 0)
+        if (maxWidth == 0) maxWidth = null
         a.recycle()
     }
 

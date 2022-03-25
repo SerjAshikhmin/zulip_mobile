@@ -7,7 +7,6 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.StyleRes
-import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.EmojiCodes
@@ -47,7 +46,7 @@ class EmojiBottomSheetDialog(
                 chosenEmojiCode = emojiView.text.toString()
                 dismiss()
             }
-            (bottomSheet.getChildAt(1) as FlexboxLayout).addView(emojiView)
+            (bottomSheet.getChildAt(1) as FlexBoxLayout).addView(emojiView)
         }
     }
 }

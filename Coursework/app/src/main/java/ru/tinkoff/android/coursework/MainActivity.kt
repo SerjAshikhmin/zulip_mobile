@@ -99,30 +99,32 @@ class MainActivity : AppCompatActivity(), BottomSheetCallback {
     }
 
     override fun callbackMethod(selectedView: View?, chosenEmojiCode: String) {
-        val emojiBox = when(selectedView) {
-            is MessageViewGroup -> selectedView.binding.emojiBox
-            is SelfMessageViewGroup -> selectedView.binding.emojiBox
-            is ImageView -> selectedView.parent as FlexBoxLayout
-            else -> null
-        }
-        val emoji = emojiBox?.children?.firstOrNull {
-            it is EmojiWithCountView && it.emojiCode == chosenEmojiCode
-        }
-        if (emoji is EmojiWithCountView) {
-            if (!emoji.isSelected) {
-                emoji.isSelected = true
-                emoji.emojiCount++
+        if (chosenEmojiCode.isNotEmpty()) {
+            val emojiBox = when (selectedView) {
+                is MessageViewGroup -> selectedView.binding.emojiBox
+                is SelfMessageViewGroup -> selectedView.binding.emojiBox
+                is ImageView -> selectedView.parent as FlexBoxLayout
+                else -> null
             }
-        } else {
-            if (emojiBox != null) {
-                val emojiView = EmojiWithCountView.createEmojiWithCountView(
-                    emojiBox,
-                    EmojiWithCount(chosenEmojiCode, 1)
-                )
-                emojiView.isSelected = true
-                emojiBox.addView(emojiView, emojiBox.childCount - 1)
-                if (emojiBox.childCount > 1) {
-                    emojiBox.getChildAt(emojiBox.childCount - 1).visibility = View.VISIBLE
+            val emoji = emojiBox?.children?.firstOrNull {
+                it is EmojiWithCountView && it.emojiCode == chosenEmojiCode
+            }
+            if (emoji is EmojiWithCountView) {
+                if (!emoji.isSelected) {
+                    emoji.isSelected = true
+                    emoji.emojiCount++
+                }
+            } else {
+                if (emojiBox != null) {
+                    val emojiView = EmojiWithCountView.createEmojiWithCountView(
+                        emojiBox,
+                        EmojiWithCount(chosenEmojiCode, 1)
+                    )
+                    emojiView.isSelected = true
+                    emojiBox.addView(emojiView, emojiBox.childCount - 1)
+                    if (emojiBox.childCount > 1) {
+                        emojiBox.getChildAt(emojiBox.childCount - 1).visibility = View.VISIBLE
+                    }
                 }
             }
         }

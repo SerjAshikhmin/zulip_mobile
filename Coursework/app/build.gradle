@@ -40,6 +40,5 @@ dependencies {
     implementation "androidx.core:core-ktx:$coreKtxVersion"
     implementation "androidx.appcompat:appcompat:$appCompatVersion"
     implementation "com.google.android.material:material:$materialVersion"
-    implementation 'com.google.android.flexbox:flexbox:3.0.0'
     implementation "androidx.constraintlayout:constraintlayout:$constraintlayoutVersion"
 }

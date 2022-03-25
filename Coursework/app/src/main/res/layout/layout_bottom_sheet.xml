@@ -14,14 +14,13 @@
         android:background="@drawable/bottom_sheet_slider_background"
         android:layout_gravity="center|top"/>
 
-    <com.google.android.flexbox.FlexboxLayout
+    <ru.tinkoff.android.coursework.ui.customviews.FlexBoxLayout
         android:id="@+id/emoji_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        app:layout_behavior="@string/bottom_sheet_behavior"
-        app:flexWrap="wrap">
+        app:layout_behavior="@string/bottom_sheet_behavior">
 
-    </com.google.android.flexbox.FlexboxLayout>
+    </ru.tinkoff.android.coursework.ui.customviews.FlexBoxLayout>
 
 </LinearLayout>

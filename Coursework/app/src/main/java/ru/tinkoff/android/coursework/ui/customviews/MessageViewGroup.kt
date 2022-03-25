@@ -81,10 +81,11 @@ class MessageViewGroup @JvmOverloads constructor(
         )
 
         val emojiBoxTop = message.measuredHeightWithMargins
+        val firstChild = emojiBox.getChildAt(0)
         emojiBox.layout(
-            messageStart,
+            messageStart - firstChild.marginStart,
             emojiBoxTop,
-            messageStart + emojiBox.measuredWidthWithMargins,
+            messageStart + emojiBox.measuredWidthWithMargins - firstChild.marginStart,
             emojiBoxTop + emojiBox.marginBottom + emojiBox.measuredHeight
         )
     }
