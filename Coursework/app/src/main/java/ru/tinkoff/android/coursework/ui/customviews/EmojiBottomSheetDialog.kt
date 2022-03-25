@@ -12,7 +12,7 @@ import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.EmojiCodes
 import ru.tinkoff.android.coursework.ui.BottomSheetCallback
 
-class EmojiBottomSheetDialog(
+internal class EmojiBottomSheetDialog(
     context: Context,
     @StyleRes theme: Int,
     private var bottomSheet: LinearLayout,
@@ -21,6 +21,7 @@ class EmojiBottomSheetDialog(
 
     private var chosenEmojiCode = ""
     private var selectedView: View? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         createEmojiViews()

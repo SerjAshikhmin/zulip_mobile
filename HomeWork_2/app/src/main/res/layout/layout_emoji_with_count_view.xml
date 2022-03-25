@@ -1,4 +1,0 @@
-<ru.tinkoff.android.homework_2.ui.customviews.EmojiWithCountView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/Widget.HomeWork_2.EmojiWithCountView"
-    android:id="@+id/emoji" />
