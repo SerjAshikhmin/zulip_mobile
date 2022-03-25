@@ -31,18 +31,23 @@
             android:id="@+id/username"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginTop="8dp"
             android:textColor="@color/teal_500"
-            android:textSize="15sp" />
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/message_text"
             android:layout_width="wrap_content"
             android:maxWidth="200dp"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="8dp"
+            android:paddingBottom="8dp"
             android:textColor="@color/whiteVariant"
-            android:textSize="15sp" />
+            android:textSize="16sp" />
 
     </LinearLayout>
 
@@ -50,6 +55,6 @@
         android:id="@+id/emoji_box"
         android:layout_width="wrap_content"
         app:flexBoxMaxWidth="250dp"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"/>
 
 </merge>

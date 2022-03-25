@@ -170,15 +170,18 @@ internal class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
     private fun fillEmojiBox(message: Message, emojiBox: FlexBoxLayout) {
         val emojis = getEmojisForMessage(message.id)
 
-        val addEmojiView = LayoutInflater.from(emojiBox.context).inflate(
-            R.layout.view_image_add_emoji,
-            emojiBox,
-            false
-        ) as ImageView
-        addEmojiView.setOnClickListener {
-            this@ChatMessagesAdapter.dialog.show(addEmojiView)
+        var addEmojiView: ImageView? = null
+        if (emojiBox.childCount == 0) {
+            addEmojiView = LayoutInflater.from(emojiBox.context).inflate(
+                R.layout.view_image_add_emoji,
+                emojiBox,
+                false
+            ) as ImageView
+            addEmojiView.setOnClickListener {
+                this@ChatMessagesAdapter.dialog.show(addEmojiView)
+            }
+            emojiBox.addView(addEmojiView)
         }
-        emojiBox.addView(addEmojiView)
 
         if (emojis.isNotEmpty()) {
             emojis.forEach { emoji ->
@@ -186,7 +189,7 @@ internal class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
                 if (emoji.selectedByCurrentUser) emojiView.isSelected = true
                 emojiBox.addView(emojiView, emojiBox.childCount - 1)
             }
-            addEmojiView.visibility = View.VISIBLE
+            addEmojiView?.visibility = View.VISIBLE
         }
     }
 

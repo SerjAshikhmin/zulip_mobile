@@ -2,23 +2,24 @@ package ru.tinkoff.android.coursework
 
 import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
+import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.children
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.flexbox.FlexboxLayout
-import ru.tinkoff.android.coursework.data.EmojiCodes
 import ru.tinkoff.android.coursework.data.SELF_USER_ID
 import ru.tinkoff.android.coursework.data.messages
 import ru.tinkoff.android.coursework.model.Message
 import ru.tinkoff.android.coursework.ui.BottomSheetCallback
 import ru.tinkoff.android.coursework.ui.ChatMessagesAdapter
-import ru.tinkoff.android.coursework.ui.customviews.EmojiBottomSheetDialog
 import ru.tinkoff.android.coursework.databinding.ActivityMainBinding
+import ru.tinkoff.android.coursework.model.EmojiWithCount
+import ru.tinkoff.android.coursework.ui.customviews.*
+import ru.tinkoff.android.coursework.ui.customviews.EmojiWithCountView
 import java.time.LocalDateTime
 
 class MainActivity : AppCompatActivity(), BottomSheetCallback {
@@ -28,7 +29,6 @@ class MainActivity : AppCompatActivity(), BottomSheetCallback {
     private lateinit var chatRecycler: RecyclerView
     private lateinit var adapter: ChatMessagesAdapter
     private lateinit var bottomSheetCallback: BottomSheetCallback
-    private var chosenEmojiCode = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,23 +87,44 @@ class MainActivity : AppCompatActivity(), BottomSheetCallback {
     }
 
     private fun createAndConfigureBottomSheet() {
-        val bottomSheet = layoutInflater.inflate(R.layout.layout_bottom_sheet, null) as LinearLayout
-
-        EmojiCodes.values.forEach { emojiCode ->
-            val emojiView = LayoutInflater.from(this).inflate(
-                R.layout.layout_bottom_sheet_emoji, null
-            ) as TextView
-            emojiView.text = emojiCode
-            emojiView.setOnClickListener {
-                chosenEmojiCode = emojiView.text.toString()
-                dialog.dismiss()
-            }
-            (bottomSheet.getChildAt(1) as FlexboxLayout).addView(emojiView)
-        }
+        val bottomSheetLayout = layoutInflater.inflate(R.layout.layout_bottom_sheet, null) as LinearLayout
         bottomSheetCallback = this
-        dialog = EmojiBottomSheetDialog(this, R.style.BottomSheetDialogTheme, bottomSheetCallback)
-        dialog.setContentView(bottomSheet)
+        dialog = EmojiBottomSheetDialog(
+            this,
+            R.style.BottomSheetDialogTheme,
+            bottomSheetLayout,
+            bottomSheetCallback
+        )
+        dialog.setContentView(bottomSheetLayout)
     }
 
-    override fun callbackMethod() = chosenEmojiCode
+    override fun callbackMethod(selectedView: View?, chosenEmojiCode: String) {
+        val emojiBox = when(selectedView) {
+            is MessageViewGroup -> selectedView.binding.emojiBox
+            is SelfMessageViewGroup -> selectedView.binding.emojiBox
+            is ImageView -> selectedView.parent as FlexBoxLayout
+            else -> null
+        }
+        val emoji = emojiBox?.children?.firstOrNull {
+            it is EmojiWithCountView && it.emojiCode == chosenEmojiCode
+        }
+        if (emoji is EmojiWithCountView) {
+            if (!emoji.isSelected) {
+                emoji.isSelected = true
+                emoji.emojiCount++
+            }
+        } else {
+            if (emojiBox != null) {
+                val emojiView = EmojiWithCountView.createEmojiWithCountView(
+                    emojiBox,
+                    EmojiWithCount(chosenEmojiCode, 1)
+                )
+                emojiView.isSelected = true
+                emojiBox.addView(emojiView, emojiBox.childCount - 1)
+                if (emojiBox.childCount > 1) {
+                    emojiBox.getChildAt(emojiBox.childCount - 1).visibility = View.VISIBLE
+                }
+            }
+        }
+    }
 }

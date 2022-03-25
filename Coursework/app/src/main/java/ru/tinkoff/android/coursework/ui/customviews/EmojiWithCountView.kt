@@ -15,6 +15,17 @@ internal class EmojiWithCountView @JvmOverloads constructor(
     attrs: AttributeSet? = null
 ) : View(context, attrs) {
 
+    internal var emojiCount = 0
+        set(value) {
+            val oldValue = field
+            field = value
+            if (oldValue.toString().length != value.toString().length) {
+                requestLayout()
+            }
+        }
+
+    internal var emojiCode = ""
+
     private val paint = TextPaint().apply {
         style = Paint.Style.FILL
         isAntiAlias = true
@@ -22,14 +33,6 @@ internal class EmojiWithCountView @JvmOverloads constructor(
 
     private val tempBounds = Rect()
     private val tempTextPoint = PointF()
-
-    internal var emojiCount = ""
-        set(value) {
-            field = if ( value == "1") "" else value
-            requestLayout()
-        }
-
-    internal var emojiCode = ""
     private var minWidth = 40
 
     private val resultText: String
@@ -37,7 +40,7 @@ internal class EmojiWithCountView @JvmOverloads constructor(
 
     init {
         val attrs: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.EmojiWithCountView)
-        emojiCount = attrs.getString(R.styleable.EmojiWithCountView_emojiCount) ?: ""
+        emojiCount = attrs.getInt(R.styleable.EmojiWithCountView_emojiCount, 0)
         emojiCode = attrs.getString(R.styleable.EmojiWithCountView_emojiCode) ?: "\uD83D\uDE05"
         minWidth = attrs.getDimensionPixelSize(R.styleable.EmojiWithCountView_emojiMinWidth, 40)
         paint.color = attrs.getColor(R.styleable.EmojiWithCountView_emojiCountColor, Color.BLACK)
@@ -49,20 +52,22 @@ internal class EmojiWithCountView @JvmOverloads constructor(
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        paint.getTextBounds(resultText, 0, resultText.length, tempBounds)
+        if (visibility == VISIBLE) {
+            paint.getTextBounds(resultText, 0, resultText.length, tempBounds)
 
-        val textWidth = tempBounds.width()
-        val textHeight = tempBounds.height()
+            val textWidth = tempBounds.width()
+            val textHeight = tempBounds.height()
 
-        var sumWidth = textWidth + paddingLeft + paddingRight
-        val sumHeight = textHeight + paddingTop + paddingBottom
+            var sumWidth = textWidth + paddingLeft + paddingRight
+            val sumHeight = textHeight + paddingTop + paddingBottom
 
-        if (sumWidth < minWidth) sumWidth = minWidth
+            if (sumWidth < minWidth) sumWidth = minWidth
 
-        setMeasuredDimension(
-            resolveSize(sumWidth, widthMeasureSpec),
-            resolveSize(sumHeight, heightMeasureSpec)
-        )
+            setMeasuredDimension(
+                resolveSize(sumWidth, widthMeasureSpec),
+                resolveSize(sumHeight, heightMeasureSpec)
+            )
+        }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -91,7 +96,7 @@ internal class EmojiWithCountView @JvmOverloads constructor(
             view.isSelected = !view.isSelected
             (view as EmojiWithCountView).apply {
                 if (isSelected) emojiCount++ else emojiCount--
-                if (emojiCount == "0") {
+                if (emojiCount == 0) {
                     val emojiBox = (parent as FlexBoxLayout)
                     emojiBox.removeView(this)
                     if (emojiBox.childCount == 1) {
@@ -112,18 +117,8 @@ internal class EmojiWithCountView @JvmOverloads constructor(
             ) as EmojiWithCountView
             emojiView.setOnClickListener(onEmojiClick)
             emojiView.emojiCode = emoji.code
-            emojiView.emojiCount = emoji.count.toString()
+            emojiView.emojiCount = emoji.count
             return emojiView
         }
     }
-}
-
-internal operator fun String.inc(): String {
-    val int = if (this.isEmpty()) 1 else this.toInt()
-    return (int + 1).toString()
-}
-
-internal operator fun String.dec(): String {
-    val int = if (this.isEmpty()) 1 else this.toInt()
-    return (int - 1).toString()
 }

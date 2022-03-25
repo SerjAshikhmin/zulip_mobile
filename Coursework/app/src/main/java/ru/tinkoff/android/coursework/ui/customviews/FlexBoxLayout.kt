@@ -22,26 +22,27 @@ class FlexBoxLayout @JvmOverloads constructor(
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         var currentStringWidth = 0
+        var currentStringHeight = 0
         var totalHeight = 0
-        var maxWidth = currentStringWidth
+        var maxWidth = 0
         val widthSize = MeasureSpec.getSize(widthMeasureSpec)
-        for (i in 0 until childCount) {
-            val child = getChildAt(i)
+        children.forEach { child ->
             measureChildWithMargins(child, widthMeasureSpec, 0, heightMeasureSpec, 0)
-            if (currentStringWidth + child.measuredWidthWithMargins >
-                this.maxWidth ?: widthSize
-            ) {
-                maxWidth = maxOf(currentStringWidth + child.measuredWidthWithMargins, maxWidth)
-                currentStringWidth = child.measuredWidthWithMargins
-                totalHeight += child.measuredHeightWithMargins
-            } else {
+            currentStringHeight = maxOf(currentStringHeight, child.measuredHeightWithMargins)
+            if (currentStringWidth + child.measuredWidthWithMargins <= this.maxWidth ?: widthSize) {
                 currentStringWidth += child.measuredWidthWithMargins
-            }
-            if (i == 0) {
-                totalHeight += child.measuredHeightWithMargins
+            } else {
+                maxWidth = maxOf(currentStringWidth, maxWidth)
+                currentStringWidth = child.measuredWidthWithMargins
+                totalHeight += currentStringHeight
             }
         }
-        if (childCount > 0 && maxWidth == 0) maxWidth = currentStringWidth
+        if (childCount > 1 && maxWidth == 0) {
+            maxWidth = currentStringWidth
+            totalHeight = currentStringHeight
+        } else {
+            totalHeight += currentStringHeight
+        }
         setMeasuredDimension(
             resolveSize(maxWidth, widthMeasureSpec),
             resolveSize(totalHeight, heightMeasureSpec)
@@ -50,10 +51,10 @@ class FlexBoxLayout @JvmOverloads constructor(
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         if (childCount > 0) {
-            var currentStart = getChildAt(0).marginStart
+            var currentStart = 0
             var currentTop = getChildAt(0).marginTop
-            for (i in 0 until childCount) {
-                val child = getChildAt(i)
+            children.forEach { child ->
+                currentStart += child.marginStart
                 if (currentStart + child.measuredWidth + child.marginEnd > width) {
                     currentStart = child.marginStart
                     currentTop += child.measuredHeightWithMargins
@@ -64,7 +65,7 @@ class FlexBoxLayout @JvmOverloads constructor(
                     currentStart + child.measuredWidth,
                     currentTop + child.measuredHeight
                 )
-                currentStart += child.measuredWidthWithMargins
+                currentStart += child.measuredWidth + child.marginRight
             }
         }
     }

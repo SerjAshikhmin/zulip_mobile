@@ -55,9 +55,9 @@ class SelfMessageViewGroup @JvmOverloads constructor(
         val emojiBox = binding.emojiBox
 
         message.layout(
-            r - (message.measuredWidthWithMargins) - marginEnd,
+            r - message.measuredWidthWithMargins - (marginEnd * 1.6).toInt(),
             0,
-            r - marginEnd,
+            r - (marginEnd * 1.6).toInt(),
             message.measuredHeightWithMargins
         )
 
