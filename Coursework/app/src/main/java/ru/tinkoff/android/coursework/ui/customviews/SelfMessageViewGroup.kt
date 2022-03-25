@@ -63,10 +63,11 @@ class SelfMessageViewGroup @JvmOverloads constructor(
 
         val emojiBoxTop = message.measuredHeightWithMargins
         val lastChild = emojiBox.getChildAt(childCount - 1)
+        val lastChildMarginEnd = lastChild?.marginEnd ?: 0
         emojiBox.layout(
-            r - emojiBox.measuredWidthWithMargins + lastChild.marginEnd - marginEnd,
+            r - emojiBox.measuredWidthWithMargins + lastChildMarginEnd - marginEnd,
             emojiBoxTop,
-            r + lastChild.marginEnd - marginEnd,
+            r + lastChildMarginEnd - marginEnd,
             emojiBoxTop + emojiBox.marginBottom + emojiBox.measuredHeight
         )
     }
