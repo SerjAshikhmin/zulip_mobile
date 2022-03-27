@@ -7,11 +7,18 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.core.view.children
 import androidx.core.widget.doAfterTextChanged
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.SELF_USER_ID
 import ru.tinkoff.android.coursework.data.messages
@@ -36,6 +43,7 @@ internal class ChatActivity : AppCompatActivity(), BottomSheetCallback {
     private lateinit var chatRecycler: RecyclerView
     private lateinit var adapter: ChatMessagesAdapter
     private lateinit var bottomSheetCallback: BottomSheetCallback
+    private val compositeDisposable = CompositeDisposable()
     private var topic: Topic = topics[0]
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,6 +55,11 @@ internal class ChatActivity : AppCompatActivity(), BottomSheetCallback {
         configureEnterMessageSection()
         configureChatRecycler()
         configureToolbar()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        compositeDisposable.dispose()
     }
 
     private fun configureToolbar() {
@@ -72,7 +85,18 @@ internal class ChatActivity : AppCompatActivity(), BottomSheetCallback {
         layoutManager.stackFromEnd = true
         chatRecycler.layoutManager = layoutManager
         adapter = ChatMessagesAdapter(dialog)
-        adapter.messages = messages
+
+        Single.just(messages)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy (
+                onSuccess = { adapter.messages = it },
+                onError = {
+                    Toast.makeText(this, "Messages not found", Toast.LENGTH_LONG).show()
+                }
+            )
+            .addTo(compositeDisposable)
+
         chatRecycler.adapter = adapter
     }
 
