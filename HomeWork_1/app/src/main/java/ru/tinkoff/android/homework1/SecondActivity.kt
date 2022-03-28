@@ -78,9 +78,9 @@ class SecondActivity : AppCompatActivity() {
     }
 
     companion object {
+
         private const val PERMISSION_READ_CONTACTS = android.Manifest.permission.READ_CONTACTS
         private const val PERMISSION_CODE_READ_CONTACTS = 698
         internal const val CONTACT_READ = "SINGLE_CONTACT_READ"
     }
-
 }

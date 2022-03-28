@@ -21,5 +21,4 @@ class SecondActivityContract : ActivityResultContract<String, List<String>?>() {
             result
         }
     }
-
 }
