@@ -26,7 +26,7 @@ internal class ChannelsFragment: Fragment() {
 
     private lateinit var binding: FragmentChannelsBinding
     private val queryEvents: PublishSubject<String> = PublishSubject.create()
-    private val compositeDisposable = CompositeDisposable()
+    private lateinit var compositeDisposable: CompositeDisposable
 
         override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,6 +39,7 @@ internal class ChannelsFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        compositeDisposable = CompositeDisposable()
         configureViewPager()
 
         val channelsSearch = binding.searchEditText

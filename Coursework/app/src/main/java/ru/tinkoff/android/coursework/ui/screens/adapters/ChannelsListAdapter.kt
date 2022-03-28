@@ -82,7 +82,7 @@ internal class ChannelsListAdapter: RecyclerView.Adapter<ChannelsListAdapter.Cha
                     "topicName" to topic.name
                 )
                 NavHostFragment.findNavController(view.findFragment())
-                    .navigate(R.id.nav_chat, bundle)
+                    .navigate(R.id.action_nav_channels_to_nav_chat, bundle)
             }
         }
     }

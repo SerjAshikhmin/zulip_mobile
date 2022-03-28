@@ -22,7 +22,7 @@ import ru.tinkoff.android.coursework.ui.screens.adapters.PeopleListAdapter
 internal class PeopleFragment: Fragment() {
 
     private lateinit var binding: FragmentPeopleBinding
-    private val compositeDisposable = CompositeDisposable()
+    private lateinit var compositeDisposable: CompositeDisposable
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,9 +30,13 @@ internal class PeopleFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentPeopleBinding.inflate(inflater,container,false)
-
-        configurePeopleListRecycler()
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        compositeDisposable = CompositeDisposable()
+        configurePeopleListRecycler()
     }
 
     override fun onDestroyView() {

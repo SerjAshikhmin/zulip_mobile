@@ -20,7 +20,7 @@ import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
 internal class SubscribedFragment: Fragment() {
 
     private lateinit var binding: FragmentSubscribedBinding
-    private val compositeDisposable = CompositeDisposable()
+    private lateinit var compositeDisposable: CompositeDisposable
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -28,9 +28,13 @@ internal class SubscribedFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentSubscribedBinding.inflate(inflater, container,false)
-
-        configureChannelListRecycler()
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        compositeDisposable = CompositeDisposable()
+        configureChannelListRecycler()
     }
 
     override fun onDestroyView() {

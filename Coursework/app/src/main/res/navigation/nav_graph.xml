@@ -11,6 +11,10 @@
         android:label="@string/channels_menu_title"
         tools:layout="@layout/fragment_channels">
 
+        <action
+            android:id="@+id/action_nav_channels_to_nav_chat"
+            app:destination="@id/nav_chat"/>
+
     </fragment>
 
     <fragment

@@ -10,7 +10,11 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.view.children
 import androidx.core.widget.doAfterTextChanged
+import androidx.fragment.app.findFragment
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.Single
@@ -43,7 +47,7 @@ internal class ChatActivity : AppCompatActivity(), BottomSheetCallback {
     private lateinit var chatRecycler: RecyclerView
     private lateinit var adapter: ChatMessagesAdapter
     private lateinit var bottomSheetCallback: BottomSheetCallback
-    private val compositeDisposable = CompositeDisposable()
+    private lateinit var compositeDisposable: CompositeDisposable
     private var topic: Topic = topics[0]
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,6 +55,7 @@ internal class ChatActivity : AppCompatActivity(), BottomSheetCallback {
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        compositeDisposable = CompositeDisposable()
         createAndConfigureBottomSheet()
         configureEnterMessageSection()
         configureChatRecycler()
@@ -64,8 +69,7 @@ internal class ChatActivity : AppCompatActivity(), BottomSheetCallback {
 
     private fun configureToolbar() {
         binding.backIcon.setOnClickListener {
-            val navController = findNavController(R.id.nav_chat)
-            navController.popBackStack()
+            onBackPressed()
         }
 
         binding.topicName.text = resources.getString(

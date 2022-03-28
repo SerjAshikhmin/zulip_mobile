@@ -21,10 +21,6 @@ internal class ProfileFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentProfileBinding.inflate(inflater,container,false)
-        binding.backIcon.setOnClickListener {
-            val navController = findNavController()
-            navController.popBackStack()
-        }
         return binding.root
     }
 
@@ -33,6 +29,11 @@ internal class ProfileFragment: Fragment() {
         binding.userOnlineStatus.visibility = View.GONE
         binding.toolbar.visibility = View.VISIBLE
         binding.logoutBtn.visibility = View.GONE
+
+        binding.backIcon.setOnClickListener {
+            requireActivity().onBackPressed()
+        }
+
         if (arguments == null) {
             val user = getUserById(SELF_USER_ID)
             if (user != null) {
