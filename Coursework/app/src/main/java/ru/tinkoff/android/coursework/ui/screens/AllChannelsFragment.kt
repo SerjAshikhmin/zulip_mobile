@@ -20,9 +20,12 @@ internal class AllChannelsFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentAllChannelsBinding.inflate(inflater,container,false)
-
-        configureChannelListRecycler()
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        configureChannelListRecycler()
     }
 
     private fun configureChannelListRecycler() {

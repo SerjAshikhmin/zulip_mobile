@@ -20,9 +20,12 @@ internal class PeopleFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentPeopleBinding.inflate(inflater,container,false)
-
-        configurePeopleListRecycler()
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        configurePeopleListRecycler()
     }
 
     private fun configurePeopleListRecycler() {

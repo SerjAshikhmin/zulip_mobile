@@ -51,8 +51,7 @@ internal class ChatActivity : AppCompatActivity(), BottomSheetCallback {
 
     private fun configureToolbar() {
         binding.backIcon.setOnClickListener {
-            val navController = findNavController(R.id.nav_chat)
-            navController.popBackStack()
+            onBackPressed()
         }
 
         binding.topicName.text = resources.getString(

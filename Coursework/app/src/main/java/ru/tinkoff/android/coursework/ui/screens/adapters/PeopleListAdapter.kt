@@ -56,7 +56,7 @@ internal class PeopleListAdapter: RecyclerView.Adapter<PeopleListAdapter.PeopleL
                     "status" to user.status,
                     "onlineStatus" to user.isOnline
                 )
-                view.findNavController().navigate(R.id.nav_profile, bundle)
+                view.findNavController().navigate(R.id.action_nav_people_to_nav_profile, bundle)
             }
         }
     }
