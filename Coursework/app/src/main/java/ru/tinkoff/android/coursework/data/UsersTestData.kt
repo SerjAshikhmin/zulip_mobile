@@ -9,8 +9,9 @@ internal fun getUserById(userId: Long): User? {
     return users.firstOrNull { it.id == userId }
 }
 
-// метод-обертка для выбрасывания ошибки
+// метод-обертка для выбрасывания ошибки и задержки
 internal fun usersWithTestError(): MutableList<User> {
+    Thread.sleep(1000)
     if (Random.nextBoolean()) throw Exception()
     return users
 }

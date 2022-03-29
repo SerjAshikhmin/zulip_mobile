@@ -5,16 +5,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.facebook.shimmer.ShimmerFrameLayout
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.SELF_USER_ID
 import ru.tinkoff.android.coursework.model.User
 
 internal class PeopleListAdapter: RecyclerView.Adapter<PeopleListAdapter.PeopleListViewHolder>() {
+
+    internal var showShimmer = true
 
     internal var users: List<User>
         set(value) = differ.submitList(value)
@@ -33,9 +37,11 @@ internal class PeopleListAdapter: RecyclerView.Adapter<PeopleListAdapter.PeopleL
     }
 
     internal class PeopleListViewHolder(private val view: View): RecyclerView.ViewHolder(view) {
-        private val username = view.findViewById<TextView>(R.id.username)
-        private val email = view.findViewById<TextView>(R.id.email)
-        private val avatar = view.findViewById<ImageView>(R.id.profile_avatar)
+        internal val username = view.findViewById<TextView>(R.id.username)
+        internal val email = view.findViewById<TextView>(R.id.email)
+        internal val avatar = view.findViewById<ImageView>(R.id.profile_avatar)
+        internal val onlineStatusCard = view.findViewById<CardView>(R.id.online_status_card)
+        internal val shimmerFrameLayout = view.findViewById<ShimmerFrameLayout>(R.id.shimmer_layout)
 
         fun bind(user: User) {
             username.text = user.name
@@ -45,6 +51,7 @@ internal class PeopleListAdapter: RecyclerView.Adapter<PeopleListAdapter.PeopleL
             } else {
                 avatar.setImageResource(R.drawable.avatar)
             }
+            if (!user.isOnline) onlineStatusCard.visibility = View.GONE
             initListener(user)
         }
 
@@ -68,9 +75,26 @@ internal class PeopleListAdapter: RecyclerView.Adapter<PeopleListAdapter.PeopleL
     }
 
     override fun onBindViewHolder(holder: PeopleListViewHolder, position: Int) {
-        holder.bind(users[position])
+        if (showShimmer) {
+            holder.shimmerFrameLayout.startShimmer()
+        } else {
+            holder.shimmerFrameLayout.stopShimmer()
+            holder.shimmerFrameLayout.setShimmer(null)
+            holder.avatar.foreground = null
+            holder.username.foreground = null
+            holder.email.foreground = null
+            holder.onlineStatusCard.foreground = null
+            holder.bind(users[position])
+        }
     }
 
-    override fun getItemCount(): Int = users.size
+    override fun getItemCount(): Int {
+        return if (showShimmer) SHIMMER_ITEM_COUNT else users.size
+    }
+
+    companion object {
+
+        const val SHIMMER_ITEM_COUNT = 2
+    }
 
 }

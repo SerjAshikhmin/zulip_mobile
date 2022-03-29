@@ -61,10 +61,15 @@ internal class PeopleFragment: Fragment() {
 
                 override fun onError(e: Throwable) {
                     Toast.makeText(context, "People not found", Toast.LENGTH_SHORT).show()
+                    adapter.showShimmer = false
+                    adapter.users = mutableListOf()
+                    adapter.notifyDataSetChanged()
                 }
 
                 override fun onSuccess(t: MutableList<User>) {
+                    adapter.showShimmer = false
                     adapter.users = t
+                    adapter.notifyDataSetChanged()
                 }
             })
 
