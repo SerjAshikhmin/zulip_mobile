@@ -13,11 +13,14 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.facebook.shimmer.ShimmerFrameLayout
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.model.Channel
 import ru.tinkoff.android.coursework.model.Topic
 
 internal class ChannelsListAdapter: RecyclerView.Adapter<ChannelsListAdapter.ChannelListViewHolder>() {
+
+    internal var showShimmer = true
 
     internal var channels: List<Channel>
         set(value) = differ.submitList(value)
@@ -36,8 +39,9 @@ internal class ChannelsListAdapter: RecyclerView.Adapter<ChannelsListAdapter.Cha
     }
 
     internal class ChannelListViewHolder(private val view: View): RecyclerView.ViewHolder(view) {
-        private val channelName = view.findViewById<TextView>(R.id.channel_name)
-        private val arrowIcon = view.findViewById<ImageView>(R.id.arrow_icon)
+        internal val channelName = view.findViewById<TextView>(R.id.channel_name)
+        internal val arrowIcon = view.findViewById<ImageView>(R.id.arrow_icon)
+        internal val shimmerFrameLayout = view.findViewById<ShimmerFrameLayout>(R.id.shimmer_layout)
         private val topicContainer = view.findViewById<LinearLayout>(R.id.topic_container)
         private var isOpened = false
 
@@ -94,8 +98,23 @@ internal class ChannelsListAdapter: RecyclerView.Adapter<ChannelsListAdapter.Cha
     }
 
     override fun onBindViewHolder(holder: ChannelListViewHolder, position: Int) {
-        holder.bind(channels[position])
+        if (showShimmer) {
+            holder.shimmerFrameLayout.startShimmer()
+        } else {
+            holder.shimmerFrameLayout.stopShimmer()
+            holder.shimmerFrameLayout.setShimmer(null)
+            holder.channelName.foreground = null
+            holder.arrowIcon.foreground = null
+            holder.bind(channels[position])
+        }
     }
 
-    override fun getItemCount(): Int = channels.size
+    override fun getItemCount(): Int {
+        return if (showShimmer) SHIMMER_ITEM_COUNT else channels.size
+    }
+
+    companion object {
+
+        const val SHIMMER_ITEM_COUNT = 4
+    }
 }

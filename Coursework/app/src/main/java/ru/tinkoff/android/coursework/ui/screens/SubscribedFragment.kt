@@ -14,6 +14,7 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.data.channels
+import ru.tinkoff.android.coursework.data.channelsWithTestErrorAndDelay
 import ru.tinkoff.android.coursework.databinding.FragmentSubscribedBinding
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
 
@@ -48,13 +49,21 @@ internal class SubscribedFragment: Fragment() {
         channelListRecycle.layoutManager = layoutManager
         val adapter = ChannelsListAdapter()
 
-        Single.just(channels)
+        Single.fromCallable { channelsWithTestErrorAndDelay() }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy (
-                onSuccess = { adapter.channels = it },
+                onSuccess = {
+                    adapter.showShimmer = false
+                    adapter.channels = it
+                    adapter.notifyDataSetChanged()
+                },
                 onError = {
+                    adapter.showShimmer = false
+                    adapter.channels = mutableListOf()
+                    adapter.notifyDataSetChanged()
                     Toast.makeText(context, "Channels not found", Toast.LENGTH_LONG).show()
+
                 }
             )
             .addTo(compositeDisposable)

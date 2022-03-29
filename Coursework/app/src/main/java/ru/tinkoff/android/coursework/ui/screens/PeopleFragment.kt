@@ -13,8 +13,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import ru.tinkoff.android.coursework.data.users
-import ru.tinkoff.android.coursework.data.usersWithTestError
+import ru.tinkoff.android.coursework.data.usersWithTestErrorAndDelay
 import ru.tinkoff.android.coursework.databinding.FragmentPeopleBinding
 import ru.tinkoff.android.coursework.model.User
 import ru.tinkoff.android.coursework.ui.screens.adapters.PeopleListAdapter
@@ -50,7 +49,7 @@ internal class PeopleFragment: Fragment() {
         peopleListRecycle.layoutManager = layoutManager
         val adapter = PeopleListAdapter()
 
-        Single.fromCallable { (usersWithTestError()) }
+        Single.fromCallable { (usersWithTestErrorAndDelay()) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe (object : SingleObserver<MutableList<User>> {
