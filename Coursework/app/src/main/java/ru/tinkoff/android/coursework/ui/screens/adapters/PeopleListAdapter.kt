@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.AsyncListDiffer
@@ -36,6 +37,7 @@ internal class PeopleListAdapter: RecyclerView.Adapter<PeopleListAdapter.PeopleL
         private val username = view.findViewById<TextView>(R.id.username)
         private val email = view.findViewById<TextView>(R.id.email)
         private val avatar = view.findViewById<ImageView>(R.id.profile_avatar)
+        internal val onlineStatusCard = view.findViewById<CardView>(R.id.online_status_card)
 
         fun bind(user: User) {
             username.text = user.name
@@ -45,6 +47,7 @@ internal class PeopleListAdapter: RecyclerView.Adapter<PeopleListAdapter.PeopleL
             } else {
                 avatar.setImageResource(R.drawable.avatar)
             }
+            if (!user.isOnline) onlineStatusCard.visibility = View.GONE else View.VISIBLE
             initListener(user)
         }
 
