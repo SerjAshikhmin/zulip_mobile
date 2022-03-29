@@ -47,7 +47,7 @@ internal class PeopleListAdapter: RecyclerView.Adapter<PeopleListAdapter.PeopleL
             } else {
                 avatar.setImageResource(R.drawable.avatar)
             }
-            if (!user.isOnline) onlineStatusCard.visibility = View.GONE else View.VISIBLE
+            onlineStatusCard.visibility = if (!user.isOnline) View.GONE else View.VISIBLE
             initListener(user)
         }
 
