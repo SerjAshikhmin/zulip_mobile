@@ -15,7 +15,7 @@ internal class EmojiWithCountView @JvmOverloads constructor(
     attrs: AttributeSet? = null
 ) : View(context, attrs) {
 
-    internal var emojiCount = 0
+    var emojiCount = 0
         set(value) {
             val oldValue = field
             field = value
@@ -24,7 +24,7 @@ internal class EmojiWithCountView @JvmOverloads constructor(
             }
         }
 
-    internal var emojiCode = ""
+    var emojiCode = ""
 
     private val paint = TextPaint().apply {
         style = Paint.Style.FILL
@@ -121,4 +121,5 @@ internal class EmojiWithCountView @JvmOverloads constructor(
             return emojiView
         }
     }
+
 }

@@ -5,8 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
-import ru.tinkoff.android.coursework.data.users
+import ru.tinkoff.android.coursework.data.usersTestData
 import ru.tinkoff.android.coursework.databinding.FragmentPeopleBinding
 import ru.tinkoff.android.coursework.ui.screens.adapters.PeopleListAdapter
 
@@ -29,11 +28,7 @@ internal class PeopleFragment: Fragment() {
     }
 
     private fun configurePeopleListRecycler() {
-        val peopleListRecycle = binding.peopleList
-        val layoutManager = LinearLayoutManager(context)
-        peopleListRecycle.layoutManager = layoutManager
-        val adapter = PeopleListAdapter()
-        adapter.users = users
-        peopleListRecycle.adapter = adapter
+        binding.peopleList.adapter = PeopleListAdapter().apply { users = usersTestData }
     }
+
 }

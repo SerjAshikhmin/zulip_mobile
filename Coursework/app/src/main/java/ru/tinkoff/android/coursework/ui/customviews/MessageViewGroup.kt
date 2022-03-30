@@ -12,7 +12,7 @@ internal class MessageViewGroup @JvmOverloads constructor(
     attrs: AttributeSet? = null
 ) : ViewGroup(context, attrs) {
 
-    internal var binding: LayoutMessageViewGroupBinding =
+    var binding: LayoutMessageViewGroupBinding =
         LayoutMessageViewGroupBinding.inflate(LayoutInflater.from(context), this)
 
     private var messageStart = 0
@@ -101,4 +101,5 @@ internal class MessageViewGroup @JvmOverloads constructor(
     override fun generateLayoutParams(p: LayoutParams): LayoutParams {
         return MarginLayoutParams(p)
     }
+
 }

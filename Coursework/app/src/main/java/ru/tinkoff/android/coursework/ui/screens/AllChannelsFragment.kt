@@ -5,8 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
-import ru.tinkoff.android.coursework.data.channels
+import ru.tinkoff.android.coursework.data.channelsTestData
 import ru.tinkoff.android.coursework.databinding.FragmentAllChannelsBinding
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
 
@@ -29,11 +28,7 @@ internal class AllChannelsFragment: Fragment() {
     }
 
     private fun configureChannelListRecycler() {
-        val channelListRecycle = binding.channelsList
-        val layoutManager = LinearLayoutManager(context)
-        channelListRecycle.layoutManager = layoutManager
-        val adapter = ChannelsListAdapter()
-        adapter.channels = channels
-        channelListRecycle.adapter = adapter
+        binding.channelsList.adapter = ChannelsListAdapter().apply { channels = channelsTestData }
     }
+
 }

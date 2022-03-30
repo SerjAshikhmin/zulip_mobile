@@ -25,13 +25,13 @@ import kotlin.math.roundToInt
 internal class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
     : RecyclerView.Adapter<ChatMessagesAdapter.BaseViewHolder>() {
 
-    internal var messages: List<Any>
+    var messages: List<Any>
         set(value) = differ.submitList(value)
         get() = differ.currentList
 
     private val differ = AsyncListDiffer(this, DiffCallback())
 
-    internal class DiffCallback: DiffUtil.ItemCallback<Any>() {
+    class DiffCallback: DiffUtil.ItemCallback<Any>() {
         override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
             if (oldItem is Message && newItem is Message) {
                 return oldItem.id == newItem.id
@@ -112,16 +112,16 @@ internal class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
         }
     }
 
-    internal fun update(newMessages: List<Any>, position: Int) {
+    fun update(newMessages: List<Any>, position: Int) {
         messages = newMessages
         notifyItemInserted(position)
     }
 
     override fun getItemCount(): Int = messages.size
 
-    internal sealed class BaseViewHolder(view: View) : RecyclerView.ViewHolder(view)
+    sealed class BaseViewHolder(view: View) : RecyclerView.ViewHolder(view)
 
-    internal inner class MessageViewHolder(messageView: MessageViewGroup) : BaseViewHolder(messageView) {
+    inner class MessageViewHolder(messageView: MessageViewGroup) : BaseViewHolder(messageView) {
         private val avatar = messageView.binding.avatarImage
         private val username = messageView.binding.username
         private val messageView = messageView.binding.messageText
@@ -137,7 +137,7 @@ internal class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
         }
     }
 
-    internal inner class SelfMessageViewHolder(selfMessageView: SelfMessageViewGroup) :
+    inner class SelfMessageViewHolder(selfMessageView: SelfMessageViewGroup) :
         BaseViewHolder(selfMessageView) {
         private val messageView = selfMessageView.binding.message
         private val emojiBox = selfMessageView.binding.emojiBox
@@ -150,13 +150,16 @@ internal class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
         }
     }
 
-    internal class SendDateViewHolder(private val sendDateView: FrameLayout) : BaseViewHolder(sendDateView) {
+    class SendDateViewHolder(private val sendDateView: FrameLayout) : BaseViewHolder(sendDateView) {
 
-        internal fun bind(sendDate: LocalDate?) {
+        fun bind(sendDate: LocalDate?) {
             var sendDateStr =
                 sendDate?.format(DateTimeFormatter.ofPattern("dd MMM"))?.replace(".", "")
             sendDateStr?.let {
-                sendDateStr = it.replaceRange(it.length - 3, it.length - 2, it[it.length - 3].uppercaseChar().toString())
+                sendDateStr = it.replaceRange(
+                    it.length - 3,
+                    it.length - 2, it[it.length - 3].uppercaseChar().toString()
+                )
             }
             (sendDateView.getChildAt(0) as TextView).text = sendDateStr
         }

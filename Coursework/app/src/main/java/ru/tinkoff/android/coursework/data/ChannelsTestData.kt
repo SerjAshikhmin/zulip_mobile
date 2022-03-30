@@ -2,10 +2,10 @@ package ru.tinkoff.android.coursework.data
 
 import ru.tinkoff.android.coursework.model.Channel
 
-internal var channels = listOf(
+internal var channelsTestData = listOf(
     Channel(
         name = "general",
-        topics = topics
+        topics = topicsTestData
     ),
     Channel(
         name = "Development",

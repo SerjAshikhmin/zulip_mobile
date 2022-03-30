@@ -13,7 +13,7 @@ internal class SelfMessageViewGroup @JvmOverloads constructor(
     attrs: AttributeSet? = null
 ) : ViewGroup(context, attrs) {
 
-    internal var binding: LayoutSelfMessageViewGroupBinding =
+    var binding: LayoutSelfMessageViewGroupBinding =
         LayoutSelfMessageViewGroupBinding.inflate(LayoutInflater.from(context), this)
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -83,4 +83,5 @@ internal class SelfMessageViewGroup @JvmOverloads constructor(
     override fun generateLayoutParams(p: LayoutParams): LayoutParams {
         return MarginLayoutParams(p)
     }
+
 }

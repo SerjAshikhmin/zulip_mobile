@@ -5,10 +5,10 @@ import ru.tinkoff.android.coursework.model.User
 internal const val SELF_USER_ID = 1L
 
 internal fun getUserById(userId: Long): User? {
-    return users.firstOrNull { it.id == userId }
+    return usersTestData.firstOrNull { it.id == userId }
 }
 
-internal var users = mutableListOf(
+internal var usersTestData = mutableListOf(
     User(
         id = 1,
         name = "Sergey Ashikhmin",

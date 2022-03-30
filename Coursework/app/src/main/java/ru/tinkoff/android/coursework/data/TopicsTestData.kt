@@ -3,12 +3,12 @@ package ru.tinkoff.android.coursework.data
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.model.Topic
 
-internal var topics = listOf(
+internal var topicsTestData = listOf(
     Topic(
         name = "Testing",
         channelName = "general",
         color = R.color.teal_500,
-        messages = messages
+        messages = messagesTestData
     ),
     Topic(
         name = "Bruh",

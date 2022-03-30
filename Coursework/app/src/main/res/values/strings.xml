@@ -11,4 +11,6 @@
     <string name="channel_name_text">#%s</string>
     <string name="messages_count_text">%s mes</string>
     <string name="topic_name_text">Topic: #%s</string>
+    <string name="subscribed_tab_name">"Subscribed"</string>
+    <string name="allChannels_tab_name">"All streams"</string>
 </resources>

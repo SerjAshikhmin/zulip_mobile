@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.google.android.material.tabs.TabLayoutMediator
+import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.FragmentChannelsBinding
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListPagerAdapter
 
@@ -35,8 +36,12 @@ internal class ChannelsFragment: Fragment() {
         viewPager.adapter = pagerAdapter
 
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
-            val tabNames = listOf("Subscribed", "All streams")
+            val tabNames = listOf(
+                resources.getString(R.string.subscribed_tab_name),
+                resources.getString(R.string.allChannels_tab_name)
+            )
             tab.text = tabNames[position]
         }.attach()
     }
+
 }
