@@ -9,14 +9,13 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.findFragment
 import androidx.navigation.fragment.NavHostFragment
-import androidx.recyclerview.widget.LinearLayoutManager
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
-import ru.tinkoff.android.coursework.data.channels
+import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.channelsWithTestErrorAndDelay
 import ru.tinkoff.android.coursework.databinding.FragmentSubscribedBinding
 import ru.tinkoff.android.coursework.model.Topic
@@ -32,7 +31,7 @@ internal class SubscribedFragment: Fragment(), OnTopicItemClickListener {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ) : View {
         binding = FragmentSubscribedBinding.inflate(inflater,container,false)
         return binding.root
     }
@@ -60,7 +59,7 @@ internal class SubscribedFragment: Fragment(), OnTopicItemClickListener {
     }
 
     private fun configureChannelListRecycler() {
-        val adapter = ChannelsListAdapter()
+        val adapter = ChannelsListAdapter(this)
 
         Single.fromCallable { channelsWithTestErrorAndDelay() }
             .subscribeOn(Schedulers.io())

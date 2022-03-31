@@ -106,7 +106,7 @@ internal class EmojiWithCountView @JvmOverloads constructor(
             }
         }
 
-        internal fun createEmojiWithCountView(
+        fun createEmojiWithCountView(
             emojiBox: FlexBoxLayout,
             emoji: EmojiWithCount
         ): EmojiWithCountView {
@@ -121,5 +121,4 @@ internal class EmojiWithCountView @JvmOverloads constructor(
             return emojiView
         }
     }
-
 }

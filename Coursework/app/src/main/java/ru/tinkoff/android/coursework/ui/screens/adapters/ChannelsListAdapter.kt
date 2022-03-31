@@ -5,12 +5,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.facebook.shimmer.ShimmerFrameLayout
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.ItemChannelInListBinding
 import ru.tinkoff.android.coursework.model.Channel
 
-internal class ChannelsListAdapter: RecyclerView.Adapter<ChannelsListAdapter.ChannelListViewHolder>() {
+internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicItemClickListener)
+    : RecyclerView.Adapter<ChannelsListAdapter.ChannelListViewHolder>() {
 
     var showShimmer = true
 
@@ -21,6 +21,7 @@ internal class ChannelsListAdapter: RecyclerView.Adapter<ChannelsListAdapter.Cha
     private val differ = AsyncListDiffer(this, DiffCallback())
 
     class DiffCallback: DiffUtil.ItemCallback<Channel>() {
+
         override fun areItemsTheSame(oldItem: Channel, newItem: Channel): Boolean {
             return oldItem.name == newItem.name
         }
@@ -57,8 +58,9 @@ internal class ChannelsListAdapter: RecyclerView.Adapter<ChannelsListAdapter.Cha
 
     inner class ChannelListViewHolder(private val binding: ItemChannelInListBinding): RecyclerView.ViewHolder(binding.root) {
 
-        private val channelName = binding.channelName
-        private val arrowIcon = binding.arrowIcon
+        internal val channelName = binding.channelName
+        internal val arrowIcon = binding.arrowIcon
+        internal val shimmerFrameLayout = binding.shimmerLayout
         private var isOpened = false
 
         fun bind(channel: Channel) {

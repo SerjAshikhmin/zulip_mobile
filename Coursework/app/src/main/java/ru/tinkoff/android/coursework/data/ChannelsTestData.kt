@@ -5,8 +5,8 @@ import ru.tinkoff.android.coursework.model.Channel
 import kotlin.random.Random
 
 internal fun getChannelsByPartOfName(query: String): Single<List<Channel>> {
-    val resultList = if (query.isBlank()) channels else {
-        channels.filter { it.name.lowercase().contains(query.lowercase()) }
+    val resultList = if (query.isBlank()) channelsTestData else {
+        channelsTestData.filter { it.name.lowercase().contains(query.lowercase()) }
     }
     return Single.just(resultList)
 }
@@ -15,7 +15,7 @@ internal fun getChannelsByPartOfName(query: String): Single<List<Channel>> {
 internal fun channelsWithTestErrorAndDelay(): List<Channel> {
     Thread.sleep(2000)
     if (Random.nextBoolean()) throw Exception()
-    return channels
+    return channelsTestData
 }
 
 internal var channelsTestData = listOf(

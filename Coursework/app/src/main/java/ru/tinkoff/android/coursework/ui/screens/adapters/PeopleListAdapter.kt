@@ -3,15 +3,9 @@ package ru.tinkoff.android.coursework.ui.screens.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.cardview.widget.CardView
-import androidx.core.os.bundleOf
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.facebook.shimmer.ShimmerFrameLayout
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.SELF_USER_ID
 import ru.tinkoff.android.coursework.databinding.ItemUserInPeopleListBinding
@@ -63,7 +57,8 @@ internal class PeopleListAdapter(private val userItemClickListener: OnUserItemCl
         return if (showShimmer) SHIMMER_ITEM_COUNT else users.size
     }
 
-    inner class PeopleListViewHolder(private val binding: ItemUserInPeopleListBinding): RecyclerView.ViewHolder(binding.root) {
+    inner class PeopleListViewHolder(private val binding: ItemUserInPeopleListBinding)
+        : RecyclerView.ViewHolder(binding.root) {
 
         internal val username = binding.username
         internal val email = binding.email

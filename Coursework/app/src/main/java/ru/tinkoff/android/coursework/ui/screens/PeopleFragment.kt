@@ -9,7 +9,6 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.findFragment
 import androidx.navigation.fragment.NavHostFragment
-import androidx.recyclerview.widget.LinearLayoutManager
 import io.reactivex.Single
 import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -17,10 +16,10 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.users
 import ru.tinkoff.android.coursework.data.usersWithTestErrorAndDelay
 import ru.tinkoff.android.coursework.databinding.FragmentPeopleBinding
 import ru.tinkoff.android.coursework.model.User
+import ru.tinkoff.android.coursework.ui.screens.adapters.OnUserItemClickListener
 import ru.tinkoff.android.coursework.ui.screens.adapters.PeopleListAdapter
 
 internal class PeopleFragment: Fragment(), OnUserItemClickListener {

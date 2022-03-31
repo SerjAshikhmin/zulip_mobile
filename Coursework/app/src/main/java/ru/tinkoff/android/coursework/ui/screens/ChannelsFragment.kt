@@ -25,14 +25,14 @@ import java.util.concurrent.TimeUnit
 internal class ChannelsFragment: Fragment() {
 
     private lateinit var binding: FragmentChannelsBinding
-    private val queryEvents: PublishSubject<String> = PublishSubject.create()
     private lateinit var compositeDisposable: CompositeDisposable
+    private val queryEvents: PublishSubject<String> = PublishSubject.create()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ) : View {
         binding = FragmentChannelsBinding.inflate(inflater, container, false)
         return binding.root
     }

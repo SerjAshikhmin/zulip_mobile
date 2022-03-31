@@ -15,6 +15,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.channelsTestData
 import ru.tinkoff.android.coursework.data.channelsWithTestErrorAndDelay
 import ru.tinkoff.android.coursework.databinding.FragmentAllChannelsBinding
@@ -80,7 +81,7 @@ internal class AllChannelsFragment: Fragment(), OnTopicItemClickListener {
             )
             .addTo(compositeDisposable)
 
-        binding.channelsList.adapter = adapter
+        binding.allChannelsList.adapter = adapter
     }
 
 }

@@ -38,6 +38,7 @@ internal class ChatActivity : AppCompatActivity() {
     private lateinit var dialog: EmojiBottomSheetDialog
     private lateinit var chatRecycler: RecyclerView
     private lateinit var adapter: ChatMessagesAdapter
+    private lateinit var compositeDisposable: CompositeDisposable
     private var topic: Topic = topicsTestData[0]
 
     override fun onCreate(savedInstanceState: Bundle?) {
