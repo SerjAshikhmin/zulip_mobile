@@ -14,30 +14,31 @@
         android:textSize="18sp"
         android:text="#general"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/arrow_icon"
         android:layout_width="23dp"
         android:layout_height="15dp"
         android:layout_marginEnd="35dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        android:src="@drawable/ic_arrow_down"
         app:layout_constraintBottom_toBottomOf="@id/separator"
-        android:src="@drawable/ic_arrow_down"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <include
         android:id="@+id/separator"
+        layout="@layout/fragment_item_in_list_separator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/channel_name"
-        layout="@layout/fragment_item_in_list_separator" />
+        app:layout_constraintTop_toBottomOf="@id/channel_name" />
 
-    <LinearLayout
-        android:id="@+id/topic_container"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/topics_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintTop_toBottomOf="@id/separator"/>
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/separator" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -18,7 +18,7 @@
         android:text="Testing"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="parent" />
 
     <TextView
         android:id="@+id/messages_count"
@@ -32,6 +32,13 @@
         android:text="1240 mes"
         app:layout_constraintStart_toEndOf="@id/topic_name"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <include
+        android:id="@+id/separator"
+        layout="@layout/fragment_item_in_list_separator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/topic_name" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

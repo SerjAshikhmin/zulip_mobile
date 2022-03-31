@@ -15,7 +15,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_scrollFlags="scroll|enterAlways" >
+            app:layout_scrollFlags="scroll|enterAlways">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/profile_title_section"
@@ -33,7 +33,7 @@
                     android:textColor="@color/white"
                     android:textSize="24sp"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"/>
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
                 <ImageView
                     android:id="@+id/back_icon"
@@ -66,7 +66,7 @@
             android:id="@+id/profile_avatar_img"
             android:layout_width="185dp"
             android:layout_height="185dp"
-            android:src="@drawable/self_avatar"/>
+            android:src="@drawable/self_avatar" />
 
     </androidx.cardview.widget.CardView>
 
