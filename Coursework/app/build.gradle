@@ -44,11 +44,11 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout:$constraintlayoutVersion"
 
     implementation "androidx.navigation:navigation-fragment-ktx:$navigationFragmentVersion"
-    implementation "androidx.navigation:navigation-ui-ktx:$navigationFragmentVersion"
+    implementation "androidx.navigation:navigation-ui-ktx:$navigationUiVersion"
+    implementation "androidx.legacy:legacy-support-v4:$legacySupportVersion"
 
     implementation "io.reactivex.rxjava2:rxandroid:$rxandroidVersion"
     implementation "io.reactivex.rxjava2:rxjava:$rxjavaVersion"
     implementation "io.reactivex.rxjava2:rxkotlin:$rxkotlinVersion"
 
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 }

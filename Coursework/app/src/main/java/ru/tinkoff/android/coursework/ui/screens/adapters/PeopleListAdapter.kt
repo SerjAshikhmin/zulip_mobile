@@ -14,19 +14,22 @@ import androidx.recyclerview.widget.RecyclerView
 import com.facebook.shimmer.ShimmerFrameLayout
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.SELF_USER_ID
+import ru.tinkoff.android.coursework.databinding.ItemUserInPeopleListBinding
 import ru.tinkoff.android.coursework.model.User
 
-internal class PeopleListAdapter: RecyclerView.Adapter<PeopleListAdapter.PeopleListViewHolder>() {
+internal class PeopleListAdapter(private val userItemClickListener: OnUserItemClickListener)
+    : RecyclerView.Adapter<PeopleListAdapter.PeopleListViewHolder>() {
 
-    internal var showShimmer = true
+    var showShimmer = true
 
-    internal var users: List<User>
+    var users: List<User>
         set(value) = differ.submitList(value)
         get() = differ.currentList
 
     private val differ = AsyncListDiffer(this, DiffCallback())
 
-    internal class DiffCallback: DiffUtil.ItemCallback<User>() {
+    class DiffCallback: DiffUtil.ItemCallback<User>() {
+
         override fun areItemsTheSame(oldItem: User, newItem: User): Boolean {
             return oldItem.id == newItem.id
         }
@@ -36,42 +39,10 @@ internal class PeopleListAdapter: RecyclerView.Adapter<PeopleListAdapter.PeopleL
         }
     }
 
-    internal class PeopleListViewHolder(private val view: View): RecyclerView.ViewHolder(view) {
-        internal val username = view.findViewById<TextView>(R.id.username)
-        internal val email = view.findViewById<TextView>(R.id.email)
-        internal val avatar = view.findViewById<ImageView>(R.id.profile_avatar)
-        internal val onlineStatusCard = view.findViewById<CardView>(R.id.online_status_card)
-        internal val shimmerFrameLayout = view.findViewById<ShimmerFrameLayout>(R.id.shimmer_layout)
-
-        fun bind(user: User) {
-            username.text = user.name
-            email.text = user.email
-            if (user.id == SELF_USER_ID) {
-                avatar.setImageResource(R.drawable.self_avatar)
-            } else {
-                avatar.setImageResource(R.drawable.avatar)
-            }
-            if (!user.isOnline) onlineStatusCard.visibility = View.GONE
-            initListener(user)
-        }
-
-        private fun initListener(user: User) {
-            view.setOnClickListener {
-                val bundle = bundleOf(
-                    "id" to user.id,
-                    "username" to user.name,
-                    "status" to user.status,
-                    "onlineStatus" to user.isOnline
-                )
-                view.findNavController().navigate(R.id.action_nav_people_to_nav_profile, bundle)
-            }
-        }
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PeopleListViewHolder {
-        val userItemView = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_user_in_people_list, parent, false)
-        return PeopleListViewHolder(userItemView)
+        val userItemBinding = ItemUserInPeopleListBinding
+            .inflate(LayoutInflater.from(parent.context), parent, false)
+        return PeopleListViewHolder(userItemBinding)
     }
 
     override fun onBindViewHolder(holder: PeopleListViewHolder, position: Int) {
@@ -92,9 +63,29 @@ internal class PeopleListAdapter: RecyclerView.Adapter<PeopleListAdapter.PeopleL
         return if (showShimmer) SHIMMER_ITEM_COUNT else users.size
     }
 
+    inner class PeopleListViewHolder(private val binding: ItemUserInPeopleListBinding): RecyclerView.ViewHolder(binding.root) {
+
+        internal val username = binding.username
+        internal val email = binding.email
+        internal val avatar = binding.profileAvatar
+        internal val onlineStatusCard = binding.onlineStatusCard
+        internal val shimmerFrameLayout = binding.shimmerLayout
+
+        fun bind(user: User) {
+            username.text = user.name
+            email.text = user.email
+            if (user.id == SELF_USER_ID) {
+                avatar.setImageResource(R.drawable.self_avatar)
+            } else {
+                avatar.setImageResource(R.drawable.avatar)
+            }
+            onlineStatusCard.visibility = if (!user.isOnline) View.GONE else View.VISIBLE
+            this@PeopleListAdapter.userItemClickListener.onTopicItemClickListener(binding.root, user)
+        }
+    }
+
     companion object {
 
         const val SHIMMER_ITEM_COUNT = 2
     }
-
 }

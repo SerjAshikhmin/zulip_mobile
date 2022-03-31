@@ -23,7 +23,7 @@
                 android:id="@+id/profile_avatar"
                 android:layout_width="64dp"
                 android:layout_height="64dp"
-                android:background="@color/grey_400"/>
+                android:background="@color/grey_400" />
 
         </androidx.cardview.widget.CardView>
 
@@ -41,7 +41,7 @@
                 android:layout_width="21dp"
                 android:layout_height="21dp"
                 android:background="@color/green_500"
-                android:src="@null"/>
+                android:src="@null" />
 
         </androidx.cardview.widget.CardView>
 
@@ -57,20 +57,20 @@
             android:textColor="@color/whiteVariant"
             android:foreground="@color/grey_400"
             app:layout_constraintStart_toEndOf="@id/profile_avatar_card"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/email"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:fontFamily="@font/inter"
-        android:text="darrel@company.com"
-        android:textSize="16sp"
-        android:textColor="@color/grey_100"
-        android:foreground="@color/grey_400"
-        app:layout_constraintStart_toEndOf="@id/profile_avatar_card"
-        app:layout_constraintTop_toBottomOf="@id/username"/>
+        <TextView
+            android:id="@+id/email"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:fontFamily="@font/inter"
+            android:text="darrel@company.com"
+            android:textSize="16sp"
+            android:textColor="@color/grey_100"
+            android:foreground="@color/grey_400"
+            app:layout_constraintStart_toEndOf="@id/profile_avatar_card"
+            app:layout_constraintTop_toBottomOf="@id/username" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

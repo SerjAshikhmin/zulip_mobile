@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 // находит сообщение по id, для каждой реакции подсчитывает ее количество в сообщении
 // в полученном списке находит и помечает реакции, отмеченные текущим пользователем
 internal fun getEmojisForMessage(messageId: Long): List<EmojiWithCount> {
-    val message = messages.first { it is Message && it.id == messageId }
+    val message = messagesTestData.first { it is Message && it.id == messageId }
     return if (message is Message) {
         val emojiList = mutableListOf<EmojiWithCount>()
         message.reactions
@@ -30,7 +30,7 @@ internal fun getEmojisForMessage(messageId: Long): List<EmojiWithCount> {
     }
 }
 
-internal var messages = mutableListOf(
+internal var messagesTestData = mutableListOf(
     LocalDate.now().minusDays(1),
     Message(
         id = 1,

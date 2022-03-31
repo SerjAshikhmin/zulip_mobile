@@ -5,7 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.findFragment
+import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.reactivex.Single
 import io.reactivex.SingleObserver
@@ -13,12 +16,14 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import ru.tinkoff.android.coursework.R
+import ru.tinkoff.android.coursework.data.users
 import ru.tinkoff.android.coursework.data.usersWithTestErrorAndDelay
 import ru.tinkoff.android.coursework.databinding.FragmentPeopleBinding
 import ru.tinkoff.android.coursework.model.User
 import ru.tinkoff.android.coursework.ui.screens.adapters.PeopleListAdapter
 
-internal class PeopleFragment: Fragment() {
+internal class PeopleFragment: Fragment(), OnUserItemClickListener {
 
     private lateinit var binding: FragmentPeopleBinding
     private lateinit var compositeDisposable: CompositeDisposable
@@ -43,11 +48,21 @@ internal class PeopleFragment: Fragment() {
         compositeDisposable.dispose()
     }
 
+    override fun onTopicItemClickListener(topicItemView: View?, user: User) {
+        topicItemView?.setOnClickListener {
+            val bundle = bundleOf(
+                ProfileFragment.USER_ID_KEY to user.id,
+                ProfileFragment.USERNAME_KEY to user.name,
+                ProfileFragment.USER_STATUS_KEY to user.status,
+                ProfileFragment.USER_ONLINE_STATUS_KEY to user.isOnline
+            )
+            NavHostFragment.findNavController(binding.root.findFragment())
+                .navigate(R.id.action_nav_people_to_nav_profile, bundle)
+        }
+    }
+
     private fun configurePeopleListRecycler() {
-        val peopleListRecycle = binding.peopleList
-        val layoutManager = LinearLayoutManager(context)
-        peopleListRecycle.layoutManager = layoutManager
-        val adapter = PeopleListAdapter()
+        val adapter = PeopleListAdapter(this)
 
         Single.fromCallable { (usersWithTestErrorAndDelay()) }
             .subscribeOn(Schedulers.io())
@@ -72,6 +87,6 @@ internal class PeopleFragment: Fragment() {
                 }
             })
 
-        peopleListRecycle.adapter = adapter
+        binding.peopleList.adapter = adapter
     }
 }

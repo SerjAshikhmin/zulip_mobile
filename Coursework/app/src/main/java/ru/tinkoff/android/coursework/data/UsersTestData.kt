@@ -6,17 +6,17 @@ import kotlin.random.Random
 internal const val SELF_USER_ID = 1L
 
 internal fun getUserById(userId: Long): User? {
-    return users.firstOrNull { it.id == userId }
+    return usersTestData.firstOrNull { it.id == userId }
 }
 
 // метод-обертка для выбрасывания ошибки и задержки
 internal fun usersWithTestErrorAndDelay(): MutableList<User> {
     Thread.sleep(2000)
     if (Random.nextBoolean()) throw Exception()
-    return users
+    return usersTestData
 }
 
-internal var users = mutableListOf(
+internal var usersTestData = mutableListOf(
     User(
         id = 1,
         name = "Sergey Ashikhmin",

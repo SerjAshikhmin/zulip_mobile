@@ -46,12 +46,12 @@ internal class ProfileFragment: Fragment() {
                 binding.logoutBtn.visibility = View.VISIBLE
             }
         } else {
-            binding.username.text = arguments?.getString("username")
-            binding.userStatus.text = arguments?.getString("status")
-            if (arguments?.getBoolean("onlineStatus") == true) {
+            binding.username.text = arguments?.getString(USERNAME_KEY)
+            binding.userStatus.text = arguments?.getString(USER_STATUS_KEY)
+            if (arguments?.getBoolean(USER_ONLINE_STATUS_KEY) == true) {
                 binding.userOnlineStatus.visibility = View.VISIBLE
             }
-            if (arguments?.getLong("id") == SELF_USER_ID) {
+            if (arguments?.getLong(USER_ID_KEY) == SELF_USER_ID) {
                 binding.toolbar.visibility = View.GONE
                 binding.logoutBtn.visibility = View.VISIBLE
                 binding.profileAvatarImg.setImageResource(R.drawable.self_avatar)
@@ -59,5 +59,13 @@ internal class ProfileFragment: Fragment() {
                 binding.profileAvatarImg.setImageResource(R.drawable.avatar)
             }
         }
+    }
+
+    companion object {
+
+        const val USER_ID_KEY = "id"
+        const val USERNAME_KEY = "username"
+        const val USER_STATUS_KEY = "status"
+        const val USER_ONLINE_STATUS_KEY = "onlineStatus"
     }
 }

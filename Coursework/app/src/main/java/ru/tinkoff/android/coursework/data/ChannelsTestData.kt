@@ -18,10 +18,10 @@ internal fun channelsWithTestErrorAndDelay(): List<Channel> {
     return channels
 }
 
-internal var channels = listOf(
+internal var channelsTestData = listOf(
     Channel(
         name = "general",
-        topics = topics
+        topics = topicsTestData
     ),
     Channel(
         name = "Development",

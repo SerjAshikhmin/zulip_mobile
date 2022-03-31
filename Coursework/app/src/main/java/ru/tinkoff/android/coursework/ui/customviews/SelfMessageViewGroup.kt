@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.children
 import androidx.core.view.marginBottom
 import androidx.core.view.marginEnd
 import ru.tinkoff.android.coursework.databinding.LayoutSelfMessageViewGroupBinding
@@ -13,7 +14,7 @@ internal class SelfMessageViewGroup @JvmOverloads constructor(
     attrs: AttributeSet? = null
 ) : ViewGroup(context, attrs) {
 
-    internal var binding: LayoutSelfMessageViewGroupBinding =
+    var binding: LayoutSelfMessageViewGroupBinding =
         LayoutSelfMessageViewGroupBinding.inflate(LayoutInflater.from(context), this)
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -62,14 +63,15 @@ internal class SelfMessageViewGroup @JvmOverloads constructor(
         )
 
         val emojiBoxTop = message.measuredHeightWithMargins
-        val lastChild = emojiBox.getChildAt(childCount - 1)
-        val lastChildMarginEnd = lastChild?.marginEnd ?: 0
-                emojiBox.layout(
-                    r - emojiBox.measuredWidthWithMargins + lastChildMarginEnd - marginEnd,
-                    emojiBoxTop,
-                    r + lastChildMarginEnd - marginEnd,
-                    emojiBoxTop + emojiBox.marginBottom + emojiBox.measuredHeight
-                )
+        val childWithMaxRight = emojiBox.children
+            .filter { right == emojiBox.children.maxOfOrNull { right } }.first()
+        val lastChildMarginEnd = childWithMaxRight.marginEnd
+        emojiBox.layout(
+            r - emojiBox.measuredWidthWithMargins + lastChildMarginEnd - marginEnd,
+            emojiBoxTop,
+            r + lastChildMarginEnd - marginEnd,
+            emojiBoxTop + emojiBox.marginBottom + emojiBox.measuredHeight
+        )
     }
 
     override fun generateLayoutParams(attrs: AttributeSet?): LayoutParams {
@@ -83,4 +85,5 @@ internal class SelfMessageViewGroup @JvmOverloads constructor(
     override fun generateLayoutParams(p: LayoutParams): LayoutParams {
         return MarginLayoutParams(p)
     }
+
 }

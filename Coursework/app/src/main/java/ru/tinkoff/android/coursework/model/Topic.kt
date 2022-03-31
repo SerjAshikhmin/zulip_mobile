@@ -1,6 +1,6 @@
 package ru.tinkoff.android.coursework.model
 
-internal class Topic (
+internal data class Topic (
     val name: String,
     val channelName: String,
     val color: Int,

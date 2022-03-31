@@ -25,27 +25,28 @@ internal class FlexBoxLayout @JvmOverloads constructor(
         var currentStringWidth = 0
         var currentStringHeight = 0
         var totalHeight = 0
-        var maxWidth = 0
+        var maxStringWidth = 0
         val widthSize = MeasureSpec.getSize(widthMeasureSpec)
         children.forEach { child ->
             measureChildWithMargins(child, widthMeasureSpec, 0, heightMeasureSpec, 0)
             currentStringHeight = maxOf(currentStringHeight, child.measuredHeightWithMargins)
-            if (currentStringWidth + child.measuredWidthWithMargins <= this.maxWidth ?: widthSize) {
+            if (currentStringWidth + child.measuredWidthWithMargins <= maxWidth ?: widthSize) {
                 currentStringWidth += child.measuredWidthWithMargins
             } else {
-                maxWidth = maxOf(currentStringWidth, maxWidth)
+                maxStringWidth = maxOf(currentStringWidth, maxStringWidth)
                 currentStringWidth = child.measuredWidthWithMargins
                 totalHeight += currentStringHeight
             }
         }
-        if (childCount > 1 && maxWidth == 0) {
-            maxWidth = currentStringWidth
+        if (childCount > 1 && maxStringWidth == 0) {
+            maxStringWidth = currentStringWidth
             totalHeight = currentStringHeight
         } else {
+            maxStringWidth = maxOf(currentStringWidth, maxStringWidth)
             totalHeight += currentStringHeight
         }
         setMeasuredDimension(
-            resolveSize(maxWidth, widthMeasureSpec),
+            resolveSize(maxStringWidth, widthMeasureSpec),
             resolveSize(totalHeight, heightMeasureSpec)
         )
     }
@@ -82,4 +83,5 @@ internal class FlexBoxLayout @JvmOverloads constructor(
     override fun generateLayoutParams(p: LayoutParams): LayoutParams {
         return MarginLayoutParams(p)
     }
+
 }

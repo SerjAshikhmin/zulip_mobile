@@ -28,12 +28,12 @@ internal class ChannelsFragment: Fragment() {
     private val queryEvents: PublishSubject<String> = PublishSubject.create()
     private lateinit var compositeDisposable: CompositeDisposable
 
-        override fun onCreateView(
+    override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentChannelsBinding.inflate(inflater, container,false)
+        binding = FragmentChannelsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -88,8 +88,12 @@ internal class ChannelsFragment: Fragment() {
         viewPager.adapter = pagerAdapter
 
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
-            val tabNames = listOf("Subscribed", "All streams")
+            val tabNames = listOf(
+                resources.getString(R.string.subscribed_tab_name),
+                resources.getString(R.string.allChannels_tab_name)
+            )
             tab.text = tabNames[position]
         }.attach()
     }
+
 }
