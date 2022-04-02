@@ -4,11 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.findFragment
 import androidx.navigation.fragment.NavHostFragment
+import com.google.android.material.snackbar.Snackbar
 import io.reactivex.Single
 import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -73,10 +73,15 @@ internal class PeopleFragment: Fragment(), OnUserItemClickListener {
                 }
 
                 override fun onError(e: Throwable) {
-                    Toast.makeText(context, "People not found", Toast.LENGTH_SHORT).show()
                     adapter.showShimmer = false
                     adapter.users = mutableListOf()
                     adapter.notifyDataSetChanged()
+
+                    showSnackBarWithRetryAction(
+                        binding.root,
+                        "People not found",
+                        Snackbar.LENGTH_LONG
+                    ) { configurePeopleListRecycler() }
                 }
 
                 override fun onSuccess(t: MutableList<User>) {

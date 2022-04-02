@@ -4,11 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.findFragment
 import androidx.navigation.fragment.NavHostFragment
+import com.google.android.material.snackbar.Snackbar
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -74,8 +74,12 @@ internal class SubscribedFragment: Fragment(), OnTopicItemClickListener {
                     adapter.showShimmer = false
                     adapter.channels = mutableListOf()
                     adapter.notifyDataSetChanged()
-                    Toast.makeText(context, "Channels not found", Toast.LENGTH_LONG).show()
 
+                    showSnackBarWithRetryAction(
+                        binding.root,
+                        "Channels not found",
+                        Snackbar.LENGTH_LONG
+                    ) { configureChannelListRecycler() }
                 }
             )
             .addTo(compositeDisposable)

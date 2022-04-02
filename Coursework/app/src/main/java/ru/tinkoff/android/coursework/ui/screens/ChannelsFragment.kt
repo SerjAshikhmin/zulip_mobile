@@ -71,10 +71,12 @@ internal class ChannelsFragment: Fragment() {
             .subscribeBy(
                 onNext = {
                     val allChannelsRecycler = view?.findViewById<RecyclerView>(R.id.all_channels_list)
-                    (allChannelsRecycler?.adapter as ChannelsListAdapter).channels = it
+                    if (allChannelsRecycler?.adapter != null) {
+                        (allChannelsRecycler.adapter as ChannelsListAdapter).channels = it
+                    }
                 },
                 onError = {
-                    Toast.makeText(context, it.toString(), Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "Search channels error", Toast.LENGTH_LONG).show()
                 }
             )
             .addTo(compositeDisposable)
