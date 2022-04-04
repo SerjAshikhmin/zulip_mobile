@@ -60,7 +60,7 @@ internal class AllChannelsFragment: Fragment(), OnTopicItemClickListener {
     }
 
     private fun configureChannelListRecycler() {
-        val adapter = ChannelsListAdapter(this).apply { channels = channelsTestData }
+        val adapter = ChannelsListAdapter(this)
 
         Single.fromCallable { (channelsWithTestErrorAndDelay()) }
             .subscribeOn(Schedulers.io())
