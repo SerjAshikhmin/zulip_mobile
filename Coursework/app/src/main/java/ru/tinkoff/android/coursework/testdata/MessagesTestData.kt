@@ -1,4 +1,4 @@
-package ru.tinkoff.android.coursework.data
+package ru.tinkoff.android.coursework.testdata
 
 import ru.tinkoff.android.coursework.model.EmojiWithCount
 import ru.tinkoff.android.coursework.model.Message

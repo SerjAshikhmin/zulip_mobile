@@ -13,6 +13,8 @@ import ru.tinkoff.android.coursework.model.Topic
 internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemClickListener)
     : RecyclerView.Adapter<TopicItemAdapter.TopicItemViewHolder>() {
 
+    var showShimmer = true
+
     var topics: List<Topic>
         set(value) = differ.submitList(value)
         get() = differ.currentList
@@ -38,29 +40,41 @@ internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemC
     }
 
     override fun onBindViewHolder(holder: TopicItemViewHolder, position: Int) {
-        holder.bind(topics[position])
+        if (showShimmer) {
+            holder.shimmerFrameLayout.startShimmer()
+        } else {
+            holder.shimmerFrameLayout.stopShimmer()
+            holder.shimmerFrameLayout.setShimmer(null)
+            holder.topicItem.foreground = null
+
+            holder.bind(topics[position])
+        }
     }
 
-    override fun getItemCount() = topics.size
+    override fun getItemCount(): Int {
+        return if (showShimmer) SHIMMER_ITEM_COUNT else topics.size
+    }
 
     inner class TopicItemViewHolder(private val binding: ItemTopicInListBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
+        internal val shimmerFrameLayout = binding.shimmerLayout
+        internal val topicItem = binding.topicItem
+
         fun bind(topic: Topic) {
             binding.topicName.text = topic.name
-            binding.messagesCount.text =
-                binding.root.resources.getString(
-                    R.string.messages_count_text,
-                    topic.messages.size.toString()
-                )
             binding.root.setBackgroundColor(
                 ContextCompat.getColor(
                     binding.root.context,
-                    topic.color
+                    R.color.teal_500
                 )
             )
             this@TopicItemAdapter.topicItemClickListener.onTopicItemClickListener(binding.root, topic)
         }
     }
 
+    companion object {
+
+        const val SHIMMER_ITEM_COUNT = 3
+    }
 }

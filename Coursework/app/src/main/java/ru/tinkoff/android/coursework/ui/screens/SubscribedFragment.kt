@@ -9,14 +9,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.findFragment
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.snackbar.Snackbar
-import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.channelsWithTestErrorAndDelay
+import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.FragmentSubscribedBinding
 import ru.tinkoff.android.coursework.model.Topic
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
@@ -39,7 +38,7 @@ internal class SubscribedFragment: Fragment(), OnTopicItemClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         compositeDisposable = CompositeDisposable()
-        configureChannelListRecycler()
+        configureSubscribedChannelsRecyclerAdapter()
     }
 
     override fun onDestroyView() {
@@ -50,7 +49,6 @@ internal class SubscribedFragment: Fragment(), OnTopicItemClickListener {
     override fun onTopicItemClickListener(topicItemView: View?, topic: Topic) {
         topicItemView?.setOnClickListener {
             val bundle = bundleOf(
-                ChatActivity.CHANNEL_NAME_KEY to topic.channelName,
                 ChatActivity.TOPIC_NAME_KEY to topic.name
             )
             NavHostFragment.findNavController(binding.root.findFragment())
@@ -58,16 +56,16 @@ internal class SubscribedFragment: Fragment(), OnTopicItemClickListener {
         }
     }
 
-    private fun configureChannelListRecycler() {
+    private fun configureSubscribedChannelsRecyclerAdapter() {
         val adapter = ChannelsListAdapter(this)
 
-        Single.fromCallable { channelsWithTestErrorAndDelay() }
+        NetworkService.getZulipJsonApi().getSubscribedStreams()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy (
                 onSuccess = {
                     adapter.showShimmer = false
-                    adapter.channels = it
+                    adapter.channels = it.subscriptions
                     adapter.notifyDataSetChanged()
                 },
                 onError = {
@@ -79,7 +77,7 @@ internal class SubscribedFragment: Fragment(), OnTopicItemClickListener {
                         binding.root,
                         "Channels not found",
                         Snackbar.LENGTH_LONG
-                    ) { configureChannelListRecycler() }
+                    ) { configureSubscribedChannelsRecyclerAdapter() }
                 }
             )
             .addTo(compositeDisposable)

@@ -6,13 +6,7 @@ import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.core.view.children
 import androidx.core.widget.doAfterTextChanged
-import androidx.fragment.app.findFragment
-import androidx.navigation.NavController
-import androidx.navigation.Navigation
-import androidx.navigation.findNavController
-import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.Single
@@ -22,9 +16,9 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.SELF_USER_ID
-import ru.tinkoff.android.coursework.data.messagesTestData
-import ru.tinkoff.android.coursework.data.topicsTestData
+import ru.tinkoff.android.coursework.testdata.SELF_USER_ID
+import ru.tinkoff.android.coursework.testdata.messagesTestData
+import ru.tinkoff.android.coursework.testdata.topicsTestData
 import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
 import ru.tinkoff.android.coursework.model.Message
 import ru.tinkoff.android.coursework.model.Topic
@@ -63,10 +57,10 @@ internal class ChatActivity : AppCompatActivity() {
             onBackPressed()
         }
 
-        binding.topicName.text = resources.getString(
+        /*binding.topicName.text = resources.getString(
             R.string.topic_name_text,
             intent.getStringExtra(TOPIC_NAME_KEY)?.lowercase()
-        )
+        )*/
 
         binding.channelName.text = resources.getString(
             R.string.channel_name_text,

@@ -5,9 +5,17 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
+import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.ItemChannelInListBinding
 import ru.tinkoff.android.coursework.model.Channel
+import ru.tinkoff.android.coursework.ui.screens.showSnackBarWithRetryAction
 
 internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicItemClickListener)
     : RecyclerView.Adapter<ChannelsListAdapter.ChannelListViewHolder>() {
@@ -17,6 +25,8 @@ internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicIt
     var channels: List<Channel>
         set(value) = differ.submitList(value)
         get() = differ.currentList
+
+    private var compositeDisposable = CompositeDisposable()
 
     private val differ = AsyncListDiffer(this, DiffCallback())
 
@@ -56,7 +66,13 @@ internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicIt
         return if (showShimmer) SHIMMER_ITEM_COUNT else channels.size
     }
 
-    inner class ChannelListViewHolder(private val binding: ItemChannelInListBinding): RecyclerView.ViewHolder(binding.root) {
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView)
+        compositeDisposable.dispose()
+    }
+
+    inner class ChannelListViewHolder(private val binding: ItemChannelInListBinding)
+        : RecyclerView.ViewHolder(binding.root) {
 
         internal val channelName = binding.channelName
         internal val arrowIcon = binding.arrowIcon
@@ -70,19 +86,46 @@ internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicIt
 
         fun initChannelListener(channel: Channel) {
             binding.root.setOnClickListener {
-                val topItemAdapter = TopicItemAdapter(this@ChannelsListAdapter.topicItemClickListener)
-                if (!isOpened) {
-                    topItemAdapter.topics = channel.topics
-                    arrowIcon.setImageResource(R.drawable.ic_arrow_up)
-                    isOpened = true
-                } else {
-                    topItemAdapter.topics = listOf()
-                    topItemAdapter.notifyDataSetChanged()
-                    arrowIcon.setImageResource(R.drawable.ic_arrow_down)
-                    isOpened = false
-                }
-                binding.topicsList.adapter = topItemAdapter
+                configureTopicItemAdapter(channel)
             }
+        }
+
+        private fun configureTopicItemAdapter(channel: Channel) {
+            val topItemAdapter = TopicItemAdapter(this@ChannelsListAdapter.topicItemClickListener)
+            if (!isOpened) {
+
+                NetworkService.getZulipJsonApi().getTopicsInStream(streamId = channel.id)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeBy(
+                        onSuccess = {
+                            topItemAdapter.showShimmer = false
+                            topItemAdapter.topics = it.topics
+                            topItemAdapter.notifyDataSetChanged()
+                        },
+                        onError = {
+                            topItemAdapter.showShimmer = false
+                            topItemAdapter.topics = mutableListOf()
+                            topItemAdapter.notifyDataSetChanged()
+
+                            showSnackBarWithRetryAction(
+                                binding.root,
+                                "Topics not found",
+                                Snackbar.LENGTH_LONG
+                            ) { configureTopicItemAdapter(channel) }
+                        }
+                    )
+                    .addTo(compositeDisposable)
+
+                arrowIcon.setImageResource(R.drawable.ic_arrow_up)
+                isOpened = true
+            } else {
+                topItemAdapter.topics = listOf()
+                topItemAdapter.notifyDataSetChanged()
+                arrowIcon.setImageResource(R.drawable.ic_arrow_down)
+                isOpened = false
+            }
+            binding.topicsList.adapter = topItemAdapter
         }
     }
 

@@ -4,10 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayoutMediator
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -16,7 +16,7 @@ import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.getChannelsByPartOfName
+import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.FragmentChannelsBinding
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListPagerAdapter
@@ -64,19 +64,35 @@ internal class ChannelsFragment: Fragment() {
             .distinctUntilChanged()
             .debounce(500, TimeUnit.MILLISECONDS)
             .observeOn(Schedulers.io())
-            .switchMapSingle { query ->
-                getChannelsByPartOfName(query)
+            .map { query ->
+                searchChannelsByQuery(query)
             }
             .observeOn(AndroidSchedulers.mainThread())
+            .subscribe()
+            .addTo(compositeDisposable)
+    }
+
+    private fun searchChannelsByQuery(query: String) {
+        NetworkService.getZulipJsonApi().getAllStreams()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
-                onNext = {
-                    val allChannelsRecycler = view?.findViewById<RecyclerView>(R.id.all_channels_list)
-                    if (allChannelsRecycler?.adapter != null) {
-                        (allChannelsRecycler.adapter as ChannelsListAdapter).channels = it
+                onSuccess = {
+                    val allChannelsRecycler =
+                        view?.findViewById<RecyclerView>(R.id.all_channels_list)
+                    if (allChannelsRecycler?.adapter != null && it != null) {
+                        (allChannelsRecycler.adapter as ChannelsListAdapter).channels =
+                            it.streams.filter { channel ->
+                                channel.name.lowercase().contains(query.lowercase())
+                            }
                     }
                 },
                 onError = {
-                    Toast.makeText(context, "Search channels error", Toast.LENGTH_LONG).show()
+                    showSnackBarWithRetryAction(
+                        binding.root,
+                        "Search channels error",
+                        Snackbar.LENGTH_LONG
+                    ) { searchChannelsByQuery(query) }
                 }
             )
             .addTo(compositeDisposable)

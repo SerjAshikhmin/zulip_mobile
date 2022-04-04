@@ -1,4 +1,4 @@
-package ru.tinkoff.android.coursework.data
+package ru.tinkoff.android.coursework.testdata
 
 import io.reactivex.Single
 import ru.tinkoff.android.coursework.model.Channel
@@ -20,19 +20,23 @@ internal fun channelsWithTestErrorAndDelay(): List<Channel> {
 
 internal var channelsTestData = listOf(
     Channel(
+        id = 1,
         name = "general",
-        topics = topicsTestData
+        //topics = topicsTestData
     ),
     Channel(
+        id = 2,
         name = "Development",
-        topics = listOf()
+        //topics = listOf()
     ),
     Channel(
+        id = 3,
         name = "Design",
-        topics = listOf()
+        //topics = listOf()
     ),
     Channel(
+        id = 4,
         name = "HR",
-        topics = listOf()
+        //topics = listOf()
     )
 )

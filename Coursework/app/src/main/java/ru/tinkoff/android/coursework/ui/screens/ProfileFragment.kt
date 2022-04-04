@@ -6,8 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.SELF_USER_ID
-import ru.tinkoff.android.coursework.data.getUserById
+import ru.tinkoff.android.coursework.testdata.SELF_USER_ID
+import ru.tinkoff.android.coursework.testdata.getUserById
 import ru.tinkoff.android.coursework.databinding.FragmentProfileBinding
 
 internal class ProfileFragment: Fragment() {
@@ -27,7 +27,6 @@ internal class ProfileFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.userOnlineStatus.visibility = View.GONE
         binding.toolbar.visibility = View.VISIBLE
-        binding.logoutBtn.visibility = View.GONE
 
         binding.backIcon.setOnClickListener {
             requireActivity().onBackPressed()
@@ -43,7 +42,6 @@ internal class ProfileFragment: Fragment() {
                     binding.userOnlineStatus.visibility = View.VISIBLE
                 }
                 binding.toolbar.visibility = View.GONE
-                binding.logoutBtn.visibility = View.VISIBLE
             }
         } else {
             binding.username.text = arguments?.getString(USERNAME_KEY)
@@ -53,7 +51,6 @@ internal class ProfileFragment: Fragment() {
             }
             if (arguments?.getLong(USER_ID_KEY) == SELF_USER_ID) {
                 binding.toolbar.visibility = View.GONE
-                binding.logoutBtn.visibility = View.VISIBLE
                 binding.profileAvatarImg.setImageResource(R.drawable.self_avatar)
             } else {
                 binding.profileAvatarImg.setImageResource(R.drawable.avatar)

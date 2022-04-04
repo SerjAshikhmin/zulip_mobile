@@ -13,9 +13,9 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.SELF_USER_ID
-import ru.tinkoff.android.coursework.data.getEmojisForMessage
-import ru.tinkoff.android.coursework.data.getUserById
+import ru.tinkoff.android.coursework.testdata.SELF_USER_ID
+import ru.tinkoff.android.coursework.testdata.getEmojisForMessage
+import ru.tinkoff.android.coursework.testdata.getUserById
 import ru.tinkoff.android.coursework.model.Message
 import ru.tinkoff.android.coursework.ui.customviews.*
 import java.time.LocalDate

@@ -3,6 +3,6 @@ package ru.tinkoff.android.coursework.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class Topic (
-    val name: String,
+internal data class SubscribedChannelsListResponse (
+    val subscriptions: List<Channel>
 )

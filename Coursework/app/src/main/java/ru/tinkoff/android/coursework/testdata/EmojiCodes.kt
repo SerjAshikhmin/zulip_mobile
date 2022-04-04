@@ -1,4 +1,4 @@
-package ru.tinkoff.android.coursework.data
+package ru.tinkoff.android.coursework.testdata
 
 internal object EmojiCodes {
 

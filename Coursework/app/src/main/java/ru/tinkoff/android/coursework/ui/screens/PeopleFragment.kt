@@ -16,7 +16,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.usersWithTestErrorAndDelay
+import ru.tinkoff.android.coursework.testdata.usersWithTestErrorAndDelay
 import ru.tinkoff.android.coursework.databinding.FragmentPeopleBinding
 import ru.tinkoff.android.coursework.model.User
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnUserItemClickListener

@@ -11,7 +11,7 @@ import androidx.annotation.StyleRes
 import androidx.core.view.children
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.EmojiCodes
+import ru.tinkoff.android.coursework.testdata.EmojiCodes
 import ru.tinkoff.android.coursework.model.EmojiWithCount
 
 internal class EmojiBottomSheetDialog(
