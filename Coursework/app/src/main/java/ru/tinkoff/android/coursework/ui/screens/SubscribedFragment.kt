@@ -20,6 +20,7 @@ import ru.tinkoff.android.coursework.databinding.FragmentSubscribedBinding
 import ru.tinkoff.android.coursework.model.Topic
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnTopicItemClickListener
+import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
 
 internal class SubscribedFragment: Fragment(), OnTopicItemClickListener {
 

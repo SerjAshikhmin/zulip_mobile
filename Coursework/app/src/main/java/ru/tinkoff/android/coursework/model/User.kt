@@ -1,9 +1,21 @@
 package ru.tinkoff.android.coursework.model
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
 internal data class User (
+
+    @SerialName("user_id")
     val id: Long,
-    val name: String,
-    val email: String,
-    val status: String,
-    val isOnline: Boolean = false
+
+    @SerialName("full_name")
+    val name: String? = "",
+
+    val email: String? = "",
+
+    @SerialName("avatar_url")
+    val avatarUrl: String?,
+
+    var presence: String? = "undefined"
 )

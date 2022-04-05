@@ -9,18 +9,21 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.findFragment
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.snackbar.Snackbar
-import io.reactivex.Single
 import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.testdata.usersWithTestErrorAndDelay
+import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.FragmentPeopleBinding
 import ru.tinkoff.android.coursework.model.User
+import ru.tinkoff.android.coursework.model.response.AllUsersListResponse
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnUserItemClickListener
 import ru.tinkoff.android.coursework.ui.screens.adapters.PeopleListAdapter
+import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
 
 internal class PeopleFragment: Fragment(), OnUserItemClickListener {
 
@@ -47,13 +50,17 @@ internal class PeopleFragment: Fragment(), OnUserItemClickListener {
         compositeDisposable.dispose()
     }
 
-    override fun onTopicItemClickListener(topicItemView: View?, user: User) {
+    override fun onTopicItemClickListener(
+        topicItemView: View?,
+        user: User
+    ) {
         topicItemView?.setOnClickListener {
             val bundle = bundleOf(
                 ProfileFragment.USER_ID_KEY to user.id,
                 ProfileFragment.USERNAME_KEY to user.name,
-                ProfileFragment.USER_STATUS_KEY to user.status,
-                ProfileFragment.USER_ONLINE_STATUS_KEY to user.isOnline
+                ProfileFragment.EMAIL_KEY to user.email,
+                ProfileFragment.AVATAR_KEY to user.avatarUrl,
+                ProfileFragment.USER_PRESENCE_KEY to user.presence
             )
             NavHostFragment.findNavController(binding.root.findFragment())
                 .navigate(R.id.action_nav_people_to_nav_profile, bundle)
@@ -63,10 +70,10 @@ internal class PeopleFragment: Fragment(), OnUserItemClickListener {
     private fun configurePeopleListRecycler() {
         val adapter = PeopleListAdapter(this)
 
-        Single.fromCallable { (usersWithTestErrorAndDelay()) }
+        NetworkService.getZulipJsonApi().getAllUsers()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe (object : SingleObserver<MutableList<User>> {
+            .subscribe (object : SingleObserver<AllUsersListResponse> {
 
                 override fun onSubscribe(d: Disposable) {
                     compositeDisposable.add(d)
@@ -84,13 +91,33 @@ internal class PeopleFragment: Fragment(), OnUserItemClickListener {
                     ) { configurePeopleListRecycler() }
                 }
 
-                override fun onSuccess(t: MutableList<User>) {
+                override fun onSuccess(t: AllUsersListResponse) {
                     adapter.showShimmer = false
-                    adapter.users = t
+                    adapter.users = t.members
+
+                    adapter.users.forEach { user ->
+                        getUserPresence(user)
+                    }
                     adapter.notifyDataSetChanged()
                 }
             })
 
         binding.peopleList.adapter = adapter
     }
+
+    private fun getUserPresence(user: User) {
+        NetworkService.getZulipJsonApi().getUserPresence(userIdOrEmail = user.id.toString())
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(
+                onSuccess = {
+                    user.presence = it.presence.aggregated?.status ?: "not found"
+                },
+                onError = {
+                    user.presence = "not found"
+                }
+            )
+            .addTo(compositeDisposable)
+    }
+
 }

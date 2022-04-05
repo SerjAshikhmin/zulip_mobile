@@ -20,6 +20,7 @@ import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.FragmentChannelsBinding
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListPagerAdapter
+import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
 import java.util.concurrent.TimeUnit
 
 internal class ChannelsFragment: Fragment() {

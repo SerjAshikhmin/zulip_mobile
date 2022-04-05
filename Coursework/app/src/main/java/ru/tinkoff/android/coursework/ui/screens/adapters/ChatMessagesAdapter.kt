@@ -106,7 +106,7 @@ internal class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
     }
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
-        return when(holder) {
+        return when (holder) {
             is MessageViewHolder -> holder.bind(messages[position] as Message)
             is SelfMessageViewHolder -> holder.bind(messages[position] as Message)
             is SendDateViewHolder -> holder.bind(messages[position] as LocalDate)
