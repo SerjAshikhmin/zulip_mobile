@@ -30,8 +30,8 @@ internal fun getEmojisForMessage(messageId: Long): List<EmojiWithCount> {
     }
 }
 
-internal var messagesTestData = mutableListOf(
-    LocalDate.now().minusDays(1),
+internal var messagesTestData = mutableListOf<Message>(
+    /*LocalDate.now().minusDays(1),
     Message(
         id = 1,
         userId = 2,
@@ -84,5 +84,5 @@ internal var messagesTestData = mutableListOf(
         content = "Равным образом реализация намеченного плана развития напрямую зависит от дальнейших направлений развитая системы массового участия.",
         reactions = listOf(),
         sendDateTime = LocalDateTime.now()
-    )
+    )*/
 )

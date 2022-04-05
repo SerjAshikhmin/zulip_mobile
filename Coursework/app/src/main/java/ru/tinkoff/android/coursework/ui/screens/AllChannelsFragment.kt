@@ -47,10 +47,11 @@ internal class AllChannelsFragment: Fragment(), OnTopicItemClickListener {
         compositeDisposable.dispose()
     }
 
-    override fun onTopicItemClickListener(topicItemView: View?, topic: Topic) {
+    override fun onTopicItemClick(topicItemView: View?, topic: Topic, channelName: String) {
         topicItemView?.setOnClickListener {
             val bundle = bundleOf(
-                ChatActivity.TOPIC_NAME_KEY to topic.name
+                ChatActivity.TOPIC_NAME_KEY to topic.name,
+                ChatActivity.CHANNEL_NAME_KEY to channelName
             )
             NavHostFragment.findNavController(binding.root.findFragment())
                 .navigate(R.id.action_nav_channels_to_nav_chat, bundle)

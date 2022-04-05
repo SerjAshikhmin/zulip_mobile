@@ -50,7 +50,7 @@ internal class PeopleFragment: Fragment(), OnUserItemClickListener {
         compositeDisposable.dispose()
     }
 
-    override fun onTopicItemClickListener(
+    override fun onUserItemClick(
         topicItemView: View?,
         user: User
     ) {

@@ -116,9 +116,10 @@ internal class EmojiWithCountView @JvmOverloads constructor(
                 false
             ) as EmojiWithCountView
             emojiView.setOnClickListener(onEmojiClick)
-            emojiView.emojiCode = emoji.code
+            emojiView.emojiCode = String(Character.toChars(emoji.code.toInt(16)))
             emojiView.emojiCount = emoji.count
             return emojiView
         }
     }
+
 }

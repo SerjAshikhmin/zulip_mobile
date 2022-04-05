@@ -1,14 +1,14 @@
 package ru.tinkoff.android.coursework.api
 
 import io.reactivex.Single
-import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.Path
+import retrofit2.http.*
 import ru.tinkoff.android.coursework.api.NetworkService.AUTH_HEADER_NAME
 import ru.tinkoff.android.coursework.api.NetworkService.AUTH_TOKEN_VALUE
 import ru.tinkoff.android.coursework.model.User
 import ru.tinkoff.android.coursework.model.response.AllChannelsListResponse
 import ru.tinkoff.android.coursework.model.response.AllUsersListResponse
+import ru.tinkoff.android.coursework.model.response.MessagesListResponse
+import ru.tinkoff.android.coursework.model.response.SendMessageResponse
 import ru.tinkoff.android.coursework.model.response.SubscribedChannelsListResponse
 import ru.tinkoff.android.coursework.model.response.TopicsListResponse
 import ru.tinkoff.android.coursework.model.response.UserPresenceResponse
@@ -46,5 +46,23 @@ internal interface ZulipJsonApi {
     fun getOwnUser(
         @Header(AUTH_HEADER_NAME) authorization: String = AUTH_TOKEN_VALUE
     ): Single<User>
+
+    @GET("api/v1/messages")
+    fun getMessages(
+        @Header(AUTH_HEADER_NAME) authorization: String = AUTH_TOKEN_VALUE,
+        @Query("num_before") numBefore: Int = 100,
+        @Query("num_after") numAfter: Int = 100,
+        @Query("anchor") anchor: String = "first_unread",
+        @Query(value = "narrow", encoded = true) narrow: String
+    ): Single<MessagesListResponse>
+
+    @POST("api/v1/messages")
+    fun sendMessage(
+        @Header(AUTH_HEADER_NAME) authorization: String = AUTH_TOKEN_VALUE,
+        @Query("type") type: String = "stream",
+        @Query("to") to: String,
+        @Query("content") content: String,
+        @Query("topic") topic: String,
+    ): Single<SendMessageResponse>
 
 }

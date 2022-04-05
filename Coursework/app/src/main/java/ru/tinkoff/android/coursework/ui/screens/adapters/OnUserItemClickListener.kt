@@ -5,6 +5,6 @@ import ru.tinkoff.android.coursework.model.User
 
 internal interface OnUserItemClickListener {
 
-    fun onTopicItemClickListener(topicItemView: View?, user: User)
+    fun onUserItemClick(topicItemView: View?, user: User)
 
 }

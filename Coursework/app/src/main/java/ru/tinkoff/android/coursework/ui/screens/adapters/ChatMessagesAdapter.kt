@@ -8,15 +8,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.core.text.HtmlCompat
 import androidx.core.view.setMargins
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import ru.tinkoff.android.coursework.R
+import ru.tinkoff.android.coursework.model.EmojiWithCount
 import ru.tinkoff.android.coursework.testdata.SELF_USER_ID
-import ru.tinkoff.android.coursework.testdata.getEmojisForMessage
-import ru.tinkoff.android.coursework.testdata.getUserById
 import ru.tinkoff.android.coursework.model.Message
+import ru.tinkoff.android.coursework.model.Reaction
 import ru.tinkoff.android.coursework.ui.customviews.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -24,6 +26,9 @@ import kotlin.math.roundToInt
 
 internal class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
     : RecyclerView.Adapter<ChatMessagesAdapter.BaseViewHolder>() {
+
+    var channelName = ""
+    var topicName = ""
 
     var messages: List<Any>
         set(value) = differ.submitList(value)
@@ -123,6 +128,7 @@ internal class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
     sealed class BaseViewHolder(view: View) : RecyclerView.ViewHolder(view)
 
     inner class MessageViewHolder(messageView: MessageViewGroup) : BaseViewHolder(messageView) {
+
         private val avatar = messageView.binding.avatarImage
         private val username = messageView.binding.username
         private val messageView = messageView.binding.messageText
@@ -130,9 +136,19 @@ internal class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
 
         internal fun bind(message: Message?) {
             message?.let {
-                val user = getUserById(it.userId)
-                username.text = user?.name
-                messageView.text = it.content
+                username.text = it.userFullName
+                messageView.text = HtmlCompat.fromHtml(it.content, HtmlCompat.FROM_HTML_MODE_LEGACY)
+
+                if (it.avatarUrl != null) {
+                    Glide.with(messageView)
+                        .asBitmap()
+                        .load(it.avatarUrl)
+                        .error(R.drawable.default_avatar)
+                        .into(avatar)
+                } else {
+                    avatar.setImageResource(R.drawable.default_avatar)
+                }
+
                 fillEmojiBox(it, emojiBox)
             }
         }
@@ -140,6 +156,7 @@ internal class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
 
     inner class SelfMessageViewHolder(selfMessageView: SelfMessageViewGroup) :
         BaseViewHolder(selfMessageView) {
+
         private val messageView = selfMessageView.binding.message
         private val emojiBox = selfMessageView.binding.emojiBox
 
@@ -172,7 +189,7 @@ internal class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
     }
 
     private fun fillEmojiBox(message: Message, emojiBox: FlexBoxLayout) {
-        val emojis = getEmojisForMessage(message.id)
+        val emojis = getEmojisWithCountList(message.reactions)
 
         var addEmojiView: ImageView? = null
         if (emojiBox.childCount == 0) {
@@ -195,6 +212,22 @@ internal class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
             }
             addEmojiView?.visibility = View.VISIBLE
         }
+    }
+
+    private fun getEmojisWithCountList(reactions: List<Reaction>): List<EmojiWithCount> {
+        val emojiList = mutableListOf<EmojiWithCount>()
+        reactions
+                .groupBy { reaction -> reaction.code }
+                .map { emoji -> emoji.key to emoji.value.size }
+                .mapTo(emojiList) { emoji -> EmojiWithCount(emoji.first, emoji.second)}
+
+            emojiList.forEach { emojiWithCount ->
+                val selfReaction = reactions.firstOrNull { reaction ->
+                    reaction.userId == SELF_USER_ID && reaction.code == emojiWithCount.code
+                }
+                if (selfReaction != null) emojiWithCount.selectedByCurrentUser = true
+            }
+        return emojiList
     }
 
     private fun dpToPx(dp: Int, context: Context): Int {

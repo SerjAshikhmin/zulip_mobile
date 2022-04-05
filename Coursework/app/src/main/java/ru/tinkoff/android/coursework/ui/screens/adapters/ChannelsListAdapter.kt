@@ -101,6 +101,7 @@ internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicIt
                         onSuccess = {
                             topItemAdapter.showShimmer = false
                             topItemAdapter.topics = it.topics
+                            topItemAdapter.channelName = channel.name
                             topItemAdapter.notifyDataSetChanged()
                         },
                         onError = {

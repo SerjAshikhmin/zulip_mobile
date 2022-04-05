@@ -21,13 +21,15 @@ internal var usersTestData = mutableListOf(
         id = 1,
         name = "Sergey Ashikhmin",
         email = "ashihmin@yandex.ru",
-        status = "Learning Android",
-        isOnline = true
+        avatarUrl = ""
+        //status = "Learning Android",
+        //isOnline = true
     ),
     User(
         id = 2,
         name = "Darrel Steward",
         email = "darrel@company.com",
-        status = "In a meeting",
+        avatarUrl = ""
+        //status = "In a meeting",
     )
 )

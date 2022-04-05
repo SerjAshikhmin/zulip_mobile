@@ -14,6 +14,7 @@ internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemC
     : RecyclerView.Adapter<TopicItemAdapter.TopicItemViewHolder>() {
 
     var showShimmer = true
+    var channelName = ""
 
     var topics: List<Topic>
         set(value) = differ.submitList(value)
@@ -69,7 +70,8 @@ internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemC
                     R.color.teal_500
                 )
             )
-            this@TopicItemAdapter.topicItemClickListener.onTopicItemClickListener(binding.root, topic)
+            this@TopicItemAdapter.topicItemClickListener
+                .onTopicItemClick(binding.root, topic, channelName)
         }
     }
 

@@ -5,26 +5,23 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import io.reactivex.Single
+import com.google.android.material.snackbar.Snackbar
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.testdata.SELF_USER_ID
-import ru.tinkoff.android.coursework.testdata.messagesTestData
-import ru.tinkoff.android.coursework.testdata.topicsTestData
+import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
-import ru.tinkoff.android.coursework.model.Message
-import ru.tinkoff.android.coursework.model.Topic
+import ru.tinkoff.android.coursework.model.request.NarrowRequest
+import ru.tinkoff.android.coursework.model.response.SendMessageResponse
 import ru.tinkoff.android.coursework.ui.customviews.*
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChatMessagesAdapter
-import java.time.LocalDateTime
+import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
 
 internal class ChatActivity : AppCompatActivity() {
 
@@ -33,7 +30,6 @@ internal class ChatActivity : AppCompatActivity() {
     private lateinit var chatRecycler: RecyclerView
     private lateinit var adapter: ChatMessagesAdapter
     private lateinit var compositeDisposable: CompositeDisposable
-    private var topic: Topic = topicsTestData[0]
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,15 +53,8 @@ internal class ChatActivity : AppCompatActivity() {
             onBackPressed()
         }
 
-        /*binding.topicName.text = resources.getString(
-            R.string.topic_name_text,
-            intent.getStringExtra(TOPIC_NAME_KEY)?.lowercase()
-        )*/
-
-        binding.channelName.text = resources.getString(
-            R.string.channel_name_text,
-            intent.getStringExtra(CHANNEL_NAME_KEY)
-        )
+        binding.topicName.text = adapter.topicName
+        binding.channelName.text = adapter.channelName
     }
 
     private fun configureChatRecycler() {
@@ -75,16 +64,17 @@ internal class ChatActivity : AppCompatActivity() {
         chatRecycler.layoutManager = layoutManager
         adapter = ChatMessagesAdapter(dialog)
 
-        Single.just(messagesTestData)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy (
-                onSuccess = { adapter.messages = it },
-                onError = {
-                    Toast.makeText(this, "Messages not found", Toast.LENGTH_LONG).show()
-                }
-            )
-            .addTo(compositeDisposable)
+        adapter.topicName = resources.getString(
+            R.string.topic_name_text,
+            intent.getStringExtra(TOPIC_NAME_KEY)?.lowercase()
+        )
+
+        adapter.channelName = resources.getString(
+            R.string.channel_name_text,
+            intent.getStringExtra(CHANNEL_NAME_KEY)
+        )
+
+        getMessagesForChat()
 
         chatRecycler.adapter = adapter
     }
@@ -109,16 +99,14 @@ internal class ChatActivity : AppCompatActivity() {
 
         sendButton.setOnClickListener {
             if (enterMessage.text.isNotEmpty()) {
-                messagesTestData.add(Message(
-                    id = (messagesTestData.size + 1).toLong(),
-                    userId = SELF_USER_ID,
-                    topicName = topic.name,
+                val sendMessageResponse = sendMessage(
                     content = enterMessage.text.toString(),
-                    reactions = listOf(),
-                    sendDateTime = LocalDateTime.now()
-                ))
-                adapter.update(messagesTestData, messagesTestData.size - 1)
-                chatRecycler.layoutManager?.scrollToPosition(adapter.messages.size - 1)
+                    stream = intent.getStringExtra(CHANNEL_NAME_KEY) ?: "",
+                    topic = intent.getStringExtra(TOPIC_NAME_KEY) ?: ""
+                )
+                if (sendMessageResponse.result == "success") {
+                    getMessagesForChat()
+                }
                 enterMessage.text.clear()
                 val imm: InputMethodManager =
                     getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -138,9 +126,52 @@ internal class ChatActivity : AppCompatActivity() {
         dialog.setContentView(bottomSheetLayout)
     }
 
+    private fun getMessagesForChat() {
+        NetworkService.getZulipJsonApi().getMessages(
+            narrow = arrayOf(
+                NarrowRequest(
+                    operator = TOPIC_NARROW_OPERATOR_KEY,
+                    operand = intent.getStringExtra(TOPIC_NAME_KEY) ?: ""
+                )
+            ).contentToString()
+        )
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(
+                onSuccess = {
+                    adapter.messages = it.messages
+                    chatRecycler.layoutManager?.scrollToPosition(adapter.messages.size - 1)
+                },
+                onError = {
+                    it.printStackTrace()
+                    showSnackBarWithRetryAction(
+                        binding.root,
+                        "Message not found",
+                        Snackbar.LENGTH_LONG
+                    ) { configureChatRecycler() }
+                }
+            )
+            .addTo(compositeDisposable)
+    }
+
+    private fun sendMessage(
+        content: String,
+        stream: String,
+        topic: String,
+    ): SendMessageResponse {
+        return NetworkService.getZulipJsonApi().sendMessage(
+            to = stream,
+            content = content,
+            topic = topic
+        )
+            .subscribeOn(Schedulers.io())
+            .blockingGet()
+    }
+
     companion object {
 
         const val CHANNEL_NAME_KEY = "channelName"
         const val TOPIC_NAME_KEY = "topicName"
+        const val TOPIC_NARROW_OPERATOR_KEY = "topic"
     }
 }
