@@ -24,14 +24,19 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
-internal class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
+internal class ChatMessagesAdapter(
+    private val dialog: EmojiBottomSheetDialog,
+    val chatRecycler: RecyclerView
+)
     : RecyclerView.Adapter<ChatMessagesAdapter.BaseViewHolder>() {
 
     var channelName = ""
     var topicName = ""
 
     var messages: List<Any>
-        set(value) = differ.submitList(value)
+        set(value) = differ.submitList(value) {
+            chatRecycler.scrollToPosition(value.size - 1)
+        }
         get() = differ.currentList
 
     private val differ = AsyncListDiffer(this, DiffCallback())

@@ -62,7 +62,7 @@ internal class ChatActivity : AppCompatActivity() {
         val layoutManager = LinearLayoutManager(this)
         layoutManager.stackFromEnd = true
         chatRecycler.layoutManager = layoutManager
-        adapter = ChatMessagesAdapter(dialog)
+        adapter = ChatMessagesAdapter(dialog, chatRecycler)
 
         adapter.topicName = resources.getString(
             R.string.topic_name_text,
@@ -99,14 +99,11 @@ internal class ChatActivity : AppCompatActivity() {
 
         sendButton.setOnClickListener {
             if (enterMessage.text.isNotEmpty()) {
-                val sendMessageResponse = sendMessage(
+                sendMessage(
                     content = enterMessage.text.toString(),
                     stream = intent.getStringExtra(CHANNEL_NAME_KEY) ?: "",
                     topic = intent.getStringExtra(TOPIC_NAME_KEY) ?: ""
                 )
-                if (sendMessageResponse.result == "success") {
-                    getMessagesForChat()
-                }
                 enterMessage.text.clear()
                 val imm: InputMethodManager =
                     getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -139,8 +136,9 @@ internal class ChatActivity : AppCompatActivity() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onSuccess = {
+                    val isLastChanged = !adapter.messages.isNullOrEmpty() && adapter.messages.last() != it.messages.last()
                     adapter.messages = it.messages
-                    chatRecycler.layoutManager?.scrollToPosition(adapter.messages.size - 1)
+                    if (isLastChanged) adapter.notifyItemChanged(it.messages.size - 1)
                 },
                 onError = {
                     it.printStackTrace()
@@ -165,6 +163,16 @@ internal class ChatActivity : AppCompatActivity() {
             topic = topic
         )
             .subscribeOn(Schedulers.io())
+            .doOnSuccess {
+                getMessagesForChat()
+            }
+            .doOnError {
+                showSnackBarWithRetryAction(
+                    binding.root,
+                    "Sending message error",
+                    Snackbar.LENGTH_LONG
+                ) { sendMessage(content, stream, topic) }
+            }
             .blockingGet()
     }
 
