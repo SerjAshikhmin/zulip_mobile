@@ -3,7 +3,7 @@ package ru.tinkoff.android.coursework.testdata
 import ru.tinkoff.android.coursework.model.User
 import kotlin.random.Random
 
-internal const val SELF_USER_ID = 1L
+internal const val SELF_USER_ID = 491498L
 
 internal fun getUserById(userId: Long): User? {
     return usersTestData.firstOrNull { it.id == userId }

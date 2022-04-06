@@ -167,7 +167,7 @@ internal class ChatMessagesAdapter(
 
         fun bind(message: Message?) {
             message?.let {
-                messageView.text = it.content
+                messageView.text = HtmlCompat.fromHtml(it.content, HtmlCompat.FROM_HTML_MODE_LEGACY)
                 fillEmojiBox(it, emojiBox)
             }
         }
