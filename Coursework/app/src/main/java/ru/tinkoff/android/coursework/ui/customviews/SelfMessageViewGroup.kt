@@ -17,6 +17,8 @@ internal class SelfMessageViewGroup @JvmOverloads constructor(
     var binding: LayoutSelfMessageViewGroupBinding =
         LayoutSelfMessageViewGroupBinding.inflate(LayoutInflater.from(context), this)
 
+    var messageId = 0L
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val message = binding.message
         val emojiBox = binding.emojiBox

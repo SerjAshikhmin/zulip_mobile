@@ -26,8 +26,10 @@ import kotlin.math.roundToInt
 
 internal class ChatMessagesAdapter(
     private val dialog: EmojiBottomSheetDialog,
-    val chatRecycler: RecyclerView
-)
+    private val chatRecycler: RecyclerView,
+    private val emojiClickListener: OnEmojiClickListener,
+
+    )
     : RecyclerView.Adapter<ChatMessagesAdapter.BaseViewHolder>() {
 
     var channelName = ""
@@ -132,20 +134,21 @@ internal class ChatMessagesAdapter(
 
     sealed class BaseViewHolder(view: View) : RecyclerView.ViewHolder(view)
 
-    inner class MessageViewHolder(messageView: MessageViewGroup) : BaseViewHolder(messageView) {
+    inner class MessageViewHolder(private val messageView: MessageViewGroup) : BaseViewHolder(messageView) {
 
         private val avatar = messageView.binding.avatarImage
         private val username = messageView.binding.username
-        private val messageView = messageView.binding.messageText
+        private val messageTextView = messageView.binding.messageText
         private val emojiBox = messageView.binding.emojiBox
 
         internal fun bind(message: Message?) {
             message?.let {
+                messageView.messageId = message.id
                 username.text = it.userFullName
-                messageView.text = HtmlCompat.fromHtml(it.content, HtmlCompat.FROM_HTML_MODE_LEGACY)
+                messageTextView.text = HtmlCompat.fromHtml(it.content, HtmlCompat.FROM_HTML_MODE_LEGACY)
 
                 if (it.avatarUrl != null) {
-                    Glide.with(messageView)
+                    Glide.with(messageTextView)
                         .asBitmap()
                         .load(it.avatarUrl)
                         .error(R.drawable.default_avatar)
@@ -159,15 +162,16 @@ internal class ChatMessagesAdapter(
         }
     }
 
-    inner class SelfMessageViewHolder(selfMessageView: SelfMessageViewGroup) :
+    inner class SelfMessageViewHolder(private val selfMessageView: SelfMessageViewGroup) :
         BaseViewHolder(selfMessageView) {
 
-        private val messageView = selfMessageView.binding.message
+        private val messageTextView = selfMessageView.binding.message
         private val emojiBox = selfMessageView.binding.emojiBox
 
         fun bind(message: Message?) {
             message?.let {
-                messageView.text = HtmlCompat.fromHtml(it.content, HtmlCompat.FROM_HTML_MODE_LEGACY)
+                selfMessageView.messageId = message.id
+                messageTextView.text = HtmlCompat.fromHtml(it.content, HtmlCompat.FROM_HTML_MODE_LEGACY)
                 fillEmojiBox(it, emojiBox)
             }
         }
@@ -211,7 +215,12 @@ internal class ChatMessagesAdapter(
 
         if (emojis.isNotEmpty()) {
             emojis.forEach { emoji ->
-                val emojiView = EmojiWithCountView.createEmojiWithCountView(emojiBox, emoji)
+                val emojiView = EmojiWithCountView.createEmojiWithCountView(
+                    emojiBox,
+                    emoji,
+                    message.id,
+                    emojiClickListener
+                )
                 if (emoji.selectedByCurrentUser) emojiView.isSelected = true
                 emojiBox.addView(emojiView, emojiBox.childCount - 1)
             }

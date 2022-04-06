@@ -20,12 +20,16 @@ import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
 import ru.tinkoff.android.coursework.model.Message
 import ru.tinkoff.android.coursework.model.request.NarrowRequest
 import ru.tinkoff.android.coursework.model.response.SendMessageResponse
+import ru.tinkoff.android.coursework.testdata.EmojiCodes
 import ru.tinkoff.android.coursework.ui.customviews.*
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChatMessagesAdapter
+import ru.tinkoff.android.coursework.ui.screens.adapters.OnBottomSheetChooseEmojiListener
+import ru.tinkoff.android.coursework.ui.screens.adapters.OnEmojiClickListener
 import ru.tinkoff.android.coursework.ui.screens.utils.getDateTimeFromTimestamp
 import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
 
-internal class ChatActivity : AppCompatActivity() {
+internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
+    OnBottomSheetChooseEmojiListener {
 
     private lateinit var binding: ActivityChatBinding
     private lateinit var dialog: EmojiBottomSheetDialog
@@ -50,6 +54,64 @@ internal class ChatActivity : AppCompatActivity() {
         compositeDisposable.dispose()
     }
 
+    override fun onEmojiClick(
+        isSelected: Boolean,
+        emojiCode: String,
+        messageId: Long
+    ) {
+        val emojiName = EmojiCodes.emojiMap[emojiCode]
+        if (emojiName != null) {
+            if (isSelected) {
+                addReaction(messageId, emojiName)
+            } else {
+                removeReaction(messageId, emojiName)
+            }
+        }
+    }
+
+    override fun onBottomSheetChooseEmoji(isSelected: Boolean, emojiCode: String, messageId: Long) {
+        val emojiName = EmojiCodes.emojiMap[emojiCode]
+        if (emojiName != null) {
+            addReaction(messageId, emojiName)
+        }
+    }
+
+    private fun addReaction(messageId: Long, emojiName: String) {
+        NetworkService.getZulipJsonApi().addReaction(
+            messageId = messageId,
+            emojiName = emojiName
+        )
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnError {
+                showSnackBarWithRetryAction(
+                    binding.root,
+                    "Adding emoji error",
+                    Snackbar.LENGTH_LONG
+                ) { addReaction(messageId, emojiName) }
+            }
+            .subscribe()
+            .addTo(compositeDisposable)
+    }
+
+    private fun removeReaction(messageId: Long, emojiName: String) {
+        NetworkService.getZulipJsonApi().removeReaction(
+            messageId = messageId,
+            emojiName = emojiName
+        )
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnError {
+                showSnackBarWithRetryAction(
+                    binding.root,
+                    "Removing emoji error",
+                    Snackbar.LENGTH_LONG
+                ) { removeReaction(messageId, emojiName) }
+            }
+            .subscribe()
+            .addTo(compositeDisposable)
+    }
+
     private fun configureToolbar() {
         binding.backIcon.setOnClickListener {
             onBackPressed()
@@ -64,7 +126,7 @@ internal class ChatActivity : AppCompatActivity() {
         val layoutManager = LinearLayoutManager(this)
         layoutManager.stackFromEnd = true
         chatRecycler.layoutManager = layoutManager
-        adapter = ChatMessagesAdapter(dialog, chatRecycler)
+        adapter = ChatMessagesAdapter(dialog, chatRecycler, this)
 
         adapter.topicName = resources.getString(
             R.string.topic_name_text,
@@ -120,7 +182,9 @@ internal class ChatActivity : AppCompatActivity() {
         dialog = EmojiBottomSheetDialog(
             this,
             R.style.BottomSheetDialogTheme,
-            bottomSheetLayout
+            bottomSheetLayout,
+            this,
+            this
         )
         dialog.setContentView(bottomSheetLayout)
     }

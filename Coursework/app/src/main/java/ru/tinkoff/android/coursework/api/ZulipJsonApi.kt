@@ -8,6 +8,7 @@ import ru.tinkoff.android.coursework.model.User
 import ru.tinkoff.android.coursework.model.response.AllChannelsListResponse
 import ru.tinkoff.android.coursework.model.response.AllUsersListResponse
 import ru.tinkoff.android.coursework.model.response.MessagesListResponse
+import ru.tinkoff.android.coursework.model.response.ReactionResponse
 import ru.tinkoff.android.coursework.model.response.SendMessageResponse
 import ru.tinkoff.android.coursework.model.response.SubscribedChannelsListResponse
 import ru.tinkoff.android.coursework.model.response.TopicsListResponse
@@ -64,5 +65,19 @@ internal interface ZulipJsonApi {
         @Query("content") content: String,
         @Query("topic") topic: String,
     ): Single<SendMessageResponse>
+
+    @POST("api/v1/messages/{message_id}/reactions")
+    fun addReaction(
+        @Header(AUTH_HEADER_NAME) authorization: String = AUTH_TOKEN_VALUE,
+        @Path("message_id") messageId: Long,
+        @Query("emoji_name") emojiName: String
+    ): Single<ReactionResponse>
+
+    @DELETE("api/v1/messages/{message_id}/reactions")
+    fun removeReaction(
+        @Header(AUTH_HEADER_NAME) authorization: String = AUTH_TOKEN_VALUE,
+        @Path("message_id") messageId: Long,
+        @Query("emoji_name") emojiName: String
+    ): Single<ReactionResponse>
 
 }

@@ -13,11 +13,15 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.testdata.EmojiCodes
 import ru.tinkoff.android.coursework.model.EmojiWithCount
+import ru.tinkoff.android.coursework.ui.screens.adapters.OnBottomSheetChooseEmojiListener
+import ru.tinkoff.android.coursework.ui.screens.adapters.OnEmojiClickListener
 
 internal class EmojiBottomSheetDialog(
     context: Context,
     @StyleRes theme: Int,
-    private var bottomSheet: LinearLayout
+    private var bottomSheet: LinearLayout,
+    private val emojiClickListener: OnEmojiClickListener,
+    private val bottomSheetChooseEmojiListener: OnBottomSheetChooseEmojiListener
 ) : BottomSheetDialog(context, theme) {
 
     private var chosenEmojiCode = ""
@@ -55,27 +59,39 @@ internal class EmojiBottomSheetDialog(
                     emoji.emojiCount++
                 }
             } else {
+                val messageId = when (selectedView) {
+                    is MessageViewGroup -> selectedView.messageId
+                    is SelfMessageViewGroup -> selectedView.messageId
+                    else -> 0L
+                }
                 if (emojiBox != null) {
                     val emojiView = EmojiWithCountView.createEmojiWithCountView(
                         emojiBox,
-                        EmojiWithCount(chosenEmojiCode, 1)
+                        EmojiWithCount(chosenEmojiCode, 1),
+                        messageId,
+                        emojiClickListener
                     )
                     emojiView.isSelected = true
                     emojiBox.addView(emojiView, emojiBox.childCount - 1)
                     if (emojiBox.childCount > 1) {
                         emojiBox.getChildAt(emojiBox.childCount - 1).visibility = View.VISIBLE
                     }
+                    bottomSheetChooseEmojiListener.onBottomSheetChooseEmoji(
+                        emojiView.isSelected,
+                        emojiView.emojiCode,
+                        messageId
+                    )
                 }
             }
         }
     }
 
     private fun createEmojiViews() {
-        EmojiCodes.values.forEach { emojiCode ->
+        EmojiCodes.emojiMap.forEach { emoji ->
             val emojiView = LayoutInflater.from(context).inflate(
                 R.layout.layout_bottom_sheet_emoji, null
             ) as TextView
-            emojiView.text = emojiCode
+            emojiView.text = emoji.key
             emojiView.setOnClickListener {
                 chosenEmojiCode = emojiView.text.toString()
                 dismiss()
