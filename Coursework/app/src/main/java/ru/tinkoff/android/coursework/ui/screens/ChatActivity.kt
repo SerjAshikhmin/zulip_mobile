@@ -17,10 +17,12 @@ import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
+import ru.tinkoff.android.coursework.model.Message
 import ru.tinkoff.android.coursework.model.request.NarrowRequest
 import ru.tinkoff.android.coursework.model.response.SendMessageResponse
 import ru.tinkoff.android.coursework.ui.customviews.*
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChatMessagesAdapter
+import ru.tinkoff.android.coursework.ui.screens.utils.getDateTimeFromTimestamp
 import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
 
 internal class ChatActivity : AppCompatActivity() {
@@ -136,9 +138,10 @@ internal class ChatActivity : AppCompatActivity() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onSuccess = {
-                    val isLastChanged = !adapter.messages.isNullOrEmpty() && adapter.messages.last() != it.messages.last()
-                    adapter.messages = it.messages
-                    if (isLastChanged) adapter.notifyItemChanged(it.messages.size - 1)
+                    val messages = insertDateSeparators(it.messages)
+                    val isLastChanged = !adapter.messages.isNullOrEmpty() && adapter.messages.last() != messages.last()
+                    adapter.messages = messages
+                    if (isLastChanged) adapter.notifyItemChanged(messages.size - 1)
                 },
                 onError = {
                     it.printStackTrace()
@@ -150,6 +153,23 @@ internal class ChatActivity : AppCompatActivity() {
                 }
             )
             .addTo(compositeDisposable)
+    }
+
+    private fun insertDateSeparators(messages: List<Message>): List<Any> {
+        val messagesWithDateSeparators = mutableListOf<Any>()
+        for (i in messages.indices) {
+            val curDate = getDateTimeFromTimestamp(messages[i].timestamp).toLocalDate()
+            if (i == 0) {
+                messagesWithDateSeparators.add(curDate)
+            } else {
+                val prevDate = getDateTimeFromTimestamp(messages[i - 1].timestamp).toLocalDate()
+                if (prevDate != curDate) {
+                    messagesWithDateSeparators.add(curDate)
+                }
+            }
+            messagesWithDateSeparators.add(messages[i])
+        }
+        return messagesWithDateSeparators
     }
 
     private fun sendMessage(
