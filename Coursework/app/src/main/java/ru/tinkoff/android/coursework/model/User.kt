@@ -1,6 +1,9 @@
 package ru.tinkoff.android.coursework.model
 
-internal class User (
+internal data class User (
     val id: Long,
-    val name: String
+    val name: String,
+    val email: String,
+    val status: String,
+    val isOnline: Boolean = false
 )

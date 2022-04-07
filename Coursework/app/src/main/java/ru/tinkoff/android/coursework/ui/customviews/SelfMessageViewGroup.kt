@@ -4,11 +4,12 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.children
 import androidx.core.view.marginBottom
 import androidx.core.view.marginEnd
 import ru.tinkoff.android.coursework.databinding.LayoutSelfMessageViewGroupBinding
 
-class SelfMessageViewGroup @JvmOverloads constructor(
+internal class SelfMessageViewGroup @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : ViewGroup(context, attrs) {
@@ -62,8 +63,9 @@ class SelfMessageViewGroup @JvmOverloads constructor(
         )
 
         val emojiBoxTop = message.measuredHeightWithMargins
-        val lastChild = emojiBox.getChildAt(childCount - 1)
-        val lastChildMarginEnd = lastChild?.marginEnd ?: 0
+        val childWithMaxRight = emojiBox.children
+            .filter { right == emojiBox.children.maxOfOrNull { right } }.first()
+        val lastChildMarginEnd = childWithMaxRight.marginEnd
         emojiBox.layout(
             r - emojiBox.measuredWidthWithMargins + lastChildMarginEnd - marginEnd,
             emojiBoxTop,
@@ -83,4 +85,5 @@ class SelfMessageViewGroup @JvmOverloads constructor(
     override fun generateLayoutParams(p: LayoutParams): LayoutParams {
         return MarginLayoutParams(p)
     }
+
 }

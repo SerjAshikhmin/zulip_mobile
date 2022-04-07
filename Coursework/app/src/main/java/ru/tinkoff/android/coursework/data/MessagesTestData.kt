@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 // находит сообщение по id, для каждой реакции подсчитывает ее количество в сообщении
 // в полученном списке находит и помечает реакции, отмеченные текущим пользователем
 internal fun getEmojisForMessage(messageId: Long): List<EmojiWithCount> {
-    val message = messages.first { it is Message && it.id == messageId }
+    val message = messagesTestData.first { it is Message && it.id == messageId }
     return if (message is Message) {
         val emojiList = mutableListOf<EmojiWithCount>()
         message.reactions
@@ -30,11 +30,12 @@ internal fun getEmojisForMessage(messageId: Long): List<EmojiWithCount> {
     }
 }
 
-internal var messages = mutableListOf(
+internal var messagesTestData = mutableListOf(
     LocalDate.now().minusDays(1),
     Message(
         id = 1,
         userId = 2,
+        topicName = "Testing",
         content = "Не следует, однако, забывать о том, что социально-экономическое развитие " +
             "способствует подготовке и реализации ключевых компонентов планируемого обновления.",
         reactions = listOf(
@@ -57,6 +58,7 @@ internal var messages = mutableListOf(
     Message(
         id = 2,
         userId = 1,
+        topicName = "Testing",
         content = "Like the technical community as a whole, the Zulip team and community is made " +
                 "up of a mixture of professionals and volunteers from all over the world, working" +
                 " on every aspect of the mission, including mentorship, teaching, and connecting" +
@@ -78,6 +80,7 @@ internal var messages = mutableListOf(
     Message(
         id = 3,
         userId = 2,
+        topicName = "Testing",
         content = "Равным образом реализация намеченного плана развития напрямую зависит от дальнейших направлений развитая системы массового участия.",
         reactions = listOf(),
         sendDateTime = LocalDateTime.now()

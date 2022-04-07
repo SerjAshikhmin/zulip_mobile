@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.core.view.*
 import ru.tinkoff.android.coursework.databinding.LayoutMessageViewGroupBinding
 
-class MessageViewGroup @JvmOverloads constructor(
+internal class MessageViewGroup @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : ViewGroup(context, attrs) {
@@ -101,4 +101,5 @@ class MessageViewGroup @JvmOverloads constructor(
     override fun generateLayoutParams(p: LayoutParams): LayoutParams {
         return MarginLayoutParams(p)
     }
+
 }

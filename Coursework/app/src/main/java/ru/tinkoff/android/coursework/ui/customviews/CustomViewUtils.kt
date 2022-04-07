@@ -6,12 +6,8 @@ import androidx.core.view.marginLeft
 import androidx.core.view.marginRight
 import androidx.core.view.marginTop
 
-val View.measuredWidthWithMargins: Int
-    get() {
-        return measuredWidth + marginRight + marginLeft
-    }
+internal val View.measuredWidthWithMargins: Int
+    get() = measuredWidth + marginRight + marginLeft
 
-val View.measuredHeightWithMargins: Int
-    get() {
-        return measuredHeight + marginTop + marginBottom
-    }
+internal val View.measuredHeightWithMargins: Int
+    get() = measuredHeight + marginTop + marginBottom

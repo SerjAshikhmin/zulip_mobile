@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph.xml"
+    app:startDestination="@id/nav_channels">
+
+    <fragment
+        android:id="@+id/nav_channels"
+        android:name="ru.tinkoff.android.coursework.ui.screens.ChannelsFragment"
+        android:label="@string/channels_menu_title"
+        tools:layout="@layout/fragment_channels">
+
+        <action
+            android:id="@+id/action_nav_channels_to_nav_chat"
+            app:destination="@id/nav_chat"/>
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_people"
+        android:name="ru.tinkoff.android.coursework.ui.screens.PeopleFragment"
+        android:label="@string/people_menu_title"
+        tools:layout="@layout/fragment_people">
+
+        <action
+            android:id="@+id/action_nav_people_to_nav_profile"
+            app:destination="@id/nav_profile"/>
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_profile"
+        android:name="ru.tinkoff.android.coursework.ui.screens.ProfileFragment"
+        android:label="@string/profile_menu_title"
+        tools:layout="@layout/fragment_profile">
+
+    </fragment>
+
+    <activity
+        android:id="@+id/nav_chat"
+        android:name="ru.tinkoff.android.coursework.ui.screens.ChatActivity"
+        tools:layout="@layout/activity_chat">
+
+    </activity>
+
+</navigation>
