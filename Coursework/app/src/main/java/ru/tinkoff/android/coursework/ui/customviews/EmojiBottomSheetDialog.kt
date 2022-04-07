@@ -9,6 +9,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.StyleRes
 import androidx.core.view.children
+import androidx.core.widget.NestedScrollView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.testdata.EmojiCodes
@@ -96,7 +97,8 @@ internal class EmojiBottomSheetDialog(
                 chosenEmojiCode = emojiView.text.toString()
                 dismiss()
             }
-            (bottomSheet.getChildAt(1) as FlexBoxLayout).addView(emojiView)
+            ((bottomSheet.getChildAt(1) as NestedScrollView)
+                .getChildAt(0) as FlexBoxLayout).addView(emojiView)
         }
     }
 

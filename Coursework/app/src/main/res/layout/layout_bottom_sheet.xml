@@ -14,13 +14,21 @@
         android:background="@drawable/bottom_sheet_slider_background"
         android:layout_gravity="center|top" />
 
-    <ru.tinkoff.android.coursework.ui.customviews.FlexBoxLayout
-        android:id="@+id/emoji_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        app:layout_behavior="@string/bottom_sheet_behavior">
 
-    </ru.tinkoff.android.coursework.ui.customviews.FlexBoxLayout>
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/emoji_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ru.tinkoff.android.coursework.ui.customviews.FlexBoxLayout
+            android:id="@+id/emoji_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            app:layout_behavior="@string/bottom_sheet_behavior">
+
+        </ru.tinkoff.android.coursework.ui.customviews.FlexBoxLayout>
+
+    </androidx.core.widget.NestedScrollView>
 
 </LinearLayout>
