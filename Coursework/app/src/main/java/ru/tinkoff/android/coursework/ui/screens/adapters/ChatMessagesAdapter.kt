@@ -228,19 +228,22 @@ internal class ChatMessagesAdapter(
         }
     }
 
+    // преобразует список реакций всего сообщения в список эмоджи
+    // для каждой реакции подсчитывает ее количество в сообщении
+    // в полученном списке находит и помечает эмоджи, отмеченные текущим пользователем
     private fun getEmojisWithCountList(reactions: List<Reaction>): List<EmojiWithCount> {
         val emojiList = mutableListOf<EmojiWithCount>()
         reactions
-                .groupBy { reaction -> reaction.code }
-                .map { emoji -> emoji.key to emoji.value.size }
-                .mapTo(emojiList) { emoji -> EmojiWithCount(emoji.first, emoji.second)}
+            .groupBy { reaction -> reaction.code }
+            .map { emoji -> emoji.key to emoji.value.size }
+            .mapTo(emojiList) { emoji -> EmojiWithCount(emoji.first, emoji.second)}
 
-            emojiList.forEach { emojiWithCount ->
-                val selfReaction = reactions.firstOrNull { reaction ->
-                    reaction.userId == SELF_USER_ID && reaction.code == emojiWithCount.code
-                }
-                if (selfReaction != null) emojiWithCount.selectedByCurrentUser = true
+        emojiList.forEach { emojiWithCount ->
+            val selfReaction = reactions.firstOrNull { reaction ->
+                reaction.userId == SELF_USER_ID && reaction.code == emojiWithCount.code
             }
+            if (selfReaction != null) emojiWithCount.selectedByCurrentUser = true
+        }
         return emojiList
     }
 
