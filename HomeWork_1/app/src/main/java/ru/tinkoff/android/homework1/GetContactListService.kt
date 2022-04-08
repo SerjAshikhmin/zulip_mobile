@@ -29,7 +29,7 @@ class GetContactListService : Service() {
         val contactList = ArrayList<String>()
         val cursor: Cursor? = contentResolver?.query(
             ContactsContract.Contacts.CONTENT_URI,
-            null, null, null, null
+            null, null, null, ContactsContract.Contacts.DISPLAY_NAME_SOURCE
         )
 
         if (cursor == null) {
