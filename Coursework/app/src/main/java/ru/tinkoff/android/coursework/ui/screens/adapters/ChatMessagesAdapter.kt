@@ -209,4 +209,5 @@ internal class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
         private const val TYPE_SELF_MESSAGE = 1
         private const val TYPE_SEND_DATE = 2
     }
+
 }

@@ -5,17 +5,10 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
-import android.widget.Toast
-import androidx.core.view.children
 import androidx.core.widget.doAfterTextChanged
-import androidx.fragment.app.findFragment
-import androidx.navigation.NavController
-import androidx.navigation.Navigation
-import androidx.navigation.findNavController
-import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import io.reactivex.Single
+import com.google.android.material.snackbar.Snackbar
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
@@ -24,6 +17,7 @@ import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.SELF_USER_ID
 import ru.tinkoff.android.coursework.data.messagesTestData
+import ru.tinkoff.android.coursework.data.messagesTestDataWithDelay
 import ru.tinkoff.android.coursework.data.topicsTestData
 import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
 import ru.tinkoff.android.coursework.model.Message
@@ -81,13 +75,17 @@ internal class ChatActivity : AppCompatActivity() {
         chatRecycler.layoutManager = layoutManager
         adapter = ChatMessagesAdapter(dialog)
 
-        Single.just(messagesTestData)
+        messagesTestDataWithDelay()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy (
                 onSuccess = { adapter.messages = it },
                 onError = {
-                    Toast.makeText(this, "Messages not found", Toast.LENGTH_LONG).show()
+                    showSnackBarWithRetryAction(
+                        binding.root,
+                        resources.getString(R.string.messages_not_found_error_text),
+                        Snackbar.LENGTH_LONG
+                    ) { configureChatRecycler() }
                 }
             )
             .addTo(compositeDisposable)
@@ -149,4 +147,5 @@ internal class ChatActivity : AppCompatActivity() {
         const val CHANNEL_NAME_KEY = "channelName"
         const val TOPIC_NAME_KEY = "topicName"
     }
+
 }

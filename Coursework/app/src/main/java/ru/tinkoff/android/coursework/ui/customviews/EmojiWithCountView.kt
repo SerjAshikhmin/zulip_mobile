@@ -121,4 +121,5 @@ internal class EmojiWithCountView @JvmOverloads constructor(
             return emojiView
         }
     }
+
 }
