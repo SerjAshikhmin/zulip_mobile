@@ -17,7 +17,7 @@
         android:padding="16dp"
         android:textColor="@color/whiteVariant"
         android:textSize="18sp"
-        android:text="#general#general#general#general"
+        android:text="@string/text_while_shimmer_showing"
         android:foreground="@color/grey_400"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

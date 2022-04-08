@@ -68,4 +68,5 @@ internal class ProfileFragment: Fragment() {
         const val USER_STATUS_KEY = "status"
         const val USER_ONLINE_STATUS_KEY = "onlineStatus"
     }
+
 }

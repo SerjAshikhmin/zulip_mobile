@@ -25,20 +25,19 @@ import ru.tinkoff.android.coursework.ui.screens.adapters.PeopleListAdapter
 internal class PeopleFragment: Fragment(), OnUserItemClickListener {
 
     private lateinit var binding: FragmentPeopleBinding
-    private lateinit var compositeDisposable: CompositeDisposable
+    private var compositeDisposable: CompositeDisposable = CompositeDisposable()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ) : View {
         binding = FragmentPeopleBinding.inflate(inflater,container,false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        compositeDisposable = CompositeDisposable()
         configurePeopleListRecycler()
     }
 
@@ -63,34 +62,39 @@ internal class PeopleFragment: Fragment(), OnUserItemClickListener {
     private fun configurePeopleListRecycler() {
         val adapter = PeopleListAdapter(this)
 
-        Single.fromCallable { (usersWithTestErrorAndDelay()) }
+        usersWithTestErrorAndDelay()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe (object : SingleObserver<MutableList<User>> {
+            .subscribe (object : SingleObserver<List<User>> {
 
                 override fun onSubscribe(d: Disposable) {
                     compositeDisposable.add(d)
                 }
 
                 override fun onError(e: Throwable) {
-                    adapter.showShimmer = false
-                    adapter.users = mutableListOf()
-                    adapter.notifyDataSetChanged()
+                    adapter.apply {
+                        showShimmer = false
+                        users = mutableListOf()
+                        notifyDataSetChanged()
+                    }
 
                     showSnackBarWithRetryAction(
                         binding.root,
-                        "People not found",
+                        resources.getString(R.string.people_not_found_error_text),
                         Snackbar.LENGTH_LONG
                     ) { configurePeopleListRecycler() }
                 }
 
-                override fun onSuccess(t: MutableList<User>) {
-                    adapter.showShimmer = false
-                    adapter.users = t
-                    adapter.notifyDataSetChanged()
+                override fun onSuccess(users: List<User>) {
+                    adapter.apply {
+                        showShimmer = false
+                        this.users = users
+                        notifyDataSetChanged()
+                    }
                 }
             })
 
         binding.peopleList.adapter = adapter
     }
+
 }

@@ -90,4 +90,5 @@ internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicIt
 
         const val SHIMMER_ITEM_COUNT = 4
     }
+
 }

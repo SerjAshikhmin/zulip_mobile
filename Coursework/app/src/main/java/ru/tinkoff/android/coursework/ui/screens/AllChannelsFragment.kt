@@ -32,7 +32,7 @@ internal class AllChannelsFragment: Fragment(), OnTopicItemClickListener {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ) : View {
         binding = FragmentAllChannelsBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -62,23 +62,27 @@ internal class AllChannelsFragment: Fragment(), OnTopicItemClickListener {
     private fun configureChannelListRecycler() {
         val adapter = ChannelsListAdapter(this)
 
-        Single.fromCallable { (channelsWithTestErrorAndDelay()) }
+        channelsWithTestErrorAndDelay()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy (
                 onSuccess = {
-                    adapter.showShimmer = false
-                    adapter.channels = it
-                    adapter.notifyDataSetChanged()
+                    adapter.apply {
+                        showShimmer = false
+                        channels = it
+                        notifyDataSetChanged()
+                    }
                 },
                 onError = {
-                    adapter.showShimmer = false
-                    adapter.channels = mutableListOf()
-                    adapter.notifyDataSetChanged()
+                    adapter.apply {
+                        showShimmer = false
+                        channels = mutableListOf()
+                        notifyDataSetChanged()
+                    }
 
                     showSnackBarWithRetryAction(
                         binding.root,
-                        "Channels not found",
+                        resources.getString(R.string.channels_not_found_error_text),
                         Snackbar.LENGTH_LONG
                     ) { configureChannelListRecycler() }
                 }
