@@ -90,4 +90,5 @@ internal class ProfileFragment: Fragment() {
         const val ACTIVE_PRESENCE_KEY = "active"
         const val IDLE_PRESENCE_KEY = "idle"
     }
+
 }

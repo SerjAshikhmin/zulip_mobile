@@ -259,4 +259,5 @@ internal class ChatMessagesAdapter(
         private const val TYPE_SELF_MESSAGE = 1
         private const val TYPE_SEND_DATE = 2
     }
+
 }

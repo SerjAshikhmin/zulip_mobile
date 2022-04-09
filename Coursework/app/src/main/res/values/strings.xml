@@ -10,6 +10,11 @@
     <string name="users_search_hint">Users...</string>
     <string name="channel_name_text">#%s</string>
     <string name="topic_name_text">Topic: #%s</string>
-    <string name="subscribed_tab_name">"Subscribed"</string>
-    <string name="allChannels_tab_name">"All streams"</string>
+    <string name="subscribed_tab_name">Subscribed</string>
+    <string name="allChannels_tab_name">All streams</string>
+    <string name="channels_not_found_error_text">Channels not found</string>
+    <string name="people_not_found_error_text">People not found</string>
+    <string name="messages_not_found_error_text">Messages not found</string>
+    <string name="search_channels_error_text">Search channels error</string>
+    <string name="retry_action_snack_bar_text">Retry</string>
 </resources>

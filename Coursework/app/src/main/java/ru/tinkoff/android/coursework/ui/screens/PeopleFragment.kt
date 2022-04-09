@@ -5,14 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.findFragment
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.snackbar.Snackbar
-import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
@@ -23,25 +19,22 @@ import ru.tinkoff.android.coursework.model.User
 import ru.tinkoff.android.coursework.model.response.AllUsersListResponse
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnUserItemClickListener
 import ru.tinkoff.android.coursework.ui.screens.adapters.PeopleListAdapter
-import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
 
-internal class PeopleFragment: Fragment(), OnUserItemClickListener {
+internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickListener {
 
     private lateinit var binding: FragmentPeopleBinding
-    private lateinit var compositeDisposable: CompositeDisposable
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ) : View {
         binding = FragmentPeopleBinding.inflate(inflater,container,false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        compositeDisposable = CompositeDisposable()
         configurePeopleListRecycler()
     }
 
@@ -73,34 +66,30 @@ internal class PeopleFragment: Fragment(), OnUserItemClickListener {
         NetworkService.getZulipJsonApi().getAllUsers()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe (object : SingleObserver<AllUsersListResponse> {
+            .subscribeBy(
+                onSuccess = {
+                    adapter.apply {
+                        showShimmer = false
+                        users = it.members
+                        users.forEach { user ->
+                            getUserPresence(user)
+                        }
+                        notifyDataSetChanged()
+                    }
+                },
+                onError = {
+                    adapter.apply {
+                        showShimmer = false
+                        users = listOf()
+                        notifyDataSetChanged()
+                    }
 
-                override fun onSubscribe(d: Disposable) {
-                    compositeDisposable.add(d)
-                }
-
-                override fun onError(e: Throwable) {
-                    adapter.showShimmer = false
-                    adapter.users = mutableListOf()
-                    adapter.notifyDataSetChanged()
-
-                    showSnackBarWithRetryAction(
-                        binding.root,
-                        "People not found",
+                    binding.root.showSnackBarWithRetryAction(
+                        resources.getString(R.string.people_not_found_error_text),
                         Snackbar.LENGTH_LONG
                     ) { configurePeopleListRecycler() }
                 }
-
-                override fun onSuccess(t: AllUsersListResponse) {
-                    adapter.showShimmer = false
-                    adapter.users = t.members
-
-                    adapter.users.forEach { user ->
-                        getUserPresence(user)
-                    }
-                    adapter.notifyDataSetChanged()
-                }
-            })
+            ).addTo(compositeDisposable)
 
         binding.peopleList.adapter = adapter
     }

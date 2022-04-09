@@ -5,12 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.findFragment
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.snackbar.Snackbar
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
@@ -20,12 +18,10 @@ import ru.tinkoff.android.coursework.databinding.FragmentAllChannelsBinding
 import ru.tinkoff.android.coursework.model.Topic
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnTopicItemClickListener
-import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
 
-internal class AllChannelsFragment: Fragment(), OnTopicItemClickListener {
+internal class AllChannelsFragment: CompositeDisposableFragment(), OnTopicItemClickListener {
 
-    private lateinit var binding: FragmentAllChannelsBinding
-    private lateinit var compositeDisposable: CompositeDisposable
+    lateinit var binding: FragmentAllChannelsBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,23 +34,23 @@ internal class AllChannelsFragment: Fragment(), OnTopicItemClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        compositeDisposable = CompositeDisposable()
-        configureAllChannelsRecyclerAdapter()
+        configureChannelListRecycler()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        compositeDisposable.dispose()
+    override fun onTopicItemClick(topic: Topic) {
+        val bundle = bundleOf(
+            ChatActivity.CHANNEL_NAME_KEY to topic.channelName,
+            ChatActivity.TOPIC_NAME_KEY to topic.name
+        )
+        NavHostFragment.findNavController(binding.root.findFragment())
+            .navigate(R.id.action_nav_channels_to_nav_chat, bundle)
     }
 
-    override fun onTopicItemClick(topicItemView: View?, topic: Topic, channelName: String) {
-        topicItemView?.setOnClickListener {
-            val bundle = bundleOf(
-                ChatActivity.TOPIC_NAME_KEY to topic.name,
-                ChatActivity.CHANNEL_NAME_KEY to channelName
-            )
-            NavHostFragment.findNavController(binding.root.findFragment())
-                .navigate(R.id.action_nav_channels_to_nav_chat, bundle)
+    fun updateChannels(newChannels: List<Channel>) {
+        (binding.allChannelsList.adapter as ChannelsListAdapter).apply {
+            showShimmer = false
+            channels = newChannels
+            notifyDataSetChanged()
         }
     }
 
@@ -66,20 +62,23 @@ internal class AllChannelsFragment: Fragment(), OnTopicItemClickListener {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy (
                 onSuccess = {
-                    adapter.showShimmer = false
-                    adapter.channels = it.streams
-                    adapter.notifyDataSetChanged()
+                    adapter.apply {
+                        showShimmer = false
+                        channels = it
+                        notifyDataSetChanged()
+                    }
                 },
                 onError = {
-                    adapter.showShimmer = false
-                    adapter.channels = mutableListOf()
-                    adapter.notifyDataSetChanged()
+                    adapter.apply {
+                        showShimmer = false
+                        channels = listOf()
+                        notifyDataSetChanged()
+                    }
 
-                    showSnackBarWithRetryAction(
-                        binding.root,
-                        "Channels not found",
+                    binding.root.showSnackBarWithRetryAction(
+                        resources.getString(R.string.channels_not_found_error_text),
                         Snackbar.LENGTH_LONG
-                    ) { configureAllChannelsRecyclerAdapter() }
+                    ) { configureChannelListRecycler() }
                 }
             )
             .addTo(compositeDisposable)

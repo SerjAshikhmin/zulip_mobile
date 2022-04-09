@@ -1,10 +1,13 @@
 package ru.tinkoff.android.coursework.testdata
 
+import io.reactivex.Single
 import ru.tinkoff.android.coursework.model.EmojiWithCount
 import ru.tinkoff.android.coursework.model.Message
 import ru.tinkoff.android.coursework.model.Reaction
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 // поиск списка эмоджи для сообщения
 // находит сообщение по id, для каждой реакции подсчитывает ее количество в сообщении
@@ -30,7 +33,16 @@ internal fun getEmojisForMessage(messageId: Long): List<EmojiWithCount> {
     }
 }
 
-internal var messagesTestData = mutableListOf<Message>(
+// метод-обертка для выбрасывания ошибки и задержки
+internal fun messagesTestDataWithDelay(): Single<MutableList<Any>> {
+    return Single.fromCallable {
+        if (Random.nextBoolean()) throw Exception()
+        messagesTestData
+    }
+        .delay(1000, TimeUnit.MILLISECONDS, true)
+}
+
+internal var messagesTestData = mutableListOf<Any>(
     /*LocalDate.now().minusDays(1),
     Message(
         id = 1,

@@ -97,4 +97,5 @@ internal class PeopleListAdapter(private val userItemClickListener: OnUserItemCl
 
         const val SHIMMER_ITEM_COUNT = 2
     }
+
 }

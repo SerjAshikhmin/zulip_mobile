@@ -70,8 +70,9 @@ internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemC
                     R.color.teal_500
                 )
             )
-            this@TopicItemAdapter.topicItemClickListener
-                .onTopicItemClick(binding.root, topic, channelName)
+            binding.root.setOnClickListener {
+                this@TopicItemAdapter.topicItemClickListener.onTopicItemClick(topic, channelName)
+            }
         }
     }
 

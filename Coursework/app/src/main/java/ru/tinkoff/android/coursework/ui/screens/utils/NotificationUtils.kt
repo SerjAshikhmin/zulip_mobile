@@ -2,16 +2,15 @@ package ru.tinkoff.android.coursework.ui.screens.utils
 
 import android.view.View
 import com.google.android.material.snackbar.Snackbar
+import ru.tinkoff.android.coursework.R
 
-internal fun showSnackBarWithRetryAction(
-    view: View,
+internal fun View.showSnackBarWithRetryAction(
     text: CharSequence,
     duration: Int,
     action: () -> Unit
 ) {
-    val snackbar = Snackbar.make(view, text, duration)
-    snackbar.setAction("Retry") {
-        action()
+    Snackbar.make(this, text, duration).apply {
+        setAction(context.getString(R.string.retry_action_snack_bar_text)) { action() }
     }
-    snackbar.show()
+        .show()
 }

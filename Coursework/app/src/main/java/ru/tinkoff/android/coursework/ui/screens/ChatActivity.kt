@@ -26,7 +26,6 @@ import ru.tinkoff.android.coursework.ui.screens.adapters.ChatMessagesAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnBottomSheetChooseEmojiListener
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnEmojiClickListener
 import ru.tinkoff.android.coursework.ui.screens.utils.getDateTimeFromTimestamp
-import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
 
 internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
     OnBottomSheetChooseEmojiListener {
@@ -208,10 +207,8 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
                     if (isLastChanged) adapter.notifyItemChanged(messages.size - 1)
                 },
                 onError = {
-                    it.printStackTrace()
-                    showSnackBarWithRetryAction(
-                        binding.root,
-                        "Message not found",
+                    binding.root.showSnackBarWithRetryAction(
+                        resources.getString(R.string.messages_not_found_error_text),
                         Snackbar.LENGTH_LONG
                     ) { configureChatRecycler() }
                 }
@@ -266,4 +263,5 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
         const val TOPIC_NAME_KEY = "topicName"
         const val TOPIC_NARROW_OPERATOR_KEY = "topic"
     }
+
 }
