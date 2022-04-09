@@ -89,7 +89,9 @@ internal class PeopleListAdapter(private val userItemClickListener: OnUserItemCl
                 else -> ColorStateList.valueOf(ContextCompat.getColor(binding.root.context, R.color.red_500))
             }
 
-            this@PeopleListAdapter.userItemClickListener.onUserItemClick(binding.root, user)
+            binding.root.setOnClickListener {
+                this@PeopleListAdapter.userItemClickListener.onUserItemClick(user)
+            }
         }
     }
 

@@ -16,5 +16,9 @@
     <string name="people_not_found_error_text">People not found</string>
     <string name="messages_not_found_error_text">Messages not found</string>
     <string name="search_channels_error_text">Search channels error</string>
+    <string name="adding_emoji_error_text">Adding emoji error</string>
+    <string name="removing_emoji_error_text">Removing emoji error</string>
+    <string name="sending_message_error_text">Sending message error</string>
+    <string name="topics_not_found_error_text">Topics not found</string>
     <string name="retry_action_snack_bar_text">Retry</string>
 </resources>

@@ -18,6 +18,7 @@ import ru.tinkoff.android.coursework.databinding.FragmentSubscribedBinding
 import ru.tinkoff.android.coursework.model.Topic
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnTopicItemClickListener
+import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
 
 internal class SubscribedFragment: CompositeDisposableFragment(), OnTopicItemClickListener {
 
@@ -37,9 +38,9 @@ internal class SubscribedFragment: CompositeDisposableFragment(), OnTopicItemCli
         configureSubscribedChannelsRecyclerAdapter()
     }
 
-    override fun onTopicItemClick(topic: Topic) {
+    override fun onTopicItemClick(topic: Topic, channelName: String) {
         val bundle = bundleOf(
-            ChatActivity.CHANNEL_NAME_KEY to topic.channelName,
+            ChatActivity.CHANNEL_NAME_KEY to channelName,
             ChatActivity.TOPIC_NAME_KEY to topic.name
         )
         NavHostFragment.findNavController(binding.root.findFragment())

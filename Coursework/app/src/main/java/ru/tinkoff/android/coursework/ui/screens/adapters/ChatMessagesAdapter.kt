@@ -16,9 +16,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.model.EmojiWithCount
-import ru.tinkoff.android.coursework.testdata.SELF_USER_ID
 import ru.tinkoff.android.coursework.model.Message
 import ru.tinkoff.android.coursework.model.Reaction
+import ru.tinkoff.android.coursework.model.SELF_USER_ID
 import ru.tinkoff.android.coursework.ui.customviews.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -28,9 +28,7 @@ internal class ChatMessagesAdapter(
     private val dialog: EmojiBottomSheetDialog,
     private val chatRecycler: RecyclerView,
     private val emojiClickListener: OnEmojiClickListener,
-
-    )
-    : RecyclerView.Adapter<ChatMessagesAdapter.BaseViewHolder>() {
+) : RecyclerView.Adapter<ChatMessagesAdapter.BaseViewHolder>() {
 
     var channelName = ""
     var topicName = ""

@@ -3,6 +3,8 @@ package ru.tinkoff.android.coursework.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+internal const val SELF_USER_ID = 491498L
+
 @Serializable
 internal data class User (
 

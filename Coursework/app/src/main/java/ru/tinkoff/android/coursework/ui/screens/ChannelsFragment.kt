@@ -13,6 +13,7 @@ import androidx.core.widget.doAfterTextChanged
 import com.google.android.material.tabs.TabLayoutMediator
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import ru.tinkoff.android.coursework.R
@@ -78,12 +79,15 @@ internal class ChannelsFragment: CompositeDisposableFragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onSuccess = {
-                    (binding.pager.adapter as ChannelsListPagerAdapter)
-                        .allChannelsFragment.updateChannels(
+                    val channelsListPagerAdapter = (binding.pager.adapter as ChannelsListPagerAdapter)
+
+                    if (channelsListPagerAdapter.isAllChannelsFragment()) {
+                        channelsListPagerAdapter.allChannelsFragment.updateChannels(
                             it.streams.filter { channel ->
                                 channel.name.lowercase().contains(query.lowercase())
                             }
                         )
+                    }
                 },
                 onError = {
                     (binding.pager.adapter as ChannelsListPagerAdapter)

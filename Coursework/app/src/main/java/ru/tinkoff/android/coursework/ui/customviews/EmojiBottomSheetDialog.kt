@@ -12,7 +12,7 @@ import androidx.core.view.children
 import androidx.core.widget.NestedScrollView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.testdata.EmojiCodes
+import ru.tinkoff.android.coursework.data.EmojiCodes
 import ru.tinkoff.android.coursework.model.EmojiWithCount
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnBottomSheetChooseEmojiListener
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnEmojiClickListener

@@ -77,9 +77,9 @@ internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicIt
         : RecyclerView.ViewHolder(binding.root) {
 
         internal val channelName = binding.channelName
-        internal val arrowIcon = binding.arrowIcon
         internal val shimmedText = binding.shimmedText
         internal val shimmerFrameLayout = binding.shimmerLayout
+        private val arrowIcon = binding.arrowIcon
         private var isOpened = false
 
         fun bind(channel: Channel) {
@@ -109,12 +109,11 @@ internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicIt
                         },
                         onError = {
                             topItemAdapter.showShimmer = false
-                            topItemAdapter.topics = mutableListOf()
+                            topItemAdapter.topics = listOf()
                             topItemAdapter.notifyDataSetChanged()
 
-                            showSnackBarWithRetryAction(
-                                binding.root,
-                                "Topics not found",
+                            binding.root.showSnackBarWithRetryAction(
+                                binding.root.resources.getString(R.string.sending_message_error_text),
                                 Snackbar.LENGTH_LONG
                             ) { configureTopicItemAdapter(channel) }
                         }
@@ -124,6 +123,7 @@ internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicIt
                 arrowIcon.setImageResource(R.drawable.ic_arrow_up)
                 isOpened = true
             } else {
+                topItemAdapter.showShimmer = false
                 topItemAdapter.topics = listOf()
                 topItemAdapter.notifyDataSetChanged()
                 arrowIcon.setImageResource(R.drawable.ic_arrow_down)

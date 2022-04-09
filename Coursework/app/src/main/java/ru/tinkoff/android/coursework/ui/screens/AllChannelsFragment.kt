@@ -15,9 +15,11 @@ import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.FragmentAllChannelsBinding
+import ru.tinkoff.android.coursework.model.Channel
 import ru.tinkoff.android.coursework.model.Topic
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnTopicItemClickListener
+import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
 
 internal class AllChannelsFragment: CompositeDisposableFragment(), OnTopicItemClickListener {
 
@@ -34,12 +36,12 @@ internal class AllChannelsFragment: CompositeDisposableFragment(), OnTopicItemCl
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        configureChannelListRecycler()
+        configureAllChannelsRecyclerAdapter()
     }
 
-    override fun onTopicItemClick(topic: Topic) {
+    override fun onTopicItemClick(topic: Topic, channelName: String) {
         val bundle = bundleOf(
-            ChatActivity.CHANNEL_NAME_KEY to topic.channelName,
+            ChatActivity.CHANNEL_NAME_KEY to channelName,
             ChatActivity.TOPIC_NAME_KEY to topic.name
         )
         NavHostFragment.findNavController(binding.root.findFragment())
@@ -64,7 +66,7 @@ internal class AllChannelsFragment: CompositeDisposableFragment(), OnTopicItemCl
                 onSuccess = {
                     adapter.apply {
                         showShimmer = false
-                        channels = it
+                        channels = it.streams
                         notifyDataSetChanged()
                     }
                 },
@@ -78,7 +80,7 @@ internal class AllChannelsFragment: CompositeDisposableFragment(), OnTopicItemCl
                     binding.root.showSnackBarWithRetryAction(
                         resources.getString(R.string.channels_not_found_error_text),
                         Snackbar.LENGTH_LONG
-                    ) { configureChannelListRecycler() }
+                    ) { configureAllChannelsRecyclerAdapter() }
                 }
             )
             .addTo(compositeDisposable)

@@ -20,12 +20,13 @@ import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
 import ru.tinkoff.android.coursework.model.Message
 import ru.tinkoff.android.coursework.model.request.NarrowRequest
 import ru.tinkoff.android.coursework.model.response.SendMessageResponse
-import ru.tinkoff.android.coursework.testdata.EmojiCodes
+import ru.tinkoff.android.coursework.data.EmojiCodes
 import ru.tinkoff.android.coursework.ui.customviews.*
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChatMessagesAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnBottomSheetChooseEmojiListener
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnEmojiClickListener
 import ru.tinkoff.android.coursework.ui.screens.utils.getDateTimeFromTimestamp
+import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
 
 internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
     OnBottomSheetChooseEmojiListener {
@@ -83,9 +84,8 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnError {
-                showSnackBarWithRetryAction(
-                    binding.root,
-                    "Adding emoji error",
+                binding.root.showSnackBarWithRetryAction(
+                    resources.getString(R.string.adding_emoji_error_text),
                     Snackbar.LENGTH_LONG
                 ) { addReaction(messageId, emojiName) }
             }
@@ -101,9 +101,8 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnError {
-                showSnackBarWithRetryAction(
-                    binding.root,
-                    "Removing emoji error",
+                binding.root.showSnackBarWithRetryAction(
+                    resources.getString(R.string.removing_emoji_error_text),
                     Snackbar.LENGTH_LONG
                 ) { removeReaction(messageId, emojiName) }
             }
@@ -248,9 +247,8 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
                 getMessagesForChat()
             }
             .doOnError {
-                showSnackBarWithRetryAction(
-                    binding.root,
-                    "Sending message error",
+                binding.root.showSnackBarWithRetryAction(
+                    resources.getString(R.string.sending_message_error_text),
                     Snackbar.LENGTH_LONG
                 ) { sendMessage(content, stream, topic) }
             }

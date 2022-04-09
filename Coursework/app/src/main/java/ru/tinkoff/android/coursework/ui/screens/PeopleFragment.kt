@@ -16,9 +16,9 @@ import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.FragmentPeopleBinding
 import ru.tinkoff.android.coursework.model.User
-import ru.tinkoff.android.coursework.model.response.AllUsersListResponse
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnUserItemClickListener
 import ru.tinkoff.android.coursework.ui.screens.adapters.PeopleListAdapter
+import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
 
 internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickListener {
 
@@ -43,21 +43,16 @@ internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickLis
         compositeDisposable.dispose()
     }
 
-    override fun onUserItemClick(
-        topicItemView: View?,
-        user: User
-    ) {
-        topicItemView?.setOnClickListener {
-            val bundle = bundleOf(
-                ProfileFragment.USER_ID_KEY to user.id,
-                ProfileFragment.USERNAME_KEY to user.name,
-                ProfileFragment.EMAIL_KEY to user.email,
-                ProfileFragment.AVATAR_KEY to user.avatarUrl,
-                ProfileFragment.USER_PRESENCE_KEY to user.presence
-            )
-            NavHostFragment.findNavController(binding.root.findFragment())
-                .navigate(R.id.action_nav_people_to_nav_profile, bundle)
-        }
+    override fun onUserItemClick(user: User) {
+        val bundle = bundleOf(
+            ProfileFragment.USER_ID_KEY to user.id,
+            ProfileFragment.USERNAME_KEY to user.name,
+            ProfileFragment.EMAIL_KEY to user.email,
+            ProfileFragment.AVATAR_KEY to user.avatarUrl,
+            ProfileFragment.USER_PRESENCE_KEY to user.presence
+        )
+        NavHostFragment.findNavController(binding.root.findFragment())
+            .navigate(R.id.action_nav_people_to_nav_profile, bundle)
     }
 
     private fun configurePeopleListRecycler() {
