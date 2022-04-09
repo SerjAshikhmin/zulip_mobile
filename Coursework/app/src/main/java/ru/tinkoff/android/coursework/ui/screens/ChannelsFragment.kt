@@ -65,7 +65,7 @@ internal class ChannelsFragment: CompositeDisposableFragment() {
         queryEvents
             .map { query -> query.trim() }
             .distinctUntilChanged()
-            .debounce(500, TimeUnit.MILLISECONDS)
+            .debounce(DELAY_BETWEEN_ENTERING_CHARACTERS, TimeUnit.MILLISECONDS)
             .subscribeOn(Schedulers.io())
             .switchMapSingle { query ->
                 Single.fromCallable {
@@ -80,23 +80,15 @@ internal class ChannelsFragment: CompositeDisposableFragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onNext = {
-                    val allChannelsRecycler = (binding.pager.adapter as ChannelsListPagerAdapter)
-                        .allChannelsFragment.binding.allChannelsList
-                    (allChannelsRecycler.adapter as ChannelsListAdapter).apply {
-                        showShimmer = false
-                        channels = it
-                        notifyDataSetChanged()
-                    }
+                    (binding.pager.adapter as ChannelsListPagerAdapter)
+                        .allChannelsFragment.updateChannels(it)
                 },
                 onError = {
-                    val allChannelsRecycler = (binding.pager.adapter as ChannelsListPagerAdapter)
-                        .allChannelsFragment.binding.allChannelsList
-                    (allChannelsRecycler.adapter as ChannelsListAdapter).apply {
-                        showShimmer = false
-                        channels = listOf()
-                        notifyDataSetChanged()
-                    }
+                    (binding.pager.adapter as ChannelsListPagerAdapter)
+                        .allChannelsFragment.updateChannels(listOf())
+
                     subscribeOnSearchChannelsEvents()
+
                     Toast.makeText(
                         context,
                         resources.getString(R.string.search_channels_error_text),
@@ -122,6 +114,11 @@ internal class ChannelsFragment: CompositeDisposableFragment() {
             )
             tab.text = tabNames[position]
         }.attach()
+    }
+
+    companion object {
+
+        private const val DELAY_BETWEEN_ENTERING_CHARACTERS = 500L
     }
 
 }

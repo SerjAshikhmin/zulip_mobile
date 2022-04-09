@@ -4,6 +4,6 @@ import ru.tinkoff.android.coursework.model.Topic
 
 internal interface OnTopicItemClickListener {
 
-    fun onTopicItemClickListener(topic: Topic)
+    fun onTopicItemClick(topic: Topic)
 
 }

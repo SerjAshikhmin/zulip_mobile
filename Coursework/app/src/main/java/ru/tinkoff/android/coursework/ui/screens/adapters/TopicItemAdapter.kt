@@ -60,7 +60,7 @@ internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemC
                 )
             )
             binding.root.setOnClickListener {
-                this@TopicItemAdapter.topicItemClickListener.onTopicItemClickListener(topic)
+                this@TopicItemAdapter.topicItemClickListener.onTopicItemClick(topic)
             }
         }
     }

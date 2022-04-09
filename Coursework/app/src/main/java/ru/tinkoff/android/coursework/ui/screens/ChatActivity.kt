@@ -81,8 +81,7 @@ internal class ChatActivity : AppCompatActivity() {
             .subscribeBy (
                 onSuccess = { adapter.messages = it },
                 onError = {
-                    showSnackBarWithRetryAction(
-                        binding.root,
+                    binding.root.showSnackBarWithRetryAction(
                         resources.getString(R.string.messages_not_found_error_text),
                         Snackbar.LENGTH_LONG
                     ) { configureChatRecycler() }

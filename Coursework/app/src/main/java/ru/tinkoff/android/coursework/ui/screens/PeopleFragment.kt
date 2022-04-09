@@ -71,8 +71,7 @@ internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickLis
                         notifyDataSetChanged()
                     }
 
-                    showSnackBarWithRetryAction(
-                        binding.root,
+                    binding.root.showSnackBarWithRetryAction(
                         resources.getString(R.string.people_not_found_error_text),
                         Snackbar.LENGTH_LONG
                     ) { configurePeopleListRecycler() }

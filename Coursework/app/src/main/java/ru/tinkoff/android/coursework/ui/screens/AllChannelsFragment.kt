@@ -15,6 +15,7 @@ import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.channelsWithTestErrorAndDelay
 import ru.tinkoff.android.coursework.databinding.FragmentAllChannelsBinding
+import ru.tinkoff.android.coursework.model.Channel
 import ru.tinkoff.android.coursework.model.Topic
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnTopicItemClickListener
@@ -37,13 +38,21 @@ internal class AllChannelsFragment: CompositeDisposableFragment(), OnTopicItemCl
         configureChannelListRecycler()
     }
 
-    override fun onTopicItemClickListener(topic: Topic) {
+    override fun onTopicItemClick(topic: Topic) {
         val bundle = bundleOf(
             ChatActivity.CHANNEL_NAME_KEY to topic.channelName,
             ChatActivity.TOPIC_NAME_KEY to topic.name
         )
         NavHostFragment.findNavController(binding.root.findFragment())
             .navigate(R.id.action_nav_channels_to_nav_chat, bundle)
+    }
+
+    fun updateChannels(newChannels: List<Channel>) {
+        (binding.allChannelsList.adapter as ChannelsListAdapter).apply {
+            showShimmer = false
+            channels = newChannels
+            notifyDataSetChanged()
+        }
     }
 
     private fun configureChannelListRecycler() {
@@ -67,8 +76,7 @@ internal class AllChannelsFragment: CompositeDisposableFragment(), OnTopicItemCl
                         notifyDataSetChanged()
                     }
 
-                    showSnackBarWithRetryAction(
-                        binding.root,
+                    binding.root.showSnackBarWithRetryAction(
                         resources.getString(R.string.channels_not_found_error_text),
                         Snackbar.LENGTH_LONG
                     ) { configureChannelListRecycler() }

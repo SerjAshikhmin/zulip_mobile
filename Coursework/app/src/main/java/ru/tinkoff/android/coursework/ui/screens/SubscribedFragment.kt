@@ -37,7 +37,7 @@ internal class SubscribedFragment: CompositeDisposableFragment(), OnTopicItemCli
         configureChannelListRecycler()
     }
 
-    override fun onTopicItemClickListener(topic: Topic) {
+    override fun onTopicItemClick(topic: Topic) {
         val bundle = bundleOf(
             ChatActivity.CHANNEL_NAME_KEY to topic.channelName,
             ChatActivity.TOPIC_NAME_KEY to topic.name
@@ -67,8 +67,7 @@ internal class SubscribedFragment: CompositeDisposableFragment(), OnTopicItemCli
                         notifyDataSetChanged()
                     }
 
-                    showSnackBarWithRetryAction(
-                        binding.root,
+                    binding.root.showSnackBarWithRetryAction(
                         resources.getString(R.string.channels_not_found_error_text),
                         Snackbar.LENGTH_LONG
                     ) { configureChannelListRecycler() }
