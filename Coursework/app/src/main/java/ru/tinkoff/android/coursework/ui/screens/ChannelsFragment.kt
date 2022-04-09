@@ -1,31 +1,32 @@
 package ru.tinkoff.android.coursework.ui.screens
 
+import android.content.Context
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
-import androidx.core.widget.addTextChangedListener
-import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.RecyclerView
+import androidx.core.widget.doAfterTextChanged
 import com.google.android.material.tabs.TabLayoutMediator
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.getChannelsByPartOfName
+import ru.tinkoff.android.coursework.data.channelsTestData
 import ru.tinkoff.android.coursework.databinding.FragmentChannelsBinding
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListPagerAdapter
 import java.util.concurrent.TimeUnit
 
-internal class ChannelsFragment: Fragment() {
+internal class ChannelsFragment: CompositeDisposableFragment() {
 
     private lateinit var binding: FragmentChannelsBinding
-    private lateinit var compositeDisposable: CompositeDisposable
     private val queryEvents: PublishSubject<String> = PublishSubject.create()
 
     override fun onCreateView(
@@ -39,23 +40,25 @@ internal class ChannelsFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        compositeDisposable = CompositeDisposable()
         configureViewPager()
 
-        val channelsSearch = binding.searchEditText
-        channelsSearch.addTextChangedListener { text ->
-            val allChannelsTab = binding.tabLayout.getTabAt(1)
-            allChannelsTab?.select()
-            val query = text?.toString().orEmpty()
-            queryEvents.onNext(query)
+        // задержка, чтобы листенер не отрабатывал на пустом запросе при создании фрагмента
+        Handler(Looper.getMainLooper()).postDelayed({
+            binding.searchEditText.doAfterTextChanged { text ->
+                val allChannelsTab = binding.tabLayout.getTabAt(1)
+                allChannelsTab?.select()
+                val query = text?.toString().orEmpty()
+                queryEvents.onNext(query)
+            }
+        }, 100)
+
+        binding.searchIcon.setOnClickListener {
+            binding.searchEditText.requestFocus()
+            val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(binding.searchEditText, InputMethodManager.SHOW_IMPLICIT)
         }
 
         subscribeOnSearchChannelsEvents()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        compositeDisposable.dispose()
     }
 
     private fun subscribeOnSearchChannelsEvents() {
@@ -63,20 +66,43 @@ internal class ChannelsFragment: Fragment() {
             .map { query -> query.trim() }
             .distinctUntilChanged()
             .debounce(500, TimeUnit.MILLISECONDS)
-            .observeOn(Schedulers.io())
+            .subscribeOn(Schedulers.io())
             .switchMapSingle { query ->
-                getChannelsByPartOfName(query)
+                Single.fromCallable {
+                    if (query.isBlank()) {
+                        channelsTestData
+                    } else {
+                        channelsTestData
+                            .filter { it.name.lowercase().contains(query.lowercase()) }
+                    }
+                }
             }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onNext = {
-                    val allChannelsRecycler = view?.findViewById<RecyclerView>(R.id.all_channels_list)
-                    if (allChannelsRecycler?.adapter != null) {
-                        (allChannelsRecycler.adapter as ChannelsListAdapter).channels = it
+                    val allChannelsRecycler = (binding.pager.adapter as ChannelsListPagerAdapter)
+                        .allChannelsFragment.binding.allChannelsList
+                    (allChannelsRecycler.adapter as ChannelsListAdapter).apply {
+                        showShimmer = false
+                        channels = it
+                        notifyDataSetChanged()
                     }
                 },
                 onError = {
-                    Toast.makeText(context, "Search channels error", Toast.LENGTH_LONG).show()
+                    val allChannelsRecycler = (binding.pager.adapter as ChannelsListPagerAdapter)
+                        .allChannelsFragment.binding.allChannelsList
+                    (allChannelsRecycler.adapter as ChannelsListAdapter).apply {
+                        showShimmer = false
+                        channels = listOf()
+                        notifyDataSetChanged()
+                    }
+                    subscribeOnSearchChannelsEvents()
+                    Toast.makeText(
+                        context,
+                        resources.getString(R.string.search_channels_error_text),
+                        Toast.LENGTH_LONG
+                    )
+                        .show()
                 }
             )
             .addTo(compositeDisposable)

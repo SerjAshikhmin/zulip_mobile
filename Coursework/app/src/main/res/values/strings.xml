@@ -18,5 +18,4 @@
     <string name="messages_not_found_error_text">Messages not found</string>
     <string name="search_channels_error_text">Search channels error</string>
     <string name="retry_action_snack_bar_text">Retry</string>
-    <string name="text_while_shimmer_showing">text while shimmer showing</string>
 </resources>

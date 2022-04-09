@@ -7,10 +7,19 @@ import ru.tinkoff.android.coursework.ui.screens.SubscribedFragment
 
 internal class ChannelsListPagerAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
 
+    lateinit var subscribedFragment: SubscribedFragment
+    lateinit var allChannelsFragment: AllChannelsFragment
+
     override fun createFragment(position: Int): Fragment {
         return when (position) {
-            0 -> SubscribedFragment()
-            else -> AllChannelsFragment()
+            0 -> {
+                subscribedFragment = SubscribedFragment()
+                subscribedFragment
+            }
+            else -> {
+                allChannelsFragment = AllChannelsFragment()
+                allChannelsFragment
+            }
         }
     }
 

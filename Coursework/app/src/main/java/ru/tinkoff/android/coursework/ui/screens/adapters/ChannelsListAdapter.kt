@@ -1,6 +1,7 @@
 package ru.tinkoff.android.coursework.ui.screens.adapters
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
@@ -39,12 +40,13 @@ internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicIt
 
     override fun onBindViewHolder(holder: ChannelListViewHolder, position: Int) {
         if (showShimmer) {
+            holder.shimmedText.visibility = View.VISIBLE
             holder.shimmerFrameLayout.startShimmer()
         } else {
             holder.shimmerFrameLayout.stopShimmer()
             holder.shimmerFrameLayout.setShimmer(null)
-            holder.channelName.foreground = null
-            holder.arrowIcon.foreground = null
+            holder.shimmedText.visibility = View.GONE
+            holder.channelName.visibility = View.VISIBLE
 
             val channel = channels[position]
             holder.initChannelListener(channel)
@@ -60,6 +62,7 @@ internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicIt
 
         internal val channelName = binding.channelName
         internal val arrowIcon = binding.arrowIcon
+        internal val shimmedText = binding.shimmedText
         internal val shimmerFrameLayout = binding.shimmerLayout
         private var isOpened = false
 

@@ -5,15 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.findFragment
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.snackbar.Snackbar
-import io.reactivex.Single
-import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.usersWithTestErrorAndDelay
@@ -22,10 +19,9 @@ import ru.tinkoff.android.coursework.model.User
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnUserItemClickListener
 import ru.tinkoff.android.coursework.ui.screens.adapters.PeopleListAdapter
 
-internal class PeopleFragment: Fragment(), OnUserItemClickListener {
+internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickListener {
 
     private lateinit var binding: FragmentPeopleBinding
-    private var compositeDisposable: CompositeDisposable = CompositeDisposable()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,11 +35,6 @@ internal class PeopleFragment: Fragment(), OnUserItemClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         configurePeopleListRecycler()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        compositeDisposable.dispose()
     }
 
     override fun onTopicItemClickListener(topicItemView: View?, user: User) {
@@ -65,16 +56,18 @@ internal class PeopleFragment: Fragment(), OnUserItemClickListener {
         usersWithTestErrorAndDelay()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe (object : SingleObserver<List<User>> {
-
-                override fun onSubscribe(d: Disposable) {
-                    compositeDisposable.add(d)
-                }
-
-                override fun onError(e: Throwable) {
+            .subscribeBy(
+                onSuccess = {
                     adapter.apply {
                         showShimmer = false
-                        users = mutableListOf()
+                        this.users = it
+                        notifyDataSetChanged()
+                    }
+                },
+                onError = {
+                    adapter.apply {
+                        showShimmer = false
+                        users = listOf()
                         notifyDataSetChanged()
                     }
 
@@ -84,15 +77,7 @@ internal class PeopleFragment: Fragment(), OnUserItemClickListener {
                         Snackbar.LENGTH_LONG
                     ) { configurePeopleListRecycler() }
                 }
-
-                override fun onSuccess(users: List<User>) {
-                    adapter.apply {
-                        showShimmer = false
-                        this.users = users
-                        notifyDataSetChanged()
-                    }
-                }
-            })
+            ).addTo(compositeDisposable)
 
         binding.peopleList.adapter = adapter
     }

@@ -5,13 +5,6 @@ import ru.tinkoff.android.coursework.model.Channel
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
-internal fun getChannelsByPartOfName(query: String): Single<List<Channel>> {
-    val resultList = if (query.isBlank()) channelsTestData else {
-        channelsTestData.filter { it.name.lowercase().contains(query.lowercase()) }
-    }
-    return Single.just(resultList)
-}
-
 // метод-обертка для выбрасывания ошибки и задержки
 internal fun channelsWithTestErrorAndDelay(): Single<List<Channel>> {
     return Single.fromCallable {
