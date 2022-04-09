@@ -5,17 +5,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.findFragment
 import androidx.navigation.fragment.NavHostFragment
+import com.google.android.material.snackbar.Snackbar
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.usersTestData
+import ru.tinkoff.android.coursework.data.usersWithTestErrorAndDelay
 import ru.tinkoff.android.coursework.databinding.FragmentPeopleBinding
 import ru.tinkoff.android.coursework.model.User
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnUserItemClickListener
 import ru.tinkoff.android.coursework.ui.screens.adapters.PeopleListAdapter
 
-internal class PeopleFragment: Fragment(), OnUserItemClickListener {
+internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickListener {
 
     private lateinit var binding: FragmentPeopleBinding
 
@@ -23,7 +27,7 @@ internal class PeopleFragment: Fragment(), OnUserItemClickListener {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ) : View {
         binding = FragmentPeopleBinding.inflate(inflater,container,false)
         return binding.root
     }
@@ -47,7 +51,34 @@ internal class PeopleFragment: Fragment(), OnUserItemClickListener {
     }
 
     private fun configurePeopleListRecycler() {
-        binding.peopleList.adapter = PeopleListAdapter(this).apply { users = usersTestData }
+        val adapter = PeopleListAdapter(this)
+
+        usersWithTestErrorAndDelay()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(
+                onSuccess = {
+                    adapter.apply {
+                        showShimmer = false
+                        this.users = it
+                        notifyDataSetChanged()
+                    }
+                },
+                onError = {
+                    adapter.apply {
+                        showShimmer = false
+                        users = listOf()
+                        notifyDataSetChanged()
+                    }
+
+                    binding.root.showSnackBarWithRetryAction(
+                        resources.getString(R.string.people_not_found_error_text),
+                        Snackbar.LENGTH_LONG
+                    ) { configurePeopleListRecycler() }
+                }
+            ).addTo(compositeDisposable)
+
+        binding.peopleList.adapter = adapter
     }
 
 }

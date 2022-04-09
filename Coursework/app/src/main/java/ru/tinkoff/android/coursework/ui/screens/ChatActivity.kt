@@ -8,9 +8,16 @@ import android.widget.LinearLayout
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.SELF_USER_ID
 import ru.tinkoff.android.coursework.data.messagesTestData
+import ru.tinkoff.android.coursework.data.messagesTestDataWithDelay
 import ru.tinkoff.android.coursework.data.topicsTestData
 import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
 import ru.tinkoff.android.coursework.model.Message
@@ -25,6 +32,7 @@ internal class ChatActivity : AppCompatActivity() {
     private lateinit var dialog: EmojiBottomSheetDialog
     private lateinit var chatRecycler: RecyclerView
     private lateinit var adapter: ChatMessagesAdapter
+    private lateinit var compositeDisposable: CompositeDisposable
     private var topic: Topic = topicsTestData[0]
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,10 +40,16 @@ internal class ChatActivity : AppCompatActivity() {
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        compositeDisposable = CompositeDisposable()
         createAndConfigureBottomSheet()
         configureEnterMessageSection()
         configureChatRecycler()
         configureToolbar()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        compositeDisposable.dispose()
     }
 
     private fun configureToolbar() {
@@ -59,7 +73,23 @@ internal class ChatActivity : AppCompatActivity() {
         val layoutManager = LinearLayoutManager(this)
         layoutManager.stackFromEnd = true
         chatRecycler.layoutManager = layoutManager
-        chatRecycler.adapter = ChatMessagesAdapter(dialog).apply { messages = messagesTestData }
+        adapter = ChatMessagesAdapter(dialog)
+
+        messagesTestDataWithDelay()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy (
+                onSuccess = { adapter.messages = it },
+                onError = {
+                    binding.root.showSnackBarWithRetryAction(
+                        resources.getString(R.string.messages_not_found_error_text),
+                        Snackbar.LENGTH_LONG
+                    ) { configureChatRecycler() }
+                }
+            )
+            .addTo(compositeDisposable)
+
+        chatRecycler.adapter = adapter
     }
 
     private fun configureEnterMessageSection() {
@@ -116,4 +146,5 @@ internal class ChatActivity : AppCompatActivity() {
         const val CHANNEL_NAME_KEY = "channelName"
         const val TOPIC_NAME_KEY = "topicName"
     }
+
 }

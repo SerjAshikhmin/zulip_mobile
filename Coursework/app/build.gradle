@@ -40,8 +40,15 @@ dependencies {
     implementation "androidx.core:core-ktx:$coreKtxVersion"
     implementation "androidx.appcompat:appcompat:$appCompatVersion"
     implementation "com.google.android.material:material:$materialVersion"
+    implementation "com.facebook.shimmer:shimmer:$shimmerVersion"
     implementation "androidx.constraintlayout:constraintlayout:$constraintlayoutVersion"
+
     implementation "androidx.navigation:navigation-fragment-ktx:$navigationFragmentVersion"
     implementation "androidx.navigation:navigation-ui-ktx:$navigationUiVersion"
     implementation "androidx.legacy:legacy-support-v4:$legacySupportVersion"
+
+    implementation "io.reactivex.rxjava2:rxandroid:$rxandroidVersion"
+    implementation "io.reactivex.rxjava2:rxjava:$rxjavaVersion"
+    implementation "io.reactivex.rxjava2:rxkotlin:$rxkotlinVersion"
+
 }

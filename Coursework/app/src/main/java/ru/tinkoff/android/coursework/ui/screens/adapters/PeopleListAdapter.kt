@@ -14,6 +14,8 @@ import ru.tinkoff.android.coursework.model.User
 internal class PeopleListAdapter(private val userItemClickListener: OnUserItemClickListener)
     : RecyclerView.Adapter<PeopleListAdapter.PeopleListViewHolder>() {
 
+    var showShimmer = true
+
     var users: List<User>
         set(value) = differ.submitList(value)
         get() = differ.currentList
@@ -38,17 +40,31 @@ internal class PeopleListAdapter(private val userItemClickListener: OnUserItemCl
     }
 
     override fun onBindViewHolder(holder: PeopleListViewHolder, position: Int) {
-        holder.bind(users[position])
+        if (showShimmer) {
+            holder.shimmerFrameLayout.startShimmer()
+        } else {
+            holder.shimmerFrameLayout.stopShimmer()
+            holder.shimmerFrameLayout.setShimmer(null)
+            holder.avatar.foreground = null
+            holder.username.foreground = null
+            holder.email.foreground = null
+            holder.onlineStatusCard.foreground = null
+            holder.bind(users[position])
+        }
     }
 
-    override fun getItemCount(): Int = users.size
+    override fun getItemCount(): Int {
+        return if (showShimmer) SHIMMER_ITEM_COUNT else users.size
+    }
 
-    inner class PeopleListViewHolder(private val binding: ItemUserInPeopleListBinding): RecyclerView.ViewHolder(binding.root) {
+    inner class PeopleListViewHolder(private val binding: ItemUserInPeopleListBinding)
+        : RecyclerView.ViewHolder(binding.root) {
 
-        private val username = binding.username
-        private val email = binding.email
-        private val avatar = binding.profileAvatar
-        private val onlineStatusCard = binding.onlineStatusCard
+        internal val username = binding.username
+        internal val email = binding.email
+        internal val avatar = binding.profileAvatar
+        internal val onlineStatusCard = binding.onlineStatusCard
+        internal val shimmerFrameLayout = binding.shimmerLayout
 
         fun bind(user: User) {
             username.text = user.name
@@ -61,6 +77,11 @@ internal class PeopleListAdapter(private val userItemClickListener: OnUserItemCl
             onlineStatusCard.visibility = if (!user.isOnline) View.GONE else View.VISIBLE
             this@PeopleListAdapter.userItemClickListener.onTopicItemClickListener(binding.root, user)
         }
+    }
+
+    companion object {
+
+        const val SHIMMER_ITEM_COUNT = 2
     }
 
 }

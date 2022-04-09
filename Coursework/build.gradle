@@ -17,4 +17,8 @@ ext {
     navigationFragmentVersion = '2.4.1'
     navigationUiVersion = '2.4.1'
     legacySupportVersion = '1.0.0'
+    rxandroidVersion = '2.1.1'
+    rxjavaVersion = '2.2.21'
+    rxkotlinVersion = '2.4.0'
+    shimmerVersion = '0.5.0'
 }

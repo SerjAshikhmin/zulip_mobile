@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.SELF_USER_ID
 import ru.tinkoff.android.coursework.data.getUserById
@@ -19,7 +18,7 @@ internal class ProfileFragment: Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ) : View {
         binding = FragmentProfileBinding.inflate(inflater,container,false)
         return binding.root
     }
@@ -69,4 +68,5 @@ internal class ProfileFragment: Fragment() {
         const val USER_STATUS_KEY = "status"
         const val USER_ONLINE_STATUS_KEY = "onlineStatus"
     }
+
 }

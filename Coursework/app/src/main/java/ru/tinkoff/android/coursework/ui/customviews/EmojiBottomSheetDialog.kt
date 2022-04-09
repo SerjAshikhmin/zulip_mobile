@@ -18,7 +18,7 @@ internal class EmojiBottomSheetDialog(
     context: Context,
     @StyleRes theme: Int,
     private var bottomSheet: LinearLayout
-): BottomSheetDialog(context, theme) {
+) : BottomSheetDialog(context, theme) {
 
     private var chosenEmojiCode = ""
     private var selectedView: View? = null

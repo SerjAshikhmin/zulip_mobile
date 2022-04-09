@@ -31,7 +31,8 @@ internal class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
 
     private val differ = AsyncListDiffer(this, DiffCallback())
 
-    class DiffCallback: DiffUtil.ItemCallback<Any>() {
+    class DiffCallback : DiffUtil.ItemCallback<Any>() {
+
         override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
             if (oldItem is Message && newItem is Message) {
                 return oldItem.id == newItem.id
@@ -208,4 +209,5 @@ internal class ChatMessagesAdapter(private val dialog: EmojiBottomSheetDialog)
         private const val TYPE_SELF_MESSAGE = 1
         private const val TYPE_SEND_DATE = 2
     }
+
 }

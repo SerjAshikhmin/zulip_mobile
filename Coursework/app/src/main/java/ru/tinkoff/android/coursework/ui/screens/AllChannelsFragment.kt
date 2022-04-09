@@ -5,26 +5,31 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.findFragment
 import androidx.navigation.fragment.NavHostFragment
+import com.google.android.material.snackbar.Snackbar
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.channelsTestData
+import ru.tinkoff.android.coursework.data.channelsWithTestErrorAndDelay
 import ru.tinkoff.android.coursework.databinding.FragmentAllChannelsBinding
+import ru.tinkoff.android.coursework.model.Channel
 import ru.tinkoff.android.coursework.model.Topic
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnTopicItemClickListener
 
-internal class AllChannelsFragment: Fragment(), OnTopicItemClickListener {
+internal class AllChannelsFragment: CompositeDisposableFragment(), OnTopicItemClickListener {
 
-    private lateinit var binding: FragmentAllChannelsBinding
+    lateinit var binding: FragmentAllChannelsBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        binding = FragmentAllChannelsBinding.inflate(inflater,container,false)
+    ) : View {
+        binding = FragmentAllChannelsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -33,19 +38,53 @@ internal class AllChannelsFragment: Fragment(), OnTopicItemClickListener {
         configureChannelListRecycler()
     }
 
-    override fun onTopicItemClickListener(topicItemView: View?, topic: Topic) {
-        topicItemView?.setOnClickListener {
-            val bundle = bundleOf(
-                ChatActivity.CHANNEL_NAME_KEY to topic.channelName,
-                ChatActivity.TOPIC_NAME_KEY to topic.name
-            )
-            NavHostFragment.findNavController(binding.root.findFragment())
-                .navigate(R.id.action_nav_channels_to_nav_chat, bundle)
+    override fun onTopicItemClick(topic: Topic) {
+        val bundle = bundleOf(
+            ChatActivity.CHANNEL_NAME_KEY to topic.channelName,
+            ChatActivity.TOPIC_NAME_KEY to topic.name
+        )
+        NavHostFragment.findNavController(binding.root.findFragment())
+            .navigate(R.id.action_nav_channels_to_nav_chat, bundle)
+    }
+
+    fun updateChannels(newChannels: List<Channel>) {
+        (binding.allChannelsList.adapter as ChannelsListAdapter).apply {
+            showShimmer = false
+            channels = newChannels
+            notifyDataSetChanged()
         }
     }
 
     private fun configureChannelListRecycler() {
-        binding.channelsList.adapter = ChannelsListAdapter(this).apply { channels = channelsTestData }
+        val adapter = ChannelsListAdapter(this)
+
+        channelsWithTestErrorAndDelay()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy (
+                onSuccess = {
+                    adapter.apply {
+                        showShimmer = false
+                        channels = it
+                        notifyDataSetChanged()
+                    }
+                },
+                onError = {
+                    adapter.apply {
+                        showShimmer = false
+                        channels = listOf()
+                        notifyDataSetChanged()
+                    }
+
+                    binding.root.showSnackBarWithRetryAction(
+                        resources.getString(R.string.channels_not_found_error_text),
+                        Snackbar.LENGTH_LONG
+                    ) { configureChannelListRecycler() }
+                }
+            )
+            .addTo(compositeDisposable)
+
+        binding.allChannelsList.adapter = adapter
     }
 
 }

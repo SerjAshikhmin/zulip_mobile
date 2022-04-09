@@ -1,6 +1,7 @@
 package ru.tinkoff.android.coursework.ui.screens.adapters
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
@@ -12,13 +13,15 @@ import ru.tinkoff.android.coursework.model.Channel
 internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicItemClickListener)
     : RecyclerView.Adapter<ChannelsListAdapter.ChannelListViewHolder>() {
 
+    var showShimmer = true
+
     var channels: List<Channel>
         set(value) = differ.submitList(value)
         get() = differ.currentList
 
     private val differ = AsyncListDiffer(this, DiffCallback())
 
-    class DiffCallback : DiffUtil.ItemCallback<Channel>() {
+    class DiffCallback: DiffUtil.ItemCallback<Channel>() {
 
         override fun areItemsTheSame(oldItem: Channel, newItem: Channel): Boolean {
             return oldItem.name == newItem.name
@@ -36,18 +39,31 @@ internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicIt
     }
 
     override fun onBindViewHolder(holder: ChannelListViewHolder, position: Int) {
-        val channel = channels[position]
-        holder.initChannelListener(channel)
-        holder.bind(channel)
+        if (showShimmer) {
+            holder.shimmedText.visibility = View.VISIBLE
+            holder.shimmerFrameLayout.startShimmer()
+        } else {
+            holder.shimmerFrameLayout.stopShimmer()
+            holder.shimmerFrameLayout.setShimmer(null)
+            holder.shimmedText.visibility = View.GONE
+            holder.channelName.visibility = View.VISIBLE
+
+            val channel = channels[position]
+            holder.initChannelListener(channel)
+            holder.bind(channel)
+        }
     }
 
-    override fun getItemCount(): Int = channels.size
+    override fun getItemCount(): Int {
+        return if (showShimmer) SHIMMER_ITEM_COUNT else channels.size
+    }
 
-    inner class ChannelListViewHolder(private val binding: ItemChannelInListBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    inner class ChannelListViewHolder(private val binding: ItemChannelInListBinding): RecyclerView.ViewHolder(binding.root) {
 
-        private val channelName = binding.channelName
-        private val arrowIcon = binding.arrowIcon
+        internal val channelName = binding.channelName
+        internal val arrowIcon = binding.arrowIcon
+        internal val shimmedText = binding.shimmedText
+        internal val shimmerFrameLayout = binding.shimmerLayout
         private var isOpened = false
 
         fun bind(channel: Channel) {
@@ -71,6 +87,11 @@ internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicIt
                 binding.topicsList.adapter = topItemAdapter
             }
         }
+    }
+
+    companion object {
+
+        const val SHIMMER_ITEM_COUNT = 4
     }
 
 }
