@@ -95,9 +95,10 @@ internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicIt
 
         private fun configureTopicItemAdapter(channel: Channel) {
             val topItemAdapter = TopicItemAdapter(this@ChannelsListAdapter.topicItemClickListener)
-            if (!isOpened) {
 
-                NetworkService.getZulipJsonApi().getTopicsInStream(streamId = channel.id)
+            if (!isOpened) {
+                // TODO убрать во ViewModel
+                NetworkService.getZulipJsonApi().getTopicsInStream(streamId = channel.streamId)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(

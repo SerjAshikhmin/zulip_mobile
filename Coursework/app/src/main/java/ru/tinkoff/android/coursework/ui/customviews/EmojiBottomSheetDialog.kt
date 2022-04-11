@@ -21,7 +21,6 @@ internal class EmojiBottomSheetDialog(
     context: Context,
     @StyleRes theme: Int,
     private var bottomSheet: LinearLayout,
-    private val emojiClickListener: OnEmojiClickListener,
     private val bottomSheetChooseEmojiListener: OnBottomSheetChooseEmojiListener
 ) : BottomSheetDialog(context, theme) {
 
@@ -44,47 +43,8 @@ internal class EmojiBottomSheetDialog(
     }
 
     private fun processSelectedEmoji(selectedView: View?, chosenEmojiCode: String) {
-        if (chosenEmojiCode.isNotEmpty()) {
-            val emojiBox = when (selectedView) {
-                is MessageViewGroup -> selectedView.binding.emojiBox
-                is SelfMessageViewGroup -> selectedView.binding.emojiBox
-                is ImageView -> selectedView.parent as FlexBoxLayout
-                else -> null
-            }
-            val emoji = emojiBox?.children?.firstOrNull {
-                it is EmojiWithCountView && it.emojiCode == chosenEmojiCode
-            }
-            if (emoji is EmojiWithCountView) {
-                if (!emoji.isSelected) {
-                    emoji.isSelected = true
-                    emoji.emojiCount++
-                }
-            } else {
-                val messageId = when (selectedView) {
-                    is MessageViewGroup -> selectedView.messageId
-                    is SelfMessageViewGroup -> selectedView.messageId
-                    else -> 0L
-                }
-                if (emojiBox != null) {
-                    val emojiView = EmojiWithCountView.createEmojiWithCountView(
-                        emojiBox,
-                        EmojiWithCount(chosenEmojiCode, 1),
-                        messageId,
-                        emojiClickListener
-                    )
-                    emojiView.isSelected = true
-                    emojiBox.addView(emojiView, emojiBox.childCount - 1)
-                    if (emojiBox.childCount > 1) {
-                        emojiBox.getChildAt(emojiBox.childCount - 1).visibility = View.VISIBLE
-                    }
-                    bottomSheetChooseEmojiListener.onBottomSheetChooseEmoji(
-                        emojiView.isSelected,
-                        emojiView.emojiCode,
-                        messageId
-                    )
-                }
-            }
-        }
+        if (chosenEmojiCode.isEmpty()) return
+        bottomSheetChooseEmojiListener.onBottomSheetChooseEmoji(selectedView, chosenEmojiCode)
     }
 
     private fun createEmojiViews() {

@@ -9,15 +9,17 @@ internal const val SELF_USER_ID = 491498L
 internal data class User (
 
     @SerialName("user_id")
-    val id: Long,
+    val userId: Long,
 
     @SerialName("full_name")
-    val name: String? = "",
+    val fullName: String? = "",
 
+    @SerialName("email")
     val email: String? = "",
 
     @SerialName("avatar_url")
     val avatarUrl: String?,
 
+    @SerialName("presence")
     var presence: String? = "undefined"
 )

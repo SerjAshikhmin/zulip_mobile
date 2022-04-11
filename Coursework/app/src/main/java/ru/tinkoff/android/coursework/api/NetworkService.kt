@@ -12,8 +12,8 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 
 internal object NetworkService {
 
-    internal const val AUTH_HEADER_NAME = "Authorization"
-    internal const val AUTH_TOKEN_VALUE = "Basic c2VyYXNoaWhtaW5AeWFuZGV4LnJ1OnZ2RUJwcFRwRTVvWmg2dVZCRDJ0WEFoY05sdjl1dXlK"
+    private const val AUTH_HEADER_NAME = "Authorization"
+    private const val AUTH_TOKEN_VALUE = "Basic c2VyYXNoaWhtaW5AeWFuZGV4LnJ1OnZ2RUJwcFRwRTVvWmg2dVZCRDJ0WEFoY05sdjl1dXlK"
     private const val BASE_URL = "https://tinkoff-android-spring-2022.zulipchat.com/"
 
     private val okClient = OkHttpClient.Builder()
@@ -22,16 +22,17 @@ internal object NetworkService {
         .build()
 
     private val contentType = "application/json".toMediaType()
+    private val json = Json { ignoreUnknownKeys = true }
 
-    private var mRetrofit: Retrofit = Retrofit.Builder()
+    private var retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .client(okClient)
-        .addConverterFactory(Json{ ignoreUnknownKeys = true }.asConverterFactory(contentType))
+        .addConverterFactory(json.asConverterFactory(contentType))
         .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
         .build()
 
     fun getZulipJsonApi(): ZulipJsonApi {
-        return mRetrofit.create(ZulipJsonApi::class.java)
+        return retrofit.create(ZulipJsonApi::class.java)
     }
 
     class AuthInterceptor : Interceptor {

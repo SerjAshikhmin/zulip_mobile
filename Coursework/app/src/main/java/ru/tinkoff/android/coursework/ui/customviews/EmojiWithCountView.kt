@@ -28,7 +28,7 @@ internal class EmojiWithCountView @JvmOverloads constructor(
     var emojiCode = ""
 
     private lateinit var emojiClickListener: OnEmojiClickListener
-    private var messageId = 0L
+    var messageId = 0L
 
     private val paint = TextPaint().apply {
         style = Paint.Style.FILL
@@ -96,21 +96,6 @@ internal class EmojiWithCountView @JvmOverloads constructor(
         private val SUPPORTED_DRAWABLE_STATE = intArrayOf(android.R.attr.state_selected)
         private const val DEFAULT_TEXT_SIZE_SP = 15
 
-        private val onEmojiClick: (v: View) -> Unit = { view ->
-            view.isSelected = !view.isSelected
-            (view as EmojiWithCountView).apply {
-                emojiClickListener.onEmojiClick(isSelected, emojiCode, messageId)
-                if (isSelected) emojiCount++ else emojiCount--
-                if (emojiCount == 0) {
-                    val emojiBox = (parent as FlexBoxLayout)
-                    emojiBox.removeView(this)
-                    if (emojiBox.childCount == 1) {
-                        emojiBox.getChildAt(0).visibility = GONE
-                    }
-                }
-            }
-        }
-
         fun createEmojiWithCountView(
             emojiBox: FlexBoxLayout,
             emoji: EmojiWithCount,
@@ -123,12 +108,13 @@ internal class EmojiWithCountView @JvmOverloads constructor(
                 false
             ) as EmojiWithCountView
             emojiView.messageId = messageId
-            emojiView.emojiClickListener = emojiClickListener
-            emojiView.setOnClickListener(onEmojiClick)
             emojiView.emojiCode = if (emoji.code.any { it in 'a'..'f' }) {
                 String(Character.toChars(emoji.code.toInt(16)))
             } else {
                 emoji.code
+            }
+            emojiView.setOnClickListener {
+                emojiClickListener.onEmojiClick(emojiView)
             }
             emojiView.emojiCount = emoji.count
             return emojiView

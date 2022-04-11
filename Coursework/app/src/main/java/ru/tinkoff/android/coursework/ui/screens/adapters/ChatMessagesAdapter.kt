@@ -1,7 +1,5 @@
 package ru.tinkoff.android.coursework.ui.screens.adapters
 
-import android.content.Context
-import android.util.DisplayMetrics
 import android.util.LayoutDirection
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -20,9 +18,10 @@ import ru.tinkoff.android.coursework.model.Message
 import ru.tinkoff.android.coursework.model.Reaction
 import ru.tinkoff.android.coursework.model.SELF_USER_ID
 import ru.tinkoff.android.coursework.ui.customviews.*
+import ru.tinkoff.android.coursework.ui.screens.utils.dpToPx
+import ru.tinkoff.android.coursework.ui.screens.utils.getDateTimeFromTimestamp
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import kotlin.math.roundToInt
 
 internal class ChatMessagesAdapter(
     private val dialog: EmojiBottomSheetDialog,
@@ -33,11 +32,23 @@ internal class ChatMessagesAdapter(
     var channelName = ""
     var topicName = ""
 
-    var messages: List<Any>
-        set(value) = differ.submitList(value) {
-            chatRecycler.scrollToPosition(value.size - 1)
+    var messagesWithDateSeparators: List<Any>
+        set(value) {
+            if (messagesWithDateSeparators.isNotEmpty() && messagesWithDateSeparators[0] == value[0]) {
+                differ.submitList(value) {
+                    chatRecycler.scrollToPosition(value.size - 1)
+                }
+            } else {
+                differ.submitList(value)
+            }
         }
         get() = differ.currentList
+
+    var messages: List<Message> = mutableListOf()
+        set(value) {
+            field = value
+            messagesWithDateSeparators = insertDateSeparators(value)
+        }
 
     private val differ = AsyncListDiffer(this, DiffCallback())
 
@@ -65,7 +76,7 @@ internal class ChatMessagesAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        val message = messages[position]
+        val message = messagesWithDateSeparators[position]
         return when {
             message is LocalDate -> TYPE_SEND_DATE
             message is Message && message.userId == SELF_USER_ID -> TYPE_SELF_MESSAGE
@@ -81,7 +92,7 @@ internal class ChatMessagesAdapter(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 )
-                layoutParams.setMargins(dpToPx(DEFAULT_MARGIN_DP, parent.context))
+                layoutParams.setMargins(parent.context.dpToPx(DEFAULT_MARGIN_DP))
                 messageView.layoutParams = layoutParams
                 messageView.setOnLongClickListener {
                     return@setOnLongClickListener messageOnClickFunc(dialog, messageView)
@@ -94,7 +105,7 @@ internal class ChatMessagesAdapter(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 )
-                layoutParams.setMargins(dpToPx(DEFAULT_MARGIN_DP, parent.context))
+                layoutParams.setMargins(parent.context.dpToPx(DEFAULT_MARGIN_DP))
                 layoutParams.gravity = Gravity.END
                 parent.layoutParams.resolveLayoutDirection(LayoutDirection.RTL)
                 selfMessageView.layoutParams = layoutParams
@@ -117,18 +128,18 @@ internal class ChatMessagesAdapter(
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         return when (holder) {
-            is MessageViewHolder -> holder.bind(messages[position] as Message)
-            is SelfMessageViewHolder -> holder.bind(messages[position] as Message)
-            is SendDateViewHolder -> holder.bind(messages[position] as LocalDate)
+            is MessageViewHolder -> holder.bind(messagesWithDateSeparators[position] as Message)
+            is SelfMessageViewHolder -> holder.bind(messagesWithDateSeparators[position] as Message)
+            is SendDateViewHolder -> holder.bind(messagesWithDateSeparators[position] as LocalDate)
         }
     }
 
     fun update(newMessages: List<Any>, position: Int) {
-        messages = newMessages
+        messagesWithDateSeparators = newMessages
         notifyItemInserted(position)
     }
 
-    override fun getItemCount(): Int = messages.size
+    override fun getItemCount(): Int = messagesWithDateSeparators.size
 
     sealed class BaseViewHolder(view: View) : RecyclerView.ViewHolder(view)
 
@@ -190,6 +201,23 @@ internal class ChatMessagesAdapter(
         }
     }
 
+    private fun insertDateSeparators(messages: List<Message>): List<Any> {
+        val messagesWithDateSeparators = mutableListOf<Any>()
+        for (curIndex in messages.indices) {
+            val curDate = getDateTimeFromTimestamp(messages[curIndex].timestamp).toLocalDate()
+            if (curIndex == 0) {
+                messagesWithDateSeparators.add(curDate)
+            } else {
+                val prevDate = getDateTimeFromTimestamp(messages[curIndex - 1].timestamp).toLocalDate()
+                if (prevDate != curDate) {
+                    messagesWithDateSeparators.add(curDate)
+                }
+            }
+            messagesWithDateSeparators.add(messages[curIndex])
+        }
+        return messagesWithDateSeparators
+    }
+
     private fun messageOnClickFunc(dialog: EmojiBottomSheetDialog, view: View): Boolean {
         dialog.show(view)
         return true
@@ -214,10 +242,10 @@ internal class ChatMessagesAdapter(
         if (emojis.isNotEmpty()) {
             emojis.forEach { emoji ->
                 val emojiView = EmojiWithCountView.createEmojiWithCountView(
-                    emojiBox,
-                    emoji,
-                    message.id,
-                    emojiClickListener
+                    emojiBox = emojiBox,
+                    emoji = emoji,
+                    messageId = message.id,
+                    emojiClickListener = emojiClickListener
                 )
                 if (emoji.selectedByCurrentUser) emojiView.isSelected = true
                 emojiBox.addView(emojiView, emojiBox.childCount - 1)
@@ -226,28 +254,25 @@ internal class ChatMessagesAdapter(
         }
     }
 
-    // преобразует список реакций всего сообщения в список эмоджи
-    // для каждой реакции подсчитывает ее количество в сообщении
-    // в полученном списке находит и помечает эмоджи, отмеченные текущим пользователем
+    /**
+     * Преобразует список реакций всего сообщения в список эмоджи.
+     * Для каждой реакции подсчитывает ее количество в сообщении.
+     * В полученном списке находит и помечает эмоджи, отмеченные текущим пользователем.
+     *
+     * @param reactions список реакций
+     * @return список эмоджи с количеством вхождений в сообщение
+     */
     private fun getEmojisWithCountList(reactions: List<Reaction>): List<EmojiWithCount> {
-        val emojiList = mutableListOf<EmojiWithCount>()
-        reactions
-            .groupBy { reaction -> reaction.code }
-            .map { emoji -> emoji.key to emoji.value.size }
-            .mapTo(emojiList) { emoji -> EmojiWithCount(emoji.first, emoji.second)}
-
-        emojiList.forEach { emojiWithCount ->
-            val selfReaction = reactions.firstOrNull { reaction ->
-                reaction.userId == SELF_USER_ID && reaction.code == emojiWithCount.code
+        return reactions
+            .groupBy { reaction -> reaction.emojiCode }
+            .map { emoji -> EmojiWithCount(emoji.key, emoji.value.size) }
+            .map { emojiWithCount ->
+                val selfReaction = reactions.firstOrNull { reaction ->
+                    reaction.userId == SELF_USER_ID && reaction.emojiCode == emojiWithCount.code
+                }
+                if (selfReaction != null) emojiWithCount.selectedByCurrentUser = true
+                emojiWithCount
             }
-            if (selfReaction != null) emojiWithCount.selectedByCurrentUser = true
-        }
-        return emojiList
-    }
-
-    private fun dpToPx(dp: Int, context: Context): Int {
-        val displayMetrics: DisplayMetrics = context.resources.displayMetrics
-        return (dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT)).roundToInt()
     }
 
     companion object {

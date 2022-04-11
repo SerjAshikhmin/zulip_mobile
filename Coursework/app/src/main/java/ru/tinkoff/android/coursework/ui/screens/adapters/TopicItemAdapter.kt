@@ -67,7 +67,7 @@ internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemC
             binding.root.setBackgroundColor(
                 ContextCompat.getColor(
                     binding.root.context,
-                    R.color.teal_500
+                    TOPIC_BACKGROUND_COLOR
                 )
             )
             binding.root.setOnClickListener {
@@ -79,5 +79,6 @@ internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemC
     companion object {
 
         const val SHIMMER_ITEM_COUNT = 3
+        const val TOPIC_BACKGROUND_COLOR = R.color.teal_500
     }
 }

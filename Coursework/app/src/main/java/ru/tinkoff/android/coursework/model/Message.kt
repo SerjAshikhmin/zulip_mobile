@@ -5,6 +5,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class Message (
+
+    @SerialName("id")
     val id: Long,
 
     @SerialName("sender_id")
@@ -19,7 +21,12 @@ internal data class Message (
     @SerialName("avatar_url")
     val avatarUrl: String?,
 
+    @SerialName("content")
     val content: String,
+
+    @SerialName("reactions")
     val reactions: List<Reaction>,
+
+    @SerialName("timestamp")
     val timestamp: Long
 )

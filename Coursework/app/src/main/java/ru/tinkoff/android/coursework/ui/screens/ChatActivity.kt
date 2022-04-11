@@ -3,8 +3,11 @@ package ru.tinkoff.android.coursework.ui.screens
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.core.view.children
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,15 +20,14 @@ import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
-import ru.tinkoff.android.coursework.model.Message
 import ru.tinkoff.android.coursework.model.request.NarrowRequest
 import ru.tinkoff.android.coursework.model.response.SendMessageResponse
 import ru.tinkoff.android.coursework.data.EmojiCodes
+import ru.tinkoff.android.coursework.model.EmojiWithCount
 import ru.tinkoff.android.coursework.ui.customviews.*
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChatMessagesAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnBottomSheetChooseEmojiListener
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnEmojiClickListener
-import ru.tinkoff.android.coursework.ui.screens.utils.getDateTimeFromTimestamp
 import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
 
 internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
@@ -54,69 +56,141 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
         compositeDisposable.dispose()
     }
 
-    override fun onEmojiClick(
-        isSelected: Boolean,
-        emojiCode: String,
-        messageId: Long
-    ) {
-        val emojiName = EmojiCodes.emojiMap[emojiCode]
+    override fun onEmojiClick(emojiView: EmojiWithCountView) {
+        val emojiName = EmojiCodes.emojiMap[emojiView.emojiCode]
         if (emojiName != null) {
-            if (isSelected) {
-                addReaction(messageId, emojiName)
+            if (!emojiView.isSelected) {
+                addReaction(emojiView, emojiName, false, null)
             } else {
-                removeReaction(messageId, emojiName)
+                removeReaction(emojiView, emojiName)
             }
         }
     }
 
-    override fun onBottomSheetChooseEmoji(isSelected: Boolean, emojiCode: String, messageId: Long) {
-        val emojiName = EmojiCodes.emojiMap[emojiCode]
-        if (emojiName != null) {
-            addReaction(messageId, emojiName)
-        }
-    }
-
-    private fun addReaction(messageId: Long, emojiName: String) {
+    private fun addReaction(
+        emojiView: EmojiWithCountView,
+        emojiName: String,
+        isNewEmojiView: Boolean,
+        emojiBox: FlexBoxLayout?
+    ) {
         NetworkService.getZulipJsonApi().addReaction(
-            messageId = messageId,
+            messageId = emojiView.messageId,
             emojiName = emojiName
         )
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnError {
-                binding.root.showSnackBarWithRetryAction(
-                    resources.getString(R.string.adding_emoji_error_text),
-                    Snackbar.LENGTH_LONG
-                ) { addReaction(messageId, emojiName) }
-            }
-            .subscribe()
+            .subscribeBy(
+                onSuccess = {
+                    emojiView.isSelected = true
+                    emojiView.emojiCount++
+                    if (isNewEmojiView) {
+                        addNewEmojiToEmojiBox(emojiBox, emojiView)
+                    }
+                },
+                onError = {
+                    it.printStackTrace()
+                    binding.root.showSnackBarWithRetryAction(
+                        resources.getString(R.string.adding_emoji_error_text),
+                        Snackbar.LENGTH_LONG
+                    ) { addReaction(emojiView, emojiName, isNewEmojiView, emojiBox) }
+                }
+            )
             .addTo(compositeDisposable)
     }
 
-    private fun removeReaction(messageId: Long, emojiName: String) {
+    private fun addNewEmojiToEmojiBox(
+        emojiBox: FlexBoxLayout?,
+        emojiView: EmojiWithCountView
+    ) {
+        if (emojiBox != null) {
+            emojiBox.addView(emojiView, emojiBox.childCount - 1)
+            if (emojiBox.childCount > 1) {
+                emojiBox.getChildAt(emojiBox.childCount - 1).visibility = View.VISIBLE
+            }
+        }
+    }
+
+    private fun removeReaction(emojiView: EmojiWithCountView, emojiName: String) {
         NetworkService.getZulipJsonApi().removeReaction(
-            messageId = messageId,
+            messageId = emojiView.messageId,
             emojiName = emojiName
         )
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnError {
-                binding.root.showSnackBarWithRetryAction(
-                    resources.getString(R.string.removing_emoji_error_text),
-                    Snackbar.LENGTH_LONG
-                ) { removeReaction(messageId, emojiName) }
-            }
-            .subscribe()
+            .subscribeBy(
+                onSuccess = {
+                    emojiView.isSelected = false
+                    emojiView.emojiCount--
+                    if (emojiView.emojiCount == 0) {
+                        val emojiBox = (emojiView.parent as FlexBoxLayout)
+                        emojiBox.removeView(emojiView)
+                        if (emojiBox.childCount == 1) {
+                            emojiBox.getChildAt(0).visibility = View.GONE
+                        }
+                    }
+                },
+                onError = {
+                    binding.root.showSnackBarWithRetryAction(
+                        resources.getString(R.string.removing_emoji_error_text),
+                        Snackbar.LENGTH_LONG
+                    ) { removeReaction(emojiView, emojiName) }
+                }
+            )
             .addTo(compositeDisposable)
+    }
+
+    override fun onBottomSheetChooseEmoji(selectedView: View?, chosenEmojiCode: String) {
+        val emojiBox = when (selectedView) {
+            is MessageViewGroup -> selectedView.binding.emojiBox
+            is SelfMessageViewGroup -> selectedView.binding.emojiBox
+            is ImageView -> selectedView.parent as FlexBoxLayout
+            else -> null
+        }
+        val emoji = emojiBox?.children?.firstOrNull {
+            it is EmojiWithCountView && it.emojiCode == chosenEmojiCode
+        }
+        if (emoji is EmojiWithCountView) {
+            if (!emoji.isSelected) {
+                emoji.isSelected = true
+                emoji.emojiCount++
+            }
+        } else {
+            addNewEmojiToMessage(selectedView, emojiBox, chosenEmojiCode)
+        }
+    }
+
+    private fun addNewEmojiToMessage(
+        selectedView: View?,
+        emojiBox: FlexBoxLayout?,
+        chosenEmojiCode: String
+    ) {
+        val messageId = when (selectedView) {
+            is MessageViewGroup -> selectedView.messageId
+            is SelfMessageViewGroup -> selectedView.messageId
+            else -> 0L
+        }
+        if (emojiBox != null) {
+            val emojiView = EmojiWithCountView.createEmojiWithCountView(
+                emojiBox = emojiBox,
+                emoji = EmojiWithCount(chosenEmojiCode, 0),
+                messageId = messageId,
+                emojiClickListener = this
+            )
+            val emojiName = EmojiCodes.emojiMap[emojiView.emojiCode]
+            if (emojiName != null) {
+                addReaction(emojiView, emojiName, true, emojiBox)
+            }
+        }
     }
 
     private fun configureToolbar() {
-        binding.backIcon.setOnClickListener {
-            onBackPressed()
+        with(binding) {
+            backIcon.setOnClickListener {
+                onBackPressed()
+            }
+            topicName.text = adapter.topicName
+            channelName.text = adapter.channelName
         }
-
-        binding.topicName.text = adapter.topicName
-        binding.channelName.text = adapter.channelName
     }
 
     private fun configureChatRecycler() {
@@ -178,11 +252,10 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
         val bottomSheetLayout =
             layoutInflater.inflate(R.layout.layout_bottom_sheet, null) as LinearLayout
         dialog = EmojiBottomSheetDialog(
-            this,
-            R.style.BottomSheetDialogTheme,
-            bottomSheetLayout,
-            this,
-            this
+            context = this,
+            theme = R.style.BottomSheetDialogTheme,
+            bottomSheet = bottomSheetLayout,
+            bottomSheetChooseEmojiListener = this
         )
         dialog.setContentView(bottomSheetLayout)
     }
@@ -200,10 +273,13 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onSuccess = {
-                    val messages = insertDateSeparators(it.messages)
-                    val isLastChanged = !adapter.messages.isNullOrEmpty() && adapter.messages.last() != messages.last()
-                    adapter.messages = messages
-                    if (isLastChanged) adapter.notifyItemChanged(messages.size - 1)
+                    val oldMessages = adapter.messagesWithDateSeparators
+                    adapter.messages = it.messages
+                    val isLastChanged = !oldMessages.isNullOrEmpty()
+                            && adapter.messagesWithDateSeparators.last() != oldMessages.last()
+                    if (isLastChanged) adapter.notifyItemChanged(
+                        adapter.messagesWithDateSeparators.size - 1
+                    )
                 },
                 onError = {
                     binding.root.showSnackBarWithRetryAction(
@@ -213,23 +289,6 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
                 }
             )
             .addTo(compositeDisposable)
-    }
-
-    private fun insertDateSeparators(messages: List<Message>): List<Any> {
-        val messagesWithDateSeparators = mutableListOf<Any>()
-        for (i in messages.indices) {
-            val curDate = getDateTimeFromTimestamp(messages[i].timestamp).toLocalDate()
-            if (i == 0) {
-                messagesWithDateSeparators.add(curDate)
-            } else {
-                val prevDate = getDateTimeFromTimestamp(messages[i - 1].timestamp).toLocalDate()
-                if (prevDate != curDate) {
-                    messagesWithDateSeparators.add(curDate)
-                }
-            }
-            messagesWithDateSeparators.add(messages[i])
-        }
-        return messagesWithDateSeparators
     }
 
     private fun sendMessage(

@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import io.reactivex.schedulers.Schedulers
@@ -40,20 +39,20 @@ internal class ProfileFragment: Fragment() {
             user.presence = getUserPresence(user)?.presence?.aggregated?.status
         } else {
             user = User(
-                requireArguments().getLong(USER_ID_KEY),
-                requireArguments().getString(USERNAME_KEY),
-                requireArguments().getString(EMAIL_KEY),
-                requireArguments().getString(AVATAR_KEY),
-                requireArguments().getString(USER_PRESENCE_KEY)
+                userId = requireArguments().getLong(USER_ID_KEY),
+                fullName = requireArguments().getString(USERNAME_KEY),
+                email = requireArguments().getString(EMAIL_KEY),
+                avatarUrl = requireArguments().getString(AVATAR_KEY),
+                presence = requireArguments().getString(USER_PRESENCE_KEY)
             )
         }
 
-        binding.username.text = user.name
+        binding.username.text = user.fullName
         binding.userPresence.text = user.presence
         when (user.presence) {
-            ACTIVE_PRESENCE_KEY -> binding.userPresence.setTextColor(ContextCompat.getColor(binding.root.context, R.color.green_500))
-            IDLE_PRESENCE_KEY -> binding.userPresence.setTextColor(ContextCompat.getColor(binding.root.context, R.color.orange_500))
-            else -> binding.userPresence.setTextColor(ContextCompat.getColor(binding.root.context, R.color.red_500))
+            ACTIVE_PRESENCE_KEY -> binding.userPresence.setTextColor(binding.root.context.getColor(ACTIVE_PRESENCE_COLOR))
+            IDLE_PRESENCE_KEY -> binding.userPresence.setTextColor(binding.root.context.getColor(IDLE_PRESENCE_COLOR))
+            else -> binding.userPresence.setTextColor(binding.root.context.getColor(OFFLINE_PRESENCE_COLOR))
         }
 
         if (user.avatarUrl != null) {
@@ -74,7 +73,7 @@ internal class ProfileFragment: Fragment() {
     }
 
     private fun getUserPresence(user: User): UserPresenceResponse? {
-        return NetworkService.getZulipJsonApi().getUserPresence(userIdOrEmail = user.id.toString())
+        return NetworkService.getZulipJsonApi().getUserPresence(userIdOrEmail = user.userId.toString())
             .subscribeOn(Schedulers.io())
             .blockingGet()
     }
@@ -89,6 +88,10 @@ internal class ProfileFragment: Fragment() {
 
         const val ACTIVE_PRESENCE_KEY = "active"
         const val IDLE_PRESENCE_KEY = "idle"
+
+        const val ACTIVE_PRESENCE_COLOR = R.color.green_500
+        const val IDLE_PRESENCE_COLOR = R.color.orange_500
+        const val OFFLINE_PRESENCE_COLOR = R.color.red_500
     }
 
 }

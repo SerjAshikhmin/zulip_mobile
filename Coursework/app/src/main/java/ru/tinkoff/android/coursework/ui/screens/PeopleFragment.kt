@@ -45,8 +45,8 @@ internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickLis
 
     override fun onUserItemClick(user: User) {
         val bundle = bundleOf(
-            ProfileFragment.USER_ID_KEY to user.id,
-            ProfileFragment.USERNAME_KEY to user.name,
+            ProfileFragment.USER_ID_KEY to user.userId,
+            ProfileFragment.USERNAME_KEY to user.fullName,
             ProfileFragment.EMAIL_KEY to user.email,
             ProfileFragment.AVATAR_KEY to user.avatarUrl,
             ProfileFragment.USER_PRESENCE_KEY to user.presence
@@ -90,18 +90,23 @@ internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickLis
     }
 
     private fun getUserPresence(user: User) {
-        NetworkService.getZulipJsonApi().getUserPresence(userIdOrEmail = user.id.toString())
+        NetworkService.getZulipJsonApi().getUserPresence(userIdOrEmail = user.userId.toString())
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onSuccess = {
-                    user.presence = it.presence.aggregated?.status ?: "not found"
+                    user.presence = it.presence.aggregated?.status ?: NOT_FOUND_PRESENCE_KEY
                 },
                 onError = {
-                    user.presence = "not found"
+                    user.presence = NOT_FOUND_PRESENCE_KEY
                 }
             )
             .addTo(compositeDisposable)
+    }
+
+    companion object {
+
+        const val NOT_FOUND_PRESENCE_KEY = "not found"
     }
 
 }

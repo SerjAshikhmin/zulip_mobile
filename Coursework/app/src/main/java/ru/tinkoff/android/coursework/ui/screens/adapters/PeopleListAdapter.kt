@@ -11,8 +11,11 @@ import com.bumptech.glide.Glide
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.ItemUserInPeopleListBinding
 import ru.tinkoff.android.coursework.model.User
+import ru.tinkoff.android.coursework.ui.screens.ProfileFragment.Companion.ACTIVE_PRESENCE_COLOR
 import ru.tinkoff.android.coursework.ui.screens.ProfileFragment.Companion.ACTIVE_PRESENCE_KEY
+import ru.tinkoff.android.coursework.ui.screens.ProfileFragment.Companion.IDLE_PRESENCE_COLOR
 import ru.tinkoff.android.coursework.ui.screens.ProfileFragment.Companion.IDLE_PRESENCE_KEY
+import ru.tinkoff.android.coursework.ui.screens.ProfileFragment.Companion.OFFLINE_PRESENCE_COLOR
 
 internal class PeopleListAdapter(private val userItemClickListener: OnUserItemClickListener)
     : RecyclerView.Adapter<PeopleListAdapter.PeopleListViewHolder>() {
@@ -28,7 +31,7 @@ internal class PeopleListAdapter(private val userItemClickListener: OnUserItemCl
     class DiffCallback: DiffUtil.ItemCallback<User>() {
 
         override fun areItemsTheSame(oldItem: User, newItem: User): Boolean {
-            return oldItem.id == newItem.id
+            return oldItem.userId == newItem.userId
         }
 
         override fun areContentsTheSame(oldItem: User, newItem: User): Boolean {
@@ -70,7 +73,7 @@ internal class PeopleListAdapter(private val userItemClickListener: OnUserItemCl
         internal val shimmerFrameLayout = binding.shimmerLayout
 
         fun bind(user: User) {
-            username.text = user.name
+            username.text = user.fullName
             email.text = user.email
 
             if (user.avatarUrl != null) {
@@ -84,9 +87,9 @@ internal class PeopleListAdapter(private val userItemClickListener: OnUserItemCl
             }
 
             onlineStatusCard.backgroundTintList = when (user.presence) {
-                ACTIVE_PRESENCE_KEY -> ColorStateList.valueOf(ContextCompat.getColor(binding.root.context, R.color.green_500))
-                IDLE_PRESENCE_KEY -> ColorStateList.valueOf(ContextCompat.getColor(binding.root.context, R.color.orange_500))
-                else -> ColorStateList.valueOf(ContextCompat.getColor(binding.root.context, R.color.red_500))
+                ACTIVE_PRESENCE_KEY -> ColorStateList.valueOf(binding.root.context.getColor(ACTIVE_PRESENCE_COLOR))
+                IDLE_PRESENCE_KEY -> ColorStateList.valueOf(binding.root.context.getColor(IDLE_PRESENCE_COLOR))
+                else -> ColorStateList.valueOf(binding.root.context.getColor(OFFLINE_PRESENCE_COLOR))
             }
 
             binding.root.setOnClickListener {

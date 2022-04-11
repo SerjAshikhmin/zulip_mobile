@@ -1,7 +1,9 @@
 package ru.tinkoff.android.coursework.ui.screens.adapters
 
+import ru.tinkoff.android.coursework.ui.customviews.EmojiWithCountView
+
 internal interface OnEmojiClickListener {
 
-    fun onEmojiClick(isSelected: Boolean, emojiCode: String, messageId: Long)
+    fun onEmojiClick(emojiView: EmojiWithCountView)
 
 }

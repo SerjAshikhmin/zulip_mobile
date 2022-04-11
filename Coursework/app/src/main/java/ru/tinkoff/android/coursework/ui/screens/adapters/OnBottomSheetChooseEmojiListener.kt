@@ -1,6 +1,9 @@
 package ru.tinkoff.android.coursework.ui.screens.adapters
 
+import android.view.View
+
 internal interface OnBottomSheetChooseEmojiListener {
 
-    fun onBottomSheetChooseEmoji(isSelected: Boolean, emojiCode: String, messageId: Long)
+    fun onBottomSheetChooseEmoji(selectedView: View?, chosenEmojiCode: String)
+
 }

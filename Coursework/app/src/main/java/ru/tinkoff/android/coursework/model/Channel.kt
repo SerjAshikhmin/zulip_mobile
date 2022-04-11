@@ -7,7 +7,8 @@ import kotlinx.serialization.Serializable
 internal data class Channel (
 
     @SerialName("stream_id")
-    val id: Long,
+    val streamId: Long,
 
+    @SerialName("name")
     val name: String
 )
