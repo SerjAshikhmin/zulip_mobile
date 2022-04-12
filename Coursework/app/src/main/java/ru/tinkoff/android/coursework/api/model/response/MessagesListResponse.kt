@@ -8,5 +8,8 @@ import ru.tinkoff.android.coursework.api.model.Message
 internal class MessagesListResponse (
 
     @SerialName("messages")
-    val messages: List<Message>
+    val messages: List<Message>,
+
+    @SerialName("anchor")
+    val anchor: Long
 )

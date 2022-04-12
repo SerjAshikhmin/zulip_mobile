@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import ru.tinkoff.android.coursework.R
+import ru.tinkoff.android.coursework.api.LAST_MESSAGE_ANCHOR
+import ru.tinkoff.android.coursework.api.NUMBER_OF_MESSAGES_BEFORE_ANCHOR
 import ru.tinkoff.android.coursework.api.model.EmojiWithCount
 import ru.tinkoff.android.coursework.api.model.Message
 import ru.tinkoff.android.coursework.api.model.Reaction
@@ -31,6 +33,9 @@ internal class ChatMessagesAdapter(
 
     var channelName = ""
     var topicName = ""
+
+    var messagesBefore = NUMBER_OF_MESSAGES_BEFORE_ANCHOR
+    var anchor = LAST_MESSAGE_ANCHOR
 
     var messagesWithDateSeparators: List<Any>
         set(value) {

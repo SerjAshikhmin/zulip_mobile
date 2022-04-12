@@ -18,6 +18,7 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
+import ru.tinkoff.android.coursework.api.LAST_MESSAGE_ANCHOR
 import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
 import ru.tinkoff.android.coursework.api.model.request.NarrowRequest
@@ -219,6 +220,18 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
         getMessagesForChat()
 
         chatRecycler.adapter = adapter
+
+        chatRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
+                if (lastVisibleItemPosition == 5) {
+                    this@ChatActivity.getMessagesForChat()
+                }
+            }
+        })
     }
 
     private fun configureEnterMessageSection() {
@@ -268,6 +281,8 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
 
     private fun getMessagesForChat() {
         NetworkService.getZulipJsonApi().getMessages(
+            numBefore = adapter.messagesBefore,
+            anchor = adapter.anchor.toString(),
             narrow = arrayOf(
                 NarrowRequest(
                     operator = TOPIC_NARROW_OPERATOR_KEY,
@@ -279,13 +294,17 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onSuccess = {
-                    val oldMessages = adapter.messagesWithDateSeparators
-                    adapter.messages = it.messages
-                    val isLastChanged = !oldMessages.isNullOrEmpty()
-                            && adapter.messagesWithDateSeparators.last() != oldMessages.last()
-                    if (isLastChanged) adapter.notifyItemChanged(
-                        adapter.messagesWithDateSeparators.size - 1
-                    )
+                    if (it.messages.isNotEmpty() && adapter.anchor != it.messages[0].id - 1) {
+                        adapter.anchor = it.messages[0].id - 1
+                        val oldMessages = adapter.messagesWithDateSeparators
+                        adapter.messages = it.messages.plus(adapter.messages)
+                        val isLastChanged = !oldMessages.isNullOrEmpty()
+                                && adapter.messagesWithDateSeparators.last() != oldMessages.last()
+                                && adapter.messagesWithDateSeparators.first() == oldMessages[oldMessages.lastIndex - adapter.messagesWithDateSeparators.lastIndex]
+                        if (isLastChanged) adapter.notifyItemChanged(
+                            adapter.messagesWithDateSeparators.size - 1
+                        )
+                    }
                 },
                 onError = {
                     binding.root.showSnackBarWithRetryAction(
@@ -309,6 +328,7 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
         )
             .subscribeOn(Schedulers.io())
             .doOnSuccess {
+                adapter.anchor = LAST_MESSAGE_ANCHOR
                 getMessagesForChat()
             }
             .doOnError {

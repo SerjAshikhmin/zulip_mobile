@@ -12,6 +12,10 @@ import ru.tinkoff.android.coursework.api.model.response.SubscribedChannelsListRe
 import ru.tinkoff.android.coursework.api.model.response.TopicsListResponse
 import ru.tinkoff.android.coursework.api.model.response.UserPresenceResponse
 
+internal const val NUMBER_OF_MESSAGES_BEFORE_ANCHOR = 20
+internal const val NUMBER_OF_MESSAGES_AFTER_ANCHOR = 0
+internal const val LAST_MESSAGE_ANCHOR = 10000000000000000L
+
 internal interface ZulipJsonApi {
 
     @GET("api/v1/streams")
@@ -38,8 +42,8 @@ internal interface ZulipJsonApi {
 
     @GET("api/v1/messages")
     fun getMessages(
-        @Query("num_before") numBefore: Int = 100,
-        @Query("num_after") numAfter: Int = 100,
+        @Query("num_before") numBefore: Int = NUMBER_OF_MESSAGES_BEFORE_ANCHOR,
+        @Query("num_after") numAfter: Int = NUMBER_OF_MESSAGES_AFTER_ANCHOR,
         @Query("anchor") anchor: String = "first_unread",
         @Query(value = "narrow", encoded = true) narrow: String
     ): Single<MessagesListResponse>
