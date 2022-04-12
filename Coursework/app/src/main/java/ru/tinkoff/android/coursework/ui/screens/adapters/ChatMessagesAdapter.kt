@@ -226,18 +226,16 @@ internal class ChatMessagesAdapter(
     private fun fillEmojiBox(message: Message, emojiBox: FlexBoxLayout) {
         val emojis = getEmojisWithCountList(message.reactions)
 
-        var addEmojiView: ImageView? = null
-        if (emojiBox.childCount == 0) {
-            addEmojiView = LayoutInflater.from(emojiBox.context).inflate(
-                R.layout.view_image_add_emoji,
-                emojiBox,
-                false
-            ) as ImageView
-            addEmojiView.setOnClickListener {
-                this@ChatMessagesAdapter.dialog.show(addEmojiView)
-            }
-            emojiBox.addView(addEmojiView)
+        emojiBox.removeAllViews()
+        val addEmojiView = LayoutInflater.from(emojiBox.context).inflate(
+            R.layout.view_image_add_emoji,
+            emojiBox,
+            false
+        ) as ImageView
+        addEmojiView.setOnClickListener {
+            this@ChatMessagesAdapter.dialog.show(addEmojiView)
         }
+        emojiBox.addView(addEmojiView)
 
         if (emojis.isNotEmpty()) {
             emojis.forEach { emoji ->
