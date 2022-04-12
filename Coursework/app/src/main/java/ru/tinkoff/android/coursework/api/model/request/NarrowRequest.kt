@@ -1,4 +1,4 @@
-package ru.tinkoff.android.coursework.model.request
+package ru.tinkoff.android.coursework.api.model.request
 
 internal class NarrowRequest (
     val operator: String,

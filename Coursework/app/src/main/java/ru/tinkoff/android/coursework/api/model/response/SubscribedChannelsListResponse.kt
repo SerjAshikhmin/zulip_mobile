@@ -1,8 +1,8 @@
-package ru.tinkoff.android.coursework.model.response
+package ru.tinkoff.android.coursework.api.model.response
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import ru.tinkoff.android.coursework.model.Channel
+import ru.tinkoff.android.coursework.api.model.Channel
 
 @Serializable
 internal class SubscribedChannelsListResponse (

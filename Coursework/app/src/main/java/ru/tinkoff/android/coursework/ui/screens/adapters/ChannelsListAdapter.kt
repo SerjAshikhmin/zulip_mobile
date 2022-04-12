@@ -15,7 +15,7 @@ import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.ItemChannelInListBinding
-import ru.tinkoff.android.coursework.model.Channel
+import ru.tinkoff.android.coursework.api.model.Channel
 import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
 
 internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicItemClickListener)

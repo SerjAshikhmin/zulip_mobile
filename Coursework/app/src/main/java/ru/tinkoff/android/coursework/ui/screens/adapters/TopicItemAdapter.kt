@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.ItemTopicInListBinding
-import ru.tinkoff.android.coursework.model.Topic
+import ru.tinkoff.android.coursework.api.model.Topic
 
 internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemClickListener)
     : RecyclerView.Adapter<TopicItemAdapter.TopicItemViewHolder>() {

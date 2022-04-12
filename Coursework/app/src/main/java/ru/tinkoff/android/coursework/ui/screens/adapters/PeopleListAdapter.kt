@@ -3,14 +3,13 @@ package ru.tinkoff.android.coursework.ui.screens.adapters
 import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.ItemUserInPeopleListBinding
-import ru.tinkoff.android.coursework.model.User
+import ru.tinkoff.android.coursework.api.model.User
 import ru.tinkoff.android.coursework.ui.screens.ProfileFragment.Companion.ACTIVE_PRESENCE_COLOR
 import ru.tinkoff.android.coursework.ui.screens.ProfileFragment.Companion.ACTIVE_PRESENCE_KEY
 import ru.tinkoff.android.coursework.ui.screens.ProfileFragment.Companion.IDLE_PRESENCE_COLOR

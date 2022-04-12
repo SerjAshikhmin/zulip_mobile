@@ -15,7 +15,7 @@ import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.FragmentPeopleBinding
-import ru.tinkoff.android.coursework.model.User
+import ru.tinkoff.android.coursework.api.model.User
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnUserItemClickListener
 import ru.tinkoff.android.coursework.ui.screens.adapters.PeopleListAdapter
 import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction

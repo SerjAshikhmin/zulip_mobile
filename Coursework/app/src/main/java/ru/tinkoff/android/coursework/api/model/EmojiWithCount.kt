@@ -1,4 +1,4 @@
-package ru.tinkoff.android.coursework.model
+package ru.tinkoff.android.coursework.api.model
 
 internal class EmojiWithCount(
     val code: String,

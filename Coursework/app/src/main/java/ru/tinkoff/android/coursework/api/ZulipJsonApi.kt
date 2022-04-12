@@ -2,15 +2,15 @@ package ru.tinkoff.android.coursework.api
 
 import io.reactivex.Single
 import retrofit2.http.*
-import ru.tinkoff.android.coursework.model.User
-import ru.tinkoff.android.coursework.model.response.AllChannelsListResponse
-import ru.tinkoff.android.coursework.model.response.AllUsersListResponse
-import ru.tinkoff.android.coursework.model.response.MessagesListResponse
-import ru.tinkoff.android.coursework.model.response.ReactionResponse
-import ru.tinkoff.android.coursework.model.response.SendMessageResponse
-import ru.tinkoff.android.coursework.model.response.SubscribedChannelsListResponse
-import ru.tinkoff.android.coursework.model.response.TopicsListResponse
-import ru.tinkoff.android.coursework.model.response.UserPresenceResponse
+import ru.tinkoff.android.coursework.api.model.User
+import ru.tinkoff.android.coursework.api.model.response.AllChannelsListResponse
+import ru.tinkoff.android.coursework.api.model.response.AllUsersListResponse
+import ru.tinkoff.android.coursework.api.model.response.MessagesListResponse
+import ru.tinkoff.android.coursework.api.model.response.ReactionResponse
+import ru.tinkoff.android.coursework.api.model.response.SendMessageResponse
+import ru.tinkoff.android.coursework.api.model.response.SubscribedChannelsListResponse
+import ru.tinkoff.android.coursework.api.model.response.TopicsListResponse
+import ru.tinkoff.android.coursework.api.model.response.UserPresenceResponse
 
 internal interface ZulipJsonApi {
 

@@ -13,10 +13,10 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.model.EmojiWithCount
-import ru.tinkoff.android.coursework.model.Message
-import ru.tinkoff.android.coursework.model.Reaction
-import ru.tinkoff.android.coursework.model.SELF_USER_ID
+import ru.tinkoff.android.coursework.api.model.EmojiWithCount
+import ru.tinkoff.android.coursework.api.model.Message
+import ru.tinkoff.android.coursework.api.model.Reaction
+import ru.tinkoff.android.coursework.api.model.SELF_USER_ID
 import ru.tinkoff.android.coursework.ui.customviews.*
 import ru.tinkoff.android.coursework.ui.screens.utils.dpToPx
 import ru.tinkoff.android.coursework.ui.screens.utils.getDateTimeFromTimestamp

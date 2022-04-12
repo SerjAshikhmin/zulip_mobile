@@ -20,10 +20,10 @@ import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
-import ru.tinkoff.android.coursework.model.request.NarrowRequest
-import ru.tinkoff.android.coursework.model.response.SendMessageResponse
+import ru.tinkoff.android.coursework.api.model.request.NarrowRequest
+import ru.tinkoff.android.coursework.api.model.response.SendMessageResponse
 import ru.tinkoff.android.coursework.data.EmojiCodes
-import ru.tinkoff.android.coursework.model.EmojiWithCount
+import ru.tinkoff.android.coursework.api.model.EmojiWithCount
 import ru.tinkoff.android.coursework.ui.customviews.*
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChatMessagesAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnBottomSheetChooseEmojiListener
@@ -200,7 +200,7 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
     }
 
     private fun configureChatRecycler() {
-        chatRecycler = binding.chat
+        chatRecycler = binding.chatRecycler
         val layoutManager = LinearLayoutManager(this)
         layoutManager.stackFromEnd = true
         chatRecycler.layoutManager = layoutManager

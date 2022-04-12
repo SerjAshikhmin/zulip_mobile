@@ -15,8 +15,8 @@ import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.FragmentAllChannelsBinding
-import ru.tinkoff.android.coursework.model.Channel
-import ru.tinkoff.android.coursework.model.Topic
+import ru.tinkoff.android.coursework.api.model.Channel
+import ru.tinkoff.android.coursework.api.model.Topic
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnTopicItemClickListener
 import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
