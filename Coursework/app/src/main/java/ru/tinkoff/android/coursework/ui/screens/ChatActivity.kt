@@ -88,7 +88,6 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
                     }
                 },
                 onError = {
-                    it.printStackTrace()
                     binding.root.showSnackBarWithRetryAction(
                         resources.getString(R.string.adding_emoji_error_text),
                         Snackbar.LENGTH_LONG
@@ -167,6 +166,13 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
         val messageId = when (selectedView) {
             is MessageViewGroup -> selectedView.messageId
             is SelfMessageViewGroup -> selectedView.messageId
+            is ImageView -> {
+                when (val parentViewGroup = selectedView.parent.parent) {
+                    is MessageViewGroup -> parentViewGroup.messageId
+                    is SelfMessageViewGroup -> parentViewGroup.messageId
+                    else -> 0L
+                }
+            }
             else -> 0L
         }
         if (emojiBox != null) {

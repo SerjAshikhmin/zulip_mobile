@@ -38,11 +38,6 @@ internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickLis
         configurePeopleListRecycler()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        compositeDisposable.dispose()
-    }
-
     override fun onUserItemClick(user: User) {
         val bundle = bundleOf(
             ProfileFragment.USER_ID_KEY to user.userId,
@@ -52,7 +47,7 @@ internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickLis
             ProfileFragment.USER_PRESENCE_KEY to user.presence
         )
         NavHostFragment.findNavController(binding.root.findFragment())
-            .navigate(R.id.action_nav_people_to_nav_profile, bundle)
+            .navigate(R.id.action_nav_people_to_nav_user, bundle)
     }
 
     private fun configurePeopleListRecycler() {

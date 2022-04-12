@@ -6,6 +6,8 @@
     <string name="channels_menu_title">Channels</string>
     <string name="people_menu_title">People</string>
     <string name="profile_menu_title">Profile</string>
+    <string name="user_menu_title">User</string>
+    <string name="chat_menu_title">Chat</string>
     <string name="search_hint">Search...</string>
     <string name="users_search_hint">Users...</string>
     <string name="channel_name_text">#%s</string>
@@ -14,6 +16,7 @@
     <string name="allChannels_tab_name">All streams</string>
     <string name="channels_not_found_error_text">Channels not found</string>
     <string name="people_not_found_error_text">People not found</string>
+    <string name="user_not_found_error_text">User not found</string>
     <string name="messages_not_found_error_text">Messages not found</string>
     <string name="search_channels_error_text">Search channels error</string>
     <string name="adding_emoji_error_text">Adding emoji error</string>
@@ -21,4 +24,5 @@
     <string name="sending_message_error_text">Sending message error</string>
     <string name="topics_not_found_error_text">Topics not found</string>
     <string name="retry_action_snack_bar_text">Retry</string>
+    <string name="profile_toolbar_title">Profile</string>
 </resources>
