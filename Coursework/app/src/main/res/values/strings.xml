@@ -15,6 +15,7 @@
     <string name="subscribed_tab_name">Subscribed</string>
     <string name="allChannels_tab_name">All streams</string>
     <string name="channels_not_found_error_text">Channels not found</string>
+    <string name="topics_not_found_error_text">Topics not found</string>
     <string name="people_not_found_error_text">People not found</string>
     <string name="user_not_found_error_text">User not found</string>
     <string name="messages_not_found_error_text">Messages not found</string>
@@ -22,7 +23,6 @@
     <string name="adding_emoji_error_text">Adding emoji error</string>
     <string name="removing_emoji_error_text">Removing emoji error</string>
     <string name="sending_message_error_text">Sending message error</string>
-    <string name="topics_not_found_error_text">Topics not found</string>
     <string name="retry_action_snack_bar_text">Retry</string>
     <string name="profile_toolbar_title">Profile</string>
 </resources>

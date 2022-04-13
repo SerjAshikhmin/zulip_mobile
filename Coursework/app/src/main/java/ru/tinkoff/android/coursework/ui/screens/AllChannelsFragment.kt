@@ -67,6 +67,9 @@ internal class AllChannelsFragment: CompositeDisposableFragment(), OnTopicItemCl
                     adapter.apply {
                         showShimmer = false
                         channels = it.streams
+                        channels.forEach { channel ->
+                            getTopicsInChannel(channel)
+                        }
                         notifyDataSetChanged()
                     }
                 },
@@ -77,6 +80,7 @@ internal class AllChannelsFragment: CompositeDisposableFragment(), OnTopicItemCl
                         notifyDataSetChanged()
                     }
 
+                    it.printStackTrace()
                     binding.root.showSnackBarWithRetryAction(
                         resources.getString(R.string.channels_not_found_error_text),
                         Snackbar.LENGTH_LONG
@@ -86,6 +90,27 @@ internal class AllChannelsFragment: CompositeDisposableFragment(), OnTopicItemCl
             .addTo(compositeDisposable)
 
         binding.allChannelsList.adapter = adapter
+    }
+
+    // TODO перенести отсюда/убрать дублирование в ДЗ по архитектуре
+    private fun getTopicsInChannel(channel: Channel) {
+        NetworkService.getZulipJsonApi().getTopicsInStream(streamId = channel.streamId)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(
+                onSuccess = {
+                    channel.topics = it.topics
+                },
+                onError = {
+                    channel.topics = listOf()
+
+                    binding.root.showSnackBarWithRetryAction(
+                        binding.root.resources.getString(R.string.topics_not_found_error_text),
+                        Snackbar.LENGTH_LONG
+                    ) { getTopicsInChannel(channel) }
+                }
+            )
+            .addTo(compositeDisposable)
     }
 
 }
