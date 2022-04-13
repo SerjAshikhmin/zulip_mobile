@@ -110,7 +110,10 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
         }
     }
 
-    private fun removeReaction(emojiView: EmojiWithCountView, emojiName: String) {
+    private fun removeReaction(
+        emojiView: EmojiWithCountView,
+        emojiName: String
+    ) {
         NetworkService.getZulipJsonApi().removeReaction(
             messageId = emojiView.messageId,
             emojiName = emojiName
@@ -139,7 +142,10 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
             .addTo(compositeDisposable)
     }
 
-    override fun onBottomSheetChooseEmoji(selectedView: View?, chosenEmojiCode: String) {
+    override fun onBottomSheetChooseEmoji(
+        selectedView: View?,
+        chosenEmojiCode: String
+    ) {
         val emojiBox = when (selectedView) {
             is MessageViewGroup -> selectedView.binding.emojiBox
             is SelfMessageViewGroup -> selectedView.binding.emojiBox
@@ -320,24 +326,26 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
         content: String,
         stream: String,
         topic: String,
-    ): SendMessageResponse {
-        return NetworkService.getZulipJsonApi().sendMessage(
+    ) {
+        NetworkService.getZulipJsonApi().sendMessage(
             to = stream,
             content = content,
             topic = topic
         )
             .subscribeOn(Schedulers.io())
-            .doOnSuccess {
-                adapter.anchor = LAST_MESSAGE_ANCHOR
-                getMessagesForChat()
-            }
-            .doOnError {
-                binding.root.showSnackBarWithRetryAction(
-                    resources.getString(R.string.sending_message_error_text),
-                    Snackbar.LENGTH_LONG
-                ) { sendMessage(content, stream, topic) }
-            }
-            .blockingGet()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy (
+                onSuccess = {
+                    getMessagesForChat()
+                },
+                onError = {
+                    binding.root.showSnackBarWithRetryAction(
+                        resources.getString(R.string.sending_message_error_text),
+                        Snackbar.LENGTH_LONG
+                    ) { sendMessage(content, stream, topic) }
+                }
+            )
+            .addTo(compositeDisposable)
     }
 
     companion object {

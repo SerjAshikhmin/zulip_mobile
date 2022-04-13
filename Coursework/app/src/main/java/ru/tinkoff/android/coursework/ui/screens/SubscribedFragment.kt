@@ -14,6 +14,7 @@ import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.api.NetworkService
+import ru.tinkoff.android.coursework.api.model.Channel
 import ru.tinkoff.android.coursework.databinding.FragmentSubscribedBinding
 import ru.tinkoff.android.coursework.api.model.Topic
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
@@ -58,6 +59,9 @@ internal class SubscribedFragment: CompositeDisposableFragment(), OnTopicItemCli
                     adapter.apply {
                         showShimmer = false
                         channels = it.subscriptions
+                        channels.forEach { channel ->
+                            getTopicsInChannel(channel)
+                        }
                         notifyDataSetChanged()
                     }
                 },
@@ -77,6 +81,27 @@ internal class SubscribedFragment: CompositeDisposableFragment(), OnTopicItemCli
             .addTo(compositeDisposable)
 
         binding.channelsList.adapter = adapter
+    }
+
+    // TODO перенести отсюда/убрать дублирование в ДЗ по архитектуре
+    private fun getTopicsInChannel(channel: Channel) {
+        NetworkService.getZulipJsonApi().getTopicsInStream(streamId = channel.streamId)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(
+                onSuccess = {
+                    channel.topics = it.topics
+                },
+                onError = {
+                    channel.topics = listOf()
+
+                    binding.root.showSnackBarWithRetryAction(
+                        binding.root.resources.getString(R.string.topics_not_found_error_text),
+                        Snackbar.LENGTH_LONG
+                    ) { getTopicsInChannel(channel) }
+                }
+            )
+            .addTo(compositeDisposable)
     }
 
 }

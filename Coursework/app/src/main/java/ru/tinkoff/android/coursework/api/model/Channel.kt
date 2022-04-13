@@ -10,5 +10,7 @@ internal data class Channel (
     val streamId: Long,
 
     @SerialName("name")
-    val name: String
+    val name: String,
+
+    var topics: List<Topic> = listOf()
 )

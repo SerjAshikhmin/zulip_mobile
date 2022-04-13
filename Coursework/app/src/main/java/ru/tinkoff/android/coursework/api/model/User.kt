@@ -20,6 +20,5 @@ internal data class User (
     @SerialName("avatar_url")
     val avatarUrl: String?,
 
-    @SerialName("presence")
     var presence: String? = "undefined"
 )
