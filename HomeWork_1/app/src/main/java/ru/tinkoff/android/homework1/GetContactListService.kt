@@ -38,22 +38,20 @@ class GetContactListService : Service() {
         }
 
         if (cursor.count > 0) {
+            val idIndex = cursor.getColumnIndex(ContactsContract.Contacts._ID)
+            val displayNameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
+            val phoneIndex = cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)
+
             while (cursor.moveToNext()) {
                 contact = Contact()
-                val id: String = cursor.getString(
-                    cursor.getColumnIndex(ContactsContract.Contacts._ID)
-                )
+                val id: String = cursor.getString(idIndex)
                 contact.id = id
 
-                val name: String = cursor.getString(
-                    cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
-                )
+                val name: String = cursor.getString(displayNameIndex)
                 contact.name = name
 
-                val has_phone: String = cursor.getString(
-                    cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)
-                )
-                if (has_phone.toInt() > 0) {
+                val hasPhone: String = cursor.getString(phoneIndex)
+                if (hasPhone.toInt() > 0) {
                     contact.phone = getContactPhone(id)
                 }
                 val phoneStr = if (contact.phone.isBlank()) "" else ", ${contact.phone}"
@@ -77,10 +75,9 @@ class GetContactListService : Service() {
         )
         var phone = ""
         if (phoneCursor != null) {
+            val numberIndex = phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
             while (phoneCursor.moveToNext()) {
-                phone = phoneCursor.getString(
-                    phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
-                )
+                phone = phoneCursor.getString(numberIndex)
             }
             phoneCursor.close()
         }
@@ -96,4 +93,5 @@ class GetContactListService : Service() {
         private const val TAG = "GetContactListService"
         internal const val CONTRACT_LIST_EXTRA = "contactList"
     }
+
 }
