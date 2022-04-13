@@ -13,11 +13,12 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.usersWithTestErrorAndDelay
+import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.FragmentPeopleBinding
-import ru.tinkoff.android.coursework.model.User
+import ru.tinkoff.android.coursework.api.model.User
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnUserItemClickListener
 import ru.tinkoff.android.coursework.ui.screens.adapters.PeopleListAdapter
+import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
 
 internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickListener {
 
@@ -37,30 +38,32 @@ internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickLis
         configurePeopleListRecycler()
     }
 
-    override fun onTopicItemClickListener(topicItemView: View?, user: User) {
-        topicItemView?.setOnClickListener {
-            val bundle = bundleOf(
-                ProfileFragment.USER_ID_KEY to user.id,
-                ProfileFragment.USERNAME_KEY to user.name,
-                ProfileFragment.USER_STATUS_KEY to user.status,
-                ProfileFragment.USER_ONLINE_STATUS_KEY to user.isOnline
-            )
-            NavHostFragment.findNavController(binding.root.findFragment())
-                .navigate(R.id.action_nav_people_to_nav_profile, bundle)
-        }
+    override fun onUserItemClick(user: User) {
+        val bundle = bundleOf(
+            ProfileFragment.USER_ID_KEY to user.userId,
+            ProfileFragment.USERNAME_KEY to user.fullName,
+            ProfileFragment.EMAIL_KEY to user.email,
+            ProfileFragment.AVATAR_KEY to user.avatarUrl,
+            ProfileFragment.USER_PRESENCE_KEY to user.presence
+        )
+        NavHostFragment.findNavController(binding.root.findFragment())
+            .navigate(R.id.action_nav_people_to_nav_user, bundle)
     }
 
     private fun configurePeopleListRecycler() {
         val adapter = PeopleListAdapter(this)
 
-        usersWithTestErrorAndDelay()
+        NetworkService.getZulipJsonApi().getAllUsers()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onSuccess = {
                     adapter.apply {
                         showShimmer = false
-                        this.users = it
+                        users = it.members
+                        users.forEach { user ->
+                            getUserPresence(user)
+                        }
                         notifyDataSetChanged()
                     }
                 },
@@ -79,6 +82,26 @@ internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickLis
             ).addTo(compositeDisposable)
 
         binding.peopleList.adapter = adapter
+    }
+
+    private fun getUserPresence(user: User) {
+        NetworkService.getZulipJsonApi().getUserPresence(userIdOrEmail = user.userId.toString())
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(
+                onSuccess = {
+                    user.presence = it.presence.aggregated?.status ?: NOT_FOUND_PRESENCE_KEY
+                },
+                onError = {
+                    user.presence = NOT_FOUND_PRESENCE_KEY
+                }
+            )
+            .addTo(compositeDisposable)
+    }
+
+    companion object {
+
+        const val NOT_FOUND_PRESENCE_KEY = "not found"
     }
 
 }

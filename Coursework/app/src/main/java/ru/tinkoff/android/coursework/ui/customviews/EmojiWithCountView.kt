@@ -8,11 +8,12 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.model.EmojiWithCount
+import ru.tinkoff.android.coursework.api.model.EmojiWithCount
+import ru.tinkoff.android.coursework.ui.screens.adapters.OnEmojiClickListener
 
 internal class EmojiWithCountView @JvmOverloads constructor(
     context: Context,
-    attrs: AttributeSet? = null
+    attrs: AttributeSet? = null,
 ) : View(context, attrs) {
 
     var emojiCount = 0
@@ -25,6 +26,9 @@ internal class EmojiWithCountView @JvmOverloads constructor(
         }
 
     var emojiCode = ""
+
+    private lateinit var emojiClickListener: OnEmojiClickListener
+    var messageId = 0L
 
     private val paint = TextPaint().apply {
         style = Paint.Style.FILL
@@ -92,31 +96,26 @@ internal class EmojiWithCountView @JvmOverloads constructor(
         private val SUPPORTED_DRAWABLE_STATE = intArrayOf(android.R.attr.state_selected)
         private const val DEFAULT_TEXT_SIZE_SP = 15
 
-        private val onEmojiClick: (v: View) -> Unit = { view ->
-            view.isSelected = !view.isSelected
-            (view as EmojiWithCountView).apply {
-                if (isSelected) emojiCount++ else emojiCount--
-                if (emojiCount == 0) {
-                    val emojiBox = (parent as FlexBoxLayout)
-                    emojiBox.removeView(this)
-                    if (emojiBox.childCount == 1) {
-                        emojiBox.getChildAt(0).visibility = GONE
-                    }
-                }
-            }
-        }
-
         fun createEmojiWithCountView(
             emojiBox: FlexBoxLayout,
-            emoji: EmojiWithCount
+            emoji: EmojiWithCount,
+            messageId: Long,
+            emojiClickListener: OnEmojiClickListener
         ): EmojiWithCountView {
             val emojiView = LayoutInflater.from(emojiBox.context).inflate(
                 R.layout.layout_emoji_with_count_view,
                 emojiBox,
                 false
             ) as EmojiWithCountView
-            emojiView.setOnClickListener(onEmojiClick)
-            emojiView.emojiCode = emoji.code
+            emojiView.messageId = messageId
+            emojiView.emojiCode = if (emoji.code.any { it in 'a'..'f' }) {
+                String(Character.toChars(emoji.code.toInt(16)))
+            } else {
+                emoji.code
+            }
+            emojiView.setOnClickListener {
+                emojiClickListener.onEmojiClick(emojiView)
+            }
             emojiView.emojiCount = emoji.count
             return emojiView
         }

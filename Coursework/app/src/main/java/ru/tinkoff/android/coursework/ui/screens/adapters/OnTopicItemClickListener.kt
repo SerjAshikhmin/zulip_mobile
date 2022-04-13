@@ -1,9 +1,9 @@
 package ru.tinkoff.android.coursework.ui.screens.adapters
 
-import ru.tinkoff.android.coursework.model.Topic
+import ru.tinkoff.android.coursework.api.model.Topic
 
 internal interface OnTopicItemClickListener {
 
-    fun onTopicItemClick(topic: Topic)
+    fun onTopicItemClick(topic: Topic, channelName: String)
 
 }

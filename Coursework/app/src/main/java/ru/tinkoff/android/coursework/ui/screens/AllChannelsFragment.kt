@@ -13,12 +13,13 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.channelsWithTestErrorAndDelay
+import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.FragmentAllChannelsBinding
-import ru.tinkoff.android.coursework.model.Channel
-import ru.tinkoff.android.coursework.model.Topic
+import ru.tinkoff.android.coursework.api.model.Channel
+import ru.tinkoff.android.coursework.api.model.Topic
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnTopicItemClickListener
+import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
 
 internal class AllChannelsFragment: CompositeDisposableFragment(), OnTopicItemClickListener {
 
@@ -28,19 +29,19 @@ internal class AllChannelsFragment: CompositeDisposableFragment(), OnTopicItemCl
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ) : View {
+    ): View {
         binding = FragmentAllChannelsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        configureChannelListRecycler()
+        configureAllChannelsRecyclerAdapter()
     }
 
-    override fun onTopicItemClick(topic: Topic) {
+    override fun onTopicItemClick(topic: Topic, channelName: String) {
         val bundle = bundleOf(
-            ChatActivity.CHANNEL_NAME_KEY to topic.channelName,
+            ChatActivity.CHANNEL_NAME_KEY to channelName,
             ChatActivity.TOPIC_NAME_KEY to topic.name
         )
         NavHostFragment.findNavController(binding.root.findFragment())
@@ -55,17 +56,20 @@ internal class AllChannelsFragment: CompositeDisposableFragment(), OnTopicItemCl
         }
     }
 
-    private fun configureChannelListRecycler() {
+    private fun configureAllChannelsRecyclerAdapter() {
         val adapter = ChannelsListAdapter(this)
 
-        channelsWithTestErrorAndDelay()
+        NetworkService.getZulipJsonApi().getAllStreams()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy (
                 onSuccess = {
                     adapter.apply {
                         showShimmer = false
-                        channels = it
+                        channels = it.streams
+                        channels.forEach { channel ->
+                            getTopicsInChannel(channel)
+                        }
                         notifyDataSetChanged()
                     }
                 },
@@ -76,15 +80,37 @@ internal class AllChannelsFragment: CompositeDisposableFragment(), OnTopicItemCl
                         notifyDataSetChanged()
                     }
 
+                    it.printStackTrace()
                     binding.root.showSnackBarWithRetryAction(
                         resources.getString(R.string.channels_not_found_error_text),
                         Snackbar.LENGTH_LONG
-                    ) { configureChannelListRecycler() }
+                    ) { configureAllChannelsRecyclerAdapter() }
                 }
             )
             .addTo(compositeDisposable)
 
         binding.allChannelsList.adapter = adapter
+    }
+
+    // TODO перенести отсюда/убрать дублирование в ДЗ по архитектуре
+    private fun getTopicsInChannel(channel: Channel) {
+        NetworkService.getZulipJsonApi().getTopicsInStream(streamId = channel.streamId)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(
+                onSuccess = {
+                    channel.topics = it.topics
+                },
+                onError = {
+                    channel.topics = listOf()
+
+                    binding.root.showSnackBarWithRetryAction(
+                        binding.root.resources.getString(R.string.topics_not_found_error_text),
+                        Snackbar.LENGTH_LONG
+                    ) { getTopicsInChannel(channel) }
+                }
+            )
+            .addTo(compositeDisposable)
     }
 
 }

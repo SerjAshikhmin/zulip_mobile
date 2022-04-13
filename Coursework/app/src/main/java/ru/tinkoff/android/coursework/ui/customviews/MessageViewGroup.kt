@@ -15,6 +15,8 @@ internal class MessageViewGroup @JvmOverloads constructor(
     var binding: LayoutMessageViewGroupBinding =
         LayoutMessageViewGroupBinding.inflate(LayoutInflater.from(context), this)
 
+    var messageId = 0L
+
     private var messageStart = 0
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {

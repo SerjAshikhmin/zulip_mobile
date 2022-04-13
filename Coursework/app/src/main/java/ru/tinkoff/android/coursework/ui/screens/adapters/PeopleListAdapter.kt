@@ -1,15 +1,20 @@
 package ru.tinkoff.android.coursework.ui.screens.adapters
 
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.SELF_USER_ID
 import ru.tinkoff.android.coursework.databinding.ItemUserInPeopleListBinding
-import ru.tinkoff.android.coursework.model.User
+import ru.tinkoff.android.coursework.api.model.User
+import ru.tinkoff.android.coursework.ui.screens.ProfileFragment.Companion.ACTIVE_PRESENCE_COLOR
+import ru.tinkoff.android.coursework.ui.screens.ProfileFragment.Companion.ACTIVE_PRESENCE_KEY
+import ru.tinkoff.android.coursework.ui.screens.ProfileFragment.Companion.IDLE_PRESENCE_COLOR
+import ru.tinkoff.android.coursework.ui.screens.ProfileFragment.Companion.IDLE_PRESENCE_KEY
+import ru.tinkoff.android.coursework.ui.screens.ProfileFragment.Companion.OFFLINE_PRESENCE_COLOR
 
 internal class PeopleListAdapter(private val userItemClickListener: OnUserItemClickListener)
     : RecyclerView.Adapter<PeopleListAdapter.PeopleListViewHolder>() {
@@ -25,7 +30,7 @@ internal class PeopleListAdapter(private val userItemClickListener: OnUserItemCl
     class DiffCallback: DiffUtil.ItemCallback<User>() {
 
         override fun areItemsTheSame(oldItem: User, newItem: User): Boolean {
-            return oldItem.id == newItem.id
+            return oldItem.userId == newItem.userId
         }
 
         override fun areContentsTheSame(oldItem: User, newItem: User): Boolean {
@@ -67,15 +72,28 @@ internal class PeopleListAdapter(private val userItemClickListener: OnUserItemCl
         internal val shimmerFrameLayout = binding.shimmerLayout
 
         fun bind(user: User) {
-            username.text = user.name
+            username.text = user.fullName
             email.text = user.email
-            if (user.id == SELF_USER_ID) {
-                avatar.setImageResource(R.drawable.self_avatar)
+
+            if (user.avatarUrl != null) {
+                Glide.with(binding.root)
+                    .asBitmap()
+                    .load(user.avatarUrl)
+                    .error(R.drawable.default_avatar)
+                    .into(avatar)
             } else {
-                avatar.setImageResource(R.drawable.avatar)
+                avatar.setImageResource(R.drawable.default_avatar)
             }
-            onlineStatusCard.visibility = if (!user.isOnline) View.GONE else View.VISIBLE
-            this@PeopleListAdapter.userItemClickListener.onTopicItemClickListener(binding.root, user)
+
+            onlineStatusCard.backgroundTintList = when (user.presence) {
+                ACTIVE_PRESENCE_KEY -> ColorStateList.valueOf(binding.root.context.getColor(ACTIVE_PRESENCE_COLOR))
+                IDLE_PRESENCE_KEY -> ColorStateList.valueOf(binding.root.context.getColor(IDLE_PRESENCE_COLOR))
+                else -> ColorStateList.valueOf(binding.root.context.getColor(OFFLINE_PRESENCE_COLOR))
+            }
+
+            binding.root.setOnClickListener {
+                this@PeopleListAdapter.userItemClickListener.onUserItemClick(user)
+            }
         }
     }
 

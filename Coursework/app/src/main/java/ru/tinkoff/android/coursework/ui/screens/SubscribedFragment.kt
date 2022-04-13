@@ -13,11 +13,13 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.channelsWithTestErrorAndDelay
+import ru.tinkoff.android.coursework.api.NetworkService
+import ru.tinkoff.android.coursework.api.model.Channel
 import ru.tinkoff.android.coursework.databinding.FragmentSubscribedBinding
-import ru.tinkoff.android.coursework.model.Topic
+import ru.tinkoff.android.coursework.api.model.Topic
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnTopicItemClickListener
+import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
 
 internal class SubscribedFragment: CompositeDisposableFragment(), OnTopicItemClickListener {
 
@@ -34,29 +36,32 @@ internal class SubscribedFragment: CompositeDisposableFragment(), OnTopicItemCli
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        configureChannelListRecycler()
+        configureSubscribedChannelsRecyclerAdapter()
     }
 
-    override fun onTopicItemClick(topic: Topic) {
+    override fun onTopicItemClick(topic: Topic, channelName: String) {
         val bundle = bundleOf(
-            ChatActivity.CHANNEL_NAME_KEY to topic.channelName,
+            ChatActivity.CHANNEL_NAME_KEY to channelName,
             ChatActivity.TOPIC_NAME_KEY to topic.name
         )
         NavHostFragment.findNavController(binding.root.findFragment())
             .navigate(R.id.action_nav_channels_to_nav_chat, bundle)
     }
 
-    private fun configureChannelListRecycler() {
+    private fun configureSubscribedChannelsRecyclerAdapter() {
         val adapter = ChannelsListAdapter(this)
 
-        channelsWithTestErrorAndDelay()
+        NetworkService.getZulipJsonApi().getSubscribedStreams()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy (
                 onSuccess = {
                     adapter.apply {
                         showShimmer = false
-                        channels = it
+                        channels = it.subscriptions
+                        channels.forEach { channel ->
+                            getTopicsInChannel(channel)
+                        }
                         notifyDataSetChanged()
                     }
                 },
@@ -70,12 +75,33 @@ internal class SubscribedFragment: CompositeDisposableFragment(), OnTopicItemCli
                     binding.root.showSnackBarWithRetryAction(
                         resources.getString(R.string.channels_not_found_error_text),
                         Snackbar.LENGTH_LONG
-                    ) { configureChannelListRecycler() }
+                    ) { configureSubscribedChannelsRecyclerAdapter() }
                 }
             )
             .addTo(compositeDisposable)
 
         binding.channelsList.adapter = adapter
+    }
+
+    // TODO перенести отсюда/убрать дублирование в ДЗ по архитектуре
+    private fun getTopicsInChannel(channel: Channel) {
+        NetworkService.getZulipJsonApi().getTopicsInStream(streamId = channel.streamId)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(
+                onSuccess = {
+                    channel.topics = it.topics
+                },
+                onError = {
+                    channel.topics = listOf()
+
+                    binding.root.showSnackBarWithRetryAction(
+                        binding.root.resources.getString(R.string.topics_not_found_error_text),
+                        Snackbar.LENGTH_LONG
+                    ) { getTopicsInChannel(channel) }
+                }
+            )
+            .addTo(compositeDisposable)
     }
 
 }

@@ -8,10 +8,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.ItemTopicInListBinding
-import ru.tinkoff.android.coursework.model.Topic
+import ru.tinkoff.android.coursework.api.model.Topic
 
 internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemClickListener)
     : RecyclerView.Adapter<TopicItemAdapter.TopicItemViewHolder>() {
+
+    var showShimmer = true
+    var channelName = ""
 
     var topics: List<Topic>
         set(value) = differ.submitList(value)
@@ -38,31 +41,44 @@ internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemC
     }
 
     override fun onBindViewHolder(holder: TopicItemViewHolder, position: Int) {
-        holder.bind(topics[position])
+        if (showShimmer) {
+            holder.shimmerFrameLayout.startShimmer()
+        } else {
+            holder.shimmerFrameLayout.stopShimmer()
+            holder.shimmerFrameLayout.setShimmer(null)
+            holder.topicItem.foreground = null
+
+            holder.bind(topics[position])
+        }
     }
 
-    override fun getItemCount() = topics.size
+    override fun getItemCount(): Int {
+        return if (showShimmer) SHIMMER_ITEM_COUNT else topics.size
+    }
 
     inner class TopicItemViewHolder(private val binding: ItemTopicInListBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
+        internal val shimmerFrameLayout = binding.shimmerLayout
+        internal val topicItem = binding.topicItem
+
         fun bind(topic: Topic) {
             binding.topicName.text = topic.name
-            binding.messagesCount.text =
-                binding.root.resources.getString(
-                    R.string.messages_count_text,
-                    topic.messages.size.toString()
-                )
             binding.root.setBackgroundColor(
                 ContextCompat.getColor(
                     binding.root.context,
-                    topic.color
+                    TOPIC_BACKGROUND_COLOR
                 )
             )
             binding.root.setOnClickListener {
-                this@TopicItemAdapter.topicItemClickListener.onTopicItemClick(topic)
+                this@TopicItemAdapter.topicItemClickListener.onTopicItemClick(topic, channelName)
             }
         }
     }
 
+    companion object {
+
+        const val SHIMMER_ITEM_COUNT = 3
+        const val TOPIC_BACKGROUND_COLOR = R.color.teal_500
+    }
 }

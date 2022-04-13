@@ -40,7 +40,6 @@
                 android:id="@+id/online_status"
                 android:layout_width="21dp"
                 android:layout_height="21dp"
-                android:background="@color/green_500"
                 android:src="@null" />
 
         </androidx.cardview.widget.CardView>

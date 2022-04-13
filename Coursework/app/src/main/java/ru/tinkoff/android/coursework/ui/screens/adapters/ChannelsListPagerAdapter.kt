@@ -10,6 +10,9 @@ internal class ChannelsListPagerAdapter(fragment: Fragment) : FragmentStateAdapt
     lateinit var subscribedFragment: SubscribedFragment
     lateinit var allChannelsFragment: AllChannelsFragment
 
+    fun isSubscribedFragment() = ::subscribedFragment.isInitialized
+    fun isAllChannelsFragment() = ::allChannelsFragment.isInitialized
+
     override fun createFragment(position: Int): Fragment {
         return when (position) {
             0 -> {

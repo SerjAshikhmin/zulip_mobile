@@ -11,16 +11,14 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import com.google.android.material.tabs.TabLayoutMediator
-import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.channelsTestData
 import ru.tinkoff.android.coursework.databinding.FragmentChannelsBinding
-import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
+import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListPagerAdapter
 import java.util.concurrent.TimeUnit
 
@@ -67,21 +65,29 @@ internal class ChannelsFragment: CompositeDisposableFragment() {
             .distinctUntilChanged()
             .debounce(DELAY_BETWEEN_ENTERING_CHARACTERS, TimeUnit.MILLISECONDS)
             .subscribeOn(Schedulers.io())
-            .switchMapSingle { query ->
-                Single.fromCallable {
-                    if (query.isBlank()) {
-                        channelsTestData
-                    } else {
-                        channelsTestData
-                            .filter { it.name.lowercase().contains(query.lowercase()) }
-                    }
-                }
+            .map { query ->
+                searchChannelsByQuery(query)
             }
             .observeOn(AndroidSchedulers.mainThread())
+            .subscribe()
+            .addTo(compositeDisposable)
+    }
+
+    private fun searchChannelsByQuery(query: String) {
+        NetworkService.getZulipJsonApi().getAllStreams()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
-                onNext = {
-                    (binding.pager.adapter as ChannelsListPagerAdapter)
-                        .allChannelsFragment.updateChannels(it)
+                onSuccess = {
+                    val channelsListPagerAdapter = (binding.pager.adapter as ChannelsListPagerAdapter)
+
+                    if (channelsListPagerAdapter.isAllChannelsFragment()) {
+                        channelsListPagerAdapter.allChannelsFragment.updateChannels(
+                            it.streams.filter { channel ->
+                                channel.name.lowercase().contains(query.lowercase())
+                            }
+                        )
+                    }
                 },
                 onError = {
                     (binding.pager.adapter as ChannelsListPagerAdapter)
