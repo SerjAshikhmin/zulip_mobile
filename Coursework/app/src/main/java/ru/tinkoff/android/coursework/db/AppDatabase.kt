@@ -1,23 +1,22 @@
 package ru.tinkoff.android.coursework.db
 
+import android.content.Context
 import androidx.room.Database
+import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import ru.tinkoff.android.coursework.api.model.Converters
 import ru.tinkoff.android.coursework.db.dao.*
-import ru.tinkoff.android.coursework.db.model.*
 import ru.tinkoff.android.coursework.db.model.Channel
-import ru.tinkoff.android.coursework.db.model.EmojiWithCount
 import ru.tinkoff.android.coursework.db.model.Message
-import ru.tinkoff.android.coursework.db.model.Reaction
 import ru.tinkoff.android.coursework.db.model.User
 
 @Database(entities = [
     User::class,
     Message::class,
-    Channel::class,
-    Topic::class,
-    EmojiWithCount::class,
-    Reaction::class
+    Channel::class
 ], version = 1)
+@TypeConverters(Converters::class)
 internal abstract class AppDatabase : RoomDatabase() {
 
     abstract fun userDao(): UserDao
@@ -26,10 +25,23 @@ internal abstract class AppDatabase : RoomDatabase() {
 
     abstract fun channelDao(): ChannelDao
 
-    abstract fun topicDao(): TopicDao
+    companion object {
 
-    abstract fun emojiWithCountDao(): EmojiWithCountDao
+        private var INSTANCE: AppDatabase? = null
+        private const val DATABASE_NAME = "appDB"
 
-    abstract fun reactionDao(): ReactionDao
+        fun getAppDatabase(context: Context): AppDatabase? {
+            if (INSTANCE == null) {
+                synchronized(this) {
+                    INSTANCE = Room.databaseBuilder(
+                        context.applicationContext,
+                        AppDatabase::class.java,
+                        DATABASE_NAME
+                    ).build()
+                }
+            }
+            return INSTANCE
+        }
+    }
 
 }

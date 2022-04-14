@@ -15,10 +15,8 @@ import com.bumptech.glide.Glide
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.api.LAST_MESSAGE_ANCHOR
 import ru.tinkoff.android.coursework.api.NUMBER_OF_MESSAGES_BEFORE_ANCHOR
-import ru.tinkoff.android.coursework.api.model.EmojiWithCount
-import ru.tinkoff.android.coursework.api.model.Message
-import ru.tinkoff.android.coursework.api.model.Reaction
 import ru.tinkoff.android.coursework.api.model.SELF_USER_ID
+import ru.tinkoff.android.coursework.db.model.Message
 import ru.tinkoff.android.coursework.ui.customviews.*
 import ru.tinkoff.android.coursework.ui.screens.utils.dpToPx
 import ru.tinkoff.android.coursework.ui.screens.utils.getDateTimeFromTimestamp
@@ -39,7 +37,8 @@ internal class ChatMessagesAdapter(
 
     var messagesWithDateSeparators: List<Any>
         set(value) {
-            if (messagesWithDateSeparators.isNotEmpty() && messagesWithDateSeparators[0] == value[0]) {
+            if (messages.isNotEmpty() && messagesWithDateSeparators.isNotEmpty()
+                && messagesWithDateSeparators[0] == value[0]) {
                 differ.submitList(value) {
                     chatRecycler.scrollToPosition(value.size - 1)
                 }
@@ -229,8 +228,6 @@ internal class ChatMessagesAdapter(
     }
 
     private fun fillEmojiBox(message: Message, emojiBox: FlexBoxLayout) {
-        val emojis = getEmojisWithCountList(message.reactions)
-
         emojiBox.removeAllViews()
         val addEmojiView = LayoutInflater.from(emojiBox.context).inflate(
             R.layout.view_image_add_emoji,
@@ -242,8 +239,8 @@ internal class ChatMessagesAdapter(
         }
         emojiBox.addView(addEmojiView)
 
-        if (emojis.isNotEmpty()) {
-            emojis.forEach { emoji ->
+        if (message.emojis.isNotEmpty()) {
+            message.emojis.forEach { emoji ->
                 val emojiView = EmojiWithCountView.createEmojiWithCountView(
                     emojiBox = emojiBox,
                     emoji = emoji,
@@ -255,27 +252,6 @@ internal class ChatMessagesAdapter(
             }
             addEmojiView?.visibility = View.VISIBLE
         }
-    }
-
-    /**
-     * Преобразует список реакций всего сообщения в список эмоджи.
-     * Для каждой реакции подсчитывает ее количество в сообщении.
-     * В полученном списке находит и помечает эмоджи, отмеченные текущим пользователем.
-     *
-     * @param reactions список реакций
-     * @return список эмоджи с количеством вхождений в сообщение
-     */
-    private fun getEmojisWithCountList(reactions: List<Reaction>): List<EmojiWithCount> {
-        return reactions
-            .groupBy { reaction -> reaction.emojiCode }
-            .map { emoji -> EmojiWithCount(emoji.key, emoji.value.size) }
-            .map { emojiWithCount ->
-                val selfReaction = reactions.firstOrNull { reaction ->
-                    reaction.userId == SELF_USER_ID && reaction.emojiCode == emojiWithCount.code
-                }
-                if (selfReaction != null) emojiWithCount.selectedByCurrentUser = true
-                emojiWithCount
-            }
     }
 
     companion object {

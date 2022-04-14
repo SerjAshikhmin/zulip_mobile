@@ -23,6 +23,13 @@
     <string name="adding_emoji_error_text">Adding emoji error</string>
     <string name="removing_emoji_error_text">Removing emoji error</string>
     <string name="sending_message_error_text">Sending message error</string>
+    <string name="loading_channels_from_db_error_text">Loading channels from db error</string>
+    <string name="saving_channels_to_db_error_text">Saving channels to db error</string>
+    <string name="loading_users_from_db_error_text">Loading users from db error</string>
+    <string name="saving_user_to_db_error_text">Saving user to db error</string>
+    <string name="loading_messages_from_db_error_text">Loading messages from db error</string>
+    <string name="saving_messages_to_db_error_text">Saving messages to db error</string>
+    <string name="removing_messages_from_db_error_text">Removing messages from db error</string>
     <string name="retry_action_snack_bar_text">Retry</string>
     <string name="profile_toolbar_title">Profile</string>
 </resources>

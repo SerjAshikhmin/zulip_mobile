@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal class Reaction (
+internal class ReactionDto (
 
     @SerialName("user_id")
     val userId: Long,

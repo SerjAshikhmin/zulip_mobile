@@ -8,7 +8,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.api.model.EmojiWithCount
+import ru.tinkoff.android.coursework.api.model.EmojiWithCountDto
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnEmojiClickListener
 
 internal class EmojiWithCountView @JvmOverloads constructor(
@@ -98,7 +98,7 @@ internal class EmojiWithCountView @JvmOverloads constructor(
 
         fun createEmojiWithCountView(
             emojiBox: FlexBoxLayout,
-            emoji: EmojiWithCount,
+            emoji: EmojiWithCountDto,
             messageId: Long,
             emojiClickListener: OnEmojiClickListener
         ): EmojiWithCountView {

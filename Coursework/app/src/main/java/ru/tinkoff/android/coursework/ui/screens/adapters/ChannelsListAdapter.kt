@@ -9,14 +9,14 @@ import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.disposables.CompositeDisposable
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.ItemChannelInListBinding
-import ru.tinkoff.android.coursework.api.model.Channel
+import ru.tinkoff.android.coursework.api.model.ChannelDto
 
 internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicItemClickListener)
     : RecyclerView.Adapter<ChannelsListAdapter.ChannelListViewHolder>() {
 
     var showShimmer = true
 
-    var channels: List<Channel>
+    var channels: List<ChannelDto>
         set(value) = differ.submitList(value)
         get() = differ.currentList
 
@@ -24,13 +24,13 @@ internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicIt
 
     private val differ = AsyncListDiffer(this, DiffCallback())
 
-    class DiffCallback: DiffUtil.ItemCallback<Channel>() {
+    class DiffCallback: DiffUtil.ItemCallback<ChannelDto>() {
 
-        override fun areItemsTheSame(oldItem: Channel, newItem: Channel): Boolean {
+        override fun areItemsTheSame(oldItem: ChannelDto, newItem: ChannelDto): Boolean {
             return oldItem.name == newItem.name
         }
 
-        override fun areContentsTheSame(oldItem: Channel, newItem: Channel): Boolean {
+        override fun areContentsTheSame(oldItem: ChannelDto, newItem: ChannelDto): Boolean {
             return oldItem == newItem
         }
     }
@@ -75,18 +75,18 @@ internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicIt
         private val arrowIcon = binding.arrowIcon
         private var isOpened = false
 
-        fun bind(channel: Channel) {
+        fun bind(channel: ChannelDto) {
             channelName.text =
                 binding.root.resources.getString(R.string.channel_name_text, channel.name)
         }
 
-        fun initChannelListener(channel: Channel) {
+        fun initChannelListener(channel: ChannelDto) {
             binding.root.setOnClickListener {
                 configureTopicItemAdapter(channel)
             }
         }
 
-        private fun configureTopicItemAdapter(channel: Channel) {
+        private fun configureTopicItemAdapter(channel: ChannelDto) {
             val topItemAdapter = TopicItemAdapter(this@ChannelsListAdapter.topicItemClickListener)
 
             if (!isOpened) {

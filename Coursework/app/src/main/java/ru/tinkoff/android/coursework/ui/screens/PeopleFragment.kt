@@ -1,6 +1,7 @@
 package ru.tinkoff.android.coursework.ui.screens
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +16,10 @@ import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.FragmentPeopleBinding
-import ru.tinkoff.android.coursework.api.model.User
+import ru.tinkoff.android.coursework.api.model.UserDto
+import ru.tinkoff.android.coursework.db.AppDatabase
+import ru.tinkoff.android.coursework.db.model.User
+import ru.tinkoff.android.coursework.db.model.toUsersDtoList
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnUserItemClickListener
 import ru.tinkoff.android.coursework.ui.screens.adapters.PeopleListAdapter
 import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
@@ -23,6 +27,7 @@ import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryActio
 internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickListener {
 
     private lateinit var binding: FragmentPeopleBinding
+    private var db: AppDatabase? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,10 +40,11 @@ internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickLis
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        db = AppDatabase.getAppDatabase(requireContext())
         configurePeopleListRecycler()
     }
 
-    override fun onUserItemClick(user: User) {
+    override fun onUserItemClick(user: UserDto) {
         val bundle = bundleOf(
             ProfileFragment.USER_ID_KEY to user.userId,
             ProfileFragment.USERNAME_KEY to user.fullName,
@@ -53,12 +59,19 @@ internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickLis
     private fun configurePeopleListRecycler() {
         val adapter = PeopleListAdapter(this)
 
+        loadUsersFromDb(adapter)
+        loadUsersFromApi(adapter)
+
+        binding.peopleList.adapter = adapter
+    }
+
+    private fun loadUsersFromApi(adapter: PeopleListAdapter) {
         NetworkService.getZulipJsonApi().getAllUsers()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onSuccess = {
-                    adapter.apply {
+                    with(adapter) {
                         showShimmer = false
                         users = it.members
                         users.forEach { user ->
@@ -68,7 +81,7 @@ internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickLis
                     }
                 },
                 onError = {
-                    adapter.apply {
+                    with(adapter) {
                         showShimmer = false
                         users = listOf()
                         notifyDataSetChanged()
@@ -80,17 +93,49 @@ internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickLis
                     ) { configurePeopleListRecycler() }
                 }
             ).addTo(compositeDisposable)
-
-        binding.peopleList.adapter = adapter
     }
 
-    private fun getUserPresence(user: User) {
+    private fun loadUsersFromDb(adapter: PeopleListAdapter) {
+        db?.userDao()?.getAll()
+            ?.subscribeOn(Schedulers.io())
+            ?.observeOn(AndroidSchedulers.mainThread())
+            ?.subscribeBy(
+                onSuccess = {
+                    if (it.isNotEmpty()) {
+                        with(adapter) {
+                            showShimmer = false
+                            users = it.toUsersDtoList()
+                            notifyDataSetChanged()
+                        }
+                    }
+                },
+                onError = {
+                    Log.e(TAG, resources.getString(R.string.loading_users_from_db_error_text), it)
+                }
+            )
+            ?.addTo(compositeDisposable)
+    }
+
+    private fun saveUserToDb(user: User) {
+        db?.userDao()?.save(user)
+            ?.subscribeOn(Schedulers.io())
+            ?.observeOn(AndroidSchedulers.mainThread())
+            ?.subscribeBy(
+                onError = {
+                    Log.e(TAG, resources.getString(R.string.saving_user_to_db_error_text), it)
+                }
+            )
+            ?.addTo(compositeDisposable)
+    }
+
+    private fun getUserPresence(user: UserDto) {
         NetworkService.getZulipJsonApi().getUserPresence(userIdOrEmail = user.userId.toString())
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onSuccess = {
                     user.presence = it.presence.aggregated?.status ?: NOT_FOUND_PRESENCE_KEY
+                    saveUserToDb(user.toUserDb())
                 },
                 onError = {
                     user.presence = NOT_FOUND_PRESENCE_KEY
@@ -102,6 +147,7 @@ internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickLis
     companion object {
 
         const val NOT_FOUND_PRESENCE_KEY = "not found"
+        private const val TAG = "PeopleFragment"
     }
 
 }

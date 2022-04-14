@@ -2,7 +2,7 @@ package ru.tinkoff.android.coursework.api
 
 import io.reactivex.Single
 import retrofit2.http.*
-import ru.tinkoff.android.coursework.api.model.User
+import ru.tinkoff.android.coursework.api.model.UserDto
 import ru.tinkoff.android.coursework.api.model.response.AllChannelsListResponse
 import ru.tinkoff.android.coursework.api.model.response.AllUsersListResponse
 import ru.tinkoff.android.coursework.api.model.response.MessagesListResponse
@@ -38,7 +38,7 @@ internal interface ZulipJsonApi {
     ): Single<UserPresenceResponse>
 
     @GET("api/v1/users/me")
-    fun getOwnUser(): Single<User>
+    fun getOwnUser(): Single<UserDto>
 
     @GET("api/v1/messages")
     fun getMessages(
