@@ -37,8 +37,8 @@ internal class ChatMessagesAdapter(
 
     var messagesWithDateSeparators: List<Any>
         set(value) {
-            if (messages.isNotEmpty() && messagesWithDateSeparators.isNotEmpty()
-                && messagesWithDateSeparators[0] == value[0]) {
+            if (messages.isNotEmpty() && value.isNotEmpty() && messagesWithDateSeparators.isNotEmpty()
+                && (messagesWithDateSeparators[1] == value[1] || messagesWithDateSeparators.last() != value.last())) {
                 differ.submitList(value) {
                     chatRecycler.scrollToPosition(value.size - 1)
                 }

@@ -19,6 +19,7 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
+import ru.tinkoff.android.coursework.api.LAST_MESSAGE_ANCHOR
 import ru.tinkoff.android.coursework.api.NUMBER_OF_MESSAGES_BEFORE_ANCHOR
 import ru.tinkoff.android.coursework.api.NetworkService
 import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
@@ -294,6 +295,7 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
     }
 
     private fun loadMessagesFromApi(isFirstPortion: Boolean) {
+        binding.progress.visibility = View.VISIBLE
         NetworkService.getZulipJsonApi().getMessages(
             numBefore = adapter.messagesBefore,
             anchor = adapter.anchor.toString(),
@@ -308,6 +310,7 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onSuccess = {
+                    binding.progress.visibility = View.GONE
                     if (it.messages.isNotEmpty() && adapter.anchor != it.messages[0].id - 1) {
                         if (isFirstPortion) adapter.messages = mutableListOf()
                         adapter.anchor = it.messages[0].id - 1
@@ -349,7 +352,8 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy (
                 onSuccess = {
-                    loadMessagesFromApi(isFirstPortion = false)
+                    adapter.anchor = LAST_MESSAGE_ANCHOR
+                    loadMessagesFromApi(isFirstPortion = true)
                 },
                 onError = {
                     binding.root.showSnackBarWithRetryAction(
@@ -369,7 +373,7 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
                 onSuccess = {
                     if (it.isNotEmpty()) {
                         with(adapter) {
-                            //showShimmer = false
+                            binding.progress.visibility = View.GONE
                             messages = it
                             notifyDataSetChanged()
                         }
