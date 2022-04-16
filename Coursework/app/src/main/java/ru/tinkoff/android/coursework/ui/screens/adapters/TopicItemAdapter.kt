@@ -14,7 +14,7 @@ internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemC
     : RecyclerView.Adapter<TopicItemAdapter.TopicItemViewHolder>() {
 
     var showShimmer = true
-    var channelName = ""
+    var streamName = ""
 
     var topics: List<TopicDto>
         set(value) = differ.submitList(value)
@@ -71,7 +71,7 @@ internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemC
                 )
             )
             binding.root.setOnClickListener {
-                this@TopicItemAdapter.topicItemClickListener.onTopicItemClick(topic, channelName)
+                this@TopicItemAdapter.topicItemClickListener.onTopicItemClick(topic, streamName)
             }
         }
     }

@@ -19,7 +19,7 @@ import io.reactivex.subjects.PublishSubject
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.FragmentChannelsBinding
 import ru.tinkoff.android.coursework.api.NetworkService
-import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListPagerAdapter
+import ru.tinkoff.android.coursework.ui.screens.adapters.StreamsListPagerAdapter
 import java.util.concurrent.TimeUnit
 
 internal class ChannelsFragment: CompositeDisposableFragment() {
@@ -43,8 +43,8 @@ internal class ChannelsFragment: CompositeDisposableFragment() {
         // задержка, чтобы листенер не отрабатывал на пустом запросе при создании фрагмента
         Handler(Looper.getMainLooper()).postDelayed({
             binding.searchEditText.doAfterTextChanged { text ->
-                val allChannelsTab = binding.tabLayout.getTabAt(1)
-                allChannelsTab?.select()
+                val allStreamsTab = binding.tabLayout.getTabAt(1)
+                allStreamsTab?.select()
                 val query = text?.toString().orEmpty()
                 queryEvents.onNext(query)
             }
@@ -56,48 +56,48 @@ internal class ChannelsFragment: CompositeDisposableFragment() {
             imm.showSoftInput(binding.searchEditText, InputMethodManager.SHOW_IMPLICIT)
         }
 
-        subscribeOnSearchChannelsEvents()
+        subscribeOnSearchStreamsEvents()
     }
 
-    private fun subscribeOnSearchChannelsEvents() {
+    private fun subscribeOnSearchStreamsEvents() {
         queryEvents
             .map { query -> query.trim() }
             .distinctUntilChanged()
             .debounce(DELAY_BETWEEN_ENTERING_CHARACTERS, TimeUnit.MILLISECONDS)
             .subscribeOn(Schedulers.io())
             .map { query ->
-                searchChannelsByQuery(query)
+                searchStreamsByQuery(query)
             }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe()
             .addTo(compositeDisposable)
     }
 
-    private fun searchChannelsByQuery(query: String) {
+    private fun searchStreamsByQuery(query: String) {
         NetworkService.getZulipJsonApi().getAllStreams()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onSuccess = {
-                    val channelsListPagerAdapter = (binding.pager.adapter as ChannelsListPagerAdapter)
+                    val streamsListPagerAdapter = (binding.pager.adapter as StreamsListPagerAdapter)
 
-                    if (channelsListPagerAdapter.isAllChannelsFragment()) {
-                        channelsListPagerAdapter.allChannelsFragment.updateChannels(
-                            it.streams.filter { channel ->
-                                channel.name.lowercase().contains(query.lowercase())
+                    if (streamsListPagerAdapter.isAllStreamsListFragment()) {
+                        streamsListPagerAdapter.allStreamsListFragment.updateStreams(
+                            it.streams.filter { stream ->
+                                stream.name.lowercase().contains(query.lowercase())
                             }
                         )
                     }
                 },
                 onError = {
-                    (binding.pager.adapter as ChannelsListPagerAdapter)
-                        .allChannelsFragment.updateChannels(listOf())
+                    (binding.pager.adapter as StreamsListPagerAdapter)
+                        .allStreamsListFragment.updateStreams(listOf())
 
-                    subscribeOnSearchChannelsEvents()
+                    subscribeOnSearchStreamsEvents()
 
                     Toast.makeText(
                         context,
-                        resources.getString(R.string.search_channels_error_text),
+                        resources.getString(R.string.search_streams_error_text),
                         Toast.LENGTH_LONG
                     )
                         .show()
@@ -110,13 +110,13 @@ internal class ChannelsFragment: CompositeDisposableFragment() {
         val viewPager = binding.pager
         val tabLayout = binding.tabLayout
 
-        val pagerAdapter = ChannelsListPagerAdapter(this)
+        val pagerAdapter = StreamsListPagerAdapter(this)
         viewPager.adapter = pagerAdapter
 
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             val tabNames = listOf(
                 resources.getString(R.string.subscribed_tab_name),
-                resources.getString(R.string.allChannels_tab_name)
+                resources.getString(R.string.all_streams_tab_name)
             )
             tab.text = tabNames[position]
         }.attach()

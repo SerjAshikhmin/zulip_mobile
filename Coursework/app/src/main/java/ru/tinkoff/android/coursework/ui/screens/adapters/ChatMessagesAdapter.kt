@@ -6,20 +6,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.core.text.HtmlCompat
 import androidx.core.view.setMargins
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.api.LAST_MESSAGE_ANCHOR
-import ru.tinkoff.android.coursework.api.NUMBER_OF_MESSAGES_BEFORE_ANCHOR
+import ru.tinkoff.android.coursework.api.ZulipJsonApi.Companion.LAST_MESSAGE_ANCHOR
+import ru.tinkoff.android.coursework.api.ZulipJsonApi.Companion.NUMBER_OF_MESSAGES_BEFORE_ANCHOR
 import ru.tinkoff.android.coursework.api.model.SELF_USER_ID
 import ru.tinkoff.android.coursework.db.model.Message
 import ru.tinkoff.android.coursework.ui.customviews.*
-import ru.tinkoff.android.coursework.ui.screens.utils.dpToPx
-import ru.tinkoff.android.coursework.ui.screens.utils.getDateTimeFromTimestamp
+import ru.tinkoff.android.coursework.utils.dpToPx
+import ru.tinkoff.android.coursework.utils.getDateTimeFromTimestamp
+import ru.tinkoff.android.coursework.utils.getFormattedContentFromHtml
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -29,7 +29,7 @@ internal class ChatMessagesAdapter(
     private val emojiClickListener: OnEmojiClickListener,
 ) : RecyclerView.Adapter<ChatMessagesAdapter.BaseViewHolder>() {
 
-    var channelName = ""
+    var streamName = ""
     var topicName = ""
 
     var messagesBefore = NUMBER_OF_MESSAGES_BEFORE_ANCHOR
@@ -37,8 +37,9 @@ internal class ChatMessagesAdapter(
 
     var messagesWithDateSeparators: List<Any>
         set(value) {
+            // переходим на последнее сообщение в чате, если было добавлено новое сообщение
             if (messages.isNotEmpty() && value.isNotEmpty() && messagesWithDateSeparators.isNotEmpty()
-                && (messagesWithDateSeparators[1] == value[1] || messagesWithDateSeparators.last() != value.last())) {
+                && messagesWithDateSeparators.last() != value.last()) {
                 differ.submitList(value) {
                     chatRecycler.scrollToPosition(value.size - 1)
                 }
@@ -158,7 +159,7 @@ internal class ChatMessagesAdapter(
             message?.let {
                 messageView.messageId = message.id
                 username.text = it.userFullName
-                messageTextView.text = HtmlCompat.fromHtml(it.content, HtmlCompat.FROM_HTML_MODE_LEGACY)
+                messageTextView.text = getFormattedContentFromHtml(it.content)
 
                 if (it.avatarUrl != null) {
                     Glide.with(messageTextView)
@@ -184,7 +185,7 @@ internal class ChatMessagesAdapter(
         fun bind(message: Message?) {
             message?.let {
                 selfMessageView.messageId = message.id
-                messageTextView.text = HtmlCompat.fromHtml(it.content, HtmlCompat.FROM_HTML_MODE_LEGACY)
+                messageTextView.text = getFormattedContentFromHtml(it.content)
                 fillEmojiBox(it, emojiBox)
             }
         }

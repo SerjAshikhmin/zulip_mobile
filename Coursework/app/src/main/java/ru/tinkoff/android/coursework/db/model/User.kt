@@ -36,4 +36,4 @@ internal class User (
 
 }
 
-internal fun List<User>.toUsersDtoList(): List<UserDto> = map { userDto -> userDto.toUserDto()}
+internal fun List<User>.toUsersDtoList(): List<UserDto> = map { user -> user.toUserDto()}

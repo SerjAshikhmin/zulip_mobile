@@ -7,22 +7,22 @@ import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.api.NetworkService
-import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
-import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
+import ru.tinkoff.android.coursework.api.model.StreamDto
+import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
 
-internal class SubscribedFragment: ChannelsListFragment() {
+internal class AllStreamsListFragment: StreamsListFragment() {
 
-    override fun loadChannelsFromApi(adapter: ChannelsListAdapter) {
-        NetworkService.getZulipJsonApi().getSubscribedStreams()
+    override fun loadStreamsFromApi() {
+        NetworkService.getZulipJsonApi().getAllStreams()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onSuccess = {
                     with(adapter) {
                         showShimmer = false
-                        channels = it.subscriptions
-                        it.subscriptions.forEach { channel ->
-                            getTopicsInChannel(channel)
+                        streams = it.streams
+                        it.streams.forEach { stream ->
+                            getTopicsInStream(stream)
                         }
                         notifyDataSetChanged()
                     }
@@ -30,17 +30,25 @@ internal class SubscribedFragment: ChannelsListFragment() {
                 onError = {
                     with(adapter) {
                         showShimmer = false
-                        channels = listOf()
+                        streams = listOf()
                         notifyDataSetChanged()
                     }
 
                     binding.root.showSnackBarWithRetryAction(
-                        resources.getString(R.string.channels_not_found_error_text),
+                        resources.getString(R.string.streams_not_found_error_text),
                         Snackbar.LENGTH_LONG
-                    ) { configureChannelsListRecyclerAdapter() }
+                    ) { configureStreamsListRecyclerAdapter() }
                 }
             )
             .addTo(compositeDisposable)
+    }
+
+    fun updateStreams(newStreams: List<StreamDto>) {
+        adapter.apply {
+            showShimmer = false
+            streams = newStreams
+            notifyDataSetChanged()
+        }
     }
 
 }

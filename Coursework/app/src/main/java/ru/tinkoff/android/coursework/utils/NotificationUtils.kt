@@ -1,4 +1,4 @@
-package ru.tinkoff.android.coursework.ui.screens.utils
+package ru.tinkoff.android.coursework.utils
 
 import android.view.View
 import com.google.android.material.snackbar.Snackbar

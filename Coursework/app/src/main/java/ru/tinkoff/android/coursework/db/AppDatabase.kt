@@ -7,14 +7,14 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import ru.tinkoff.android.coursework.api.model.Converters
 import ru.tinkoff.android.coursework.db.dao.*
-import ru.tinkoff.android.coursework.db.model.Channel
+import ru.tinkoff.android.coursework.db.model.Stream
 import ru.tinkoff.android.coursework.db.model.Message
 import ru.tinkoff.android.coursework.db.model.User
 
 @Database(entities = [
     User::class,
     Message::class,
-    Channel::class
+    Stream::class
 ], version = 1)
 @TypeConverters(Converters::class)
 internal abstract class AppDatabase : RoomDatabase() {
@@ -23,7 +23,7 @@ internal abstract class AppDatabase : RoomDatabase() {
 
     abstract fun messageDao(): MessageDao
 
-    abstract fun channelDao(): ChannelDao
+    abstract fun streamDao(): StreamDao
 
     companion object {
 

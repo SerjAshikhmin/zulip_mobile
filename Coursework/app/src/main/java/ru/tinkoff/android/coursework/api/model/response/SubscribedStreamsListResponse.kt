@@ -2,11 +2,11 @@ package ru.tinkoff.android.coursework.api.model.response
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import ru.tinkoff.android.coursework.api.model.ChannelDto
+import ru.tinkoff.android.coursework.api.model.StreamDto
 
 @Serializable
-internal class SubscribedChannelsListResponse (
+internal class SubscribedStreamsListResponse (
 
     @SerialName("subscriptions")
-    val subscriptions: List<ChannelDto>
+    val subscriptions: List<StreamDto>
 )

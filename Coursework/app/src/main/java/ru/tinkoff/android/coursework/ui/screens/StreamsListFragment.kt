@@ -15,79 +15,80 @@ import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.api.NetworkService
-import ru.tinkoff.android.coursework.api.model.ChannelDto
+import ru.tinkoff.android.coursework.api.model.StreamDto
 import ru.tinkoff.android.coursework.api.model.TopicDto
-import ru.tinkoff.android.coursework.databinding.FragmentChannelsListBinding
+import ru.tinkoff.android.coursework.databinding.FragmentStreamsListBinding
 import ru.tinkoff.android.coursework.db.AppDatabase
-import ru.tinkoff.android.coursework.db.model.Channel
-import ru.tinkoff.android.coursework.db.model.toChannelsDtoList
-import ru.tinkoff.android.coursework.ui.screens.adapters.ChannelsListAdapter
+import ru.tinkoff.android.coursework.db.model.Stream
+import ru.tinkoff.android.coursework.db.model.toStreamsDtoList
+import ru.tinkoff.android.coursework.ui.screens.adapters.StreamsListAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnTopicItemClickListener
-import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
+import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
 
-internal abstract class ChannelsListFragment: CompositeDisposableFragment(), OnTopicItemClickListener {
+internal abstract class StreamsListFragment: CompositeDisposableFragment(), OnTopicItemClickListener {
 
-    lateinit var binding: FragmentChannelsListBinding
-    var db: AppDatabase? = null
+    lateinit var binding: FragmentStreamsListBinding
+    protected lateinit var adapter: StreamsListAdapter
+    private var db: AppDatabase? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ) : View {
-        binding = FragmentChannelsListBinding.inflate(inflater,container,false)
+        binding = FragmentStreamsListBinding.inflate(inflater,container,false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         db = AppDatabase.getAppDatabase(requireContext())
-        configureChannelsListRecyclerAdapter()
+        configureStreamsListRecyclerAdapter()
     }
 
-    override fun onTopicItemClick(topic: TopicDto, channelName: String) {
+    override fun onTopicItemClick(topic: TopicDto, streamName: String) {
         val bundle = bundleOf(
-            ChatActivity.CHANNEL_NAME_KEY to channelName,
+            ChatActivity.STREAM_NAME_KEY to streamName,
             ChatActivity.TOPIC_NAME_KEY to topic.name
         )
         NavHostFragment.findNavController(binding.root.findFragment())
             .navigate(R.id.action_nav_channels_to_nav_chat, bundle)
     }
 
-    abstract fun loadChannelsFromApi(adapter: ChannelsListAdapter)
+    abstract fun loadStreamsFromApi()
 
-    fun configureChannelsListRecyclerAdapter() {
-        val adapter = ChannelsListAdapter(this)
+    fun configureStreamsListRecyclerAdapter() {
+        adapter = StreamsListAdapter(this)
 
-        loadChannelsFromDb(adapter)
-        loadChannelsFromApi(adapter)
+        loadStreamsFromDb()
+        loadStreamsFromApi()
 
-        binding.channelsList.adapter = adapter
+        binding.streamsList.adapter = adapter
     }
 
-    fun getTopicsInChannel(channel: ChannelDto) {
-        NetworkService.getZulipJsonApi().getTopicsInStream(streamId = channel.streamId)
+    fun getTopicsInStream(stream: StreamDto) {
+        NetworkService.getZulipJsonApi().getTopicsInStream(streamId = stream.streamId)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onSuccess = {
-                    channel.topics = it.topics
-                    saveChannelToDb(channel.toChannelDb())
+                    stream.topics = it.topics
+                    saveStreamsToDb(stream.toStreamDb())
                 },
                 onError = {
-                    channel.topics = listOf()
+                    stream.topics = listOf()
 
                     binding.root.showSnackBarWithRetryAction(
                         binding.root.resources.getString(R.string.topics_not_found_error_text),
                         Snackbar.LENGTH_LONG
-                    ) { getTopicsInChannel(channel) }
+                    ) { getTopicsInStream(stream) }
                 }
             )
             .addTo(compositeDisposable)
     }
 
-    private fun loadChannelsFromDb(adapter: ChannelsListAdapter) {
-        db?.channelDao()?.getAll()
+    private fun loadStreamsFromDb() {
+        db?.streamDao()?.getAll()
             ?.subscribeOn(Schedulers.io())
             ?.observeOn(AndroidSchedulers.mainThread())
             ?.subscribeBy(
@@ -95,25 +96,25 @@ internal abstract class ChannelsListFragment: CompositeDisposableFragment(), OnT
                     if (it.isNotEmpty()) {
                         with(adapter) {
                             showShimmer = false
-                            channels = it.toChannelsDtoList()
+                            streams = it.toStreamsDtoList()
                             notifyDataSetChanged()
                         }
                     }
                 },
                 onError = {
-                    Log.e(TAG, resources.getString(R.string.loading_channels_from_db_error_text), it)
+                    Log.e(TAG, resources.getString(R.string.loading_streams_from_db_error_text), it)
                 }
             )
             ?.addTo(compositeDisposable)
     }
 
-    private fun saveChannelToDb(channel: Channel) {
-        db?.channelDao()?.save(channel)
+    private fun saveStreamsToDb(stream: Stream) {
+        db?.streamDao()?.save(stream)
             ?.subscribeOn(Schedulers.io())
             ?.observeOn(AndroidSchedulers.mainThread())
             ?.subscribeBy(
                 onError = {
-                    Log.e(TAG, resources.getString(R.string.saving_channels_to_db_error_text), it)
+                    Log.e(TAG, resources.getString(R.string.saving_streams_to_db_error_text), it)
                 }
             )
             ?.addTo(compositeDisposable)
@@ -121,7 +122,7 @@ internal abstract class ChannelsListFragment: CompositeDisposableFragment(), OnT
 
     companion object {
 
-        private const val TAG = "ChannelsListFragment"
+        private const val TAG = "StreamsListFragment"
     }
 
 }

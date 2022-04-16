@@ -1,39 +1,54 @@
 package ru.tinkoff.android.coursework.ui.screens
 
+import android.Manifest
 import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.api.LAST_MESSAGE_ANCHOR
-import ru.tinkoff.android.coursework.api.NUMBER_OF_MESSAGES_BEFORE_ANCHOR
 import ru.tinkoff.android.coursework.api.NetworkService
-import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
-import ru.tinkoff.android.coursework.api.model.request.NarrowRequest
-import ru.tinkoff.android.coursework.data.EmojiCodes
+import ru.tinkoff.android.coursework.api.ZulipJsonApi.Companion.LAST_MESSAGE_ANCHOR
+import ru.tinkoff.android.coursework.api.ZulipJsonApi.Companion.NUMBER_OF_MESSAGES_BEFORE_ANCHOR
 import ru.tinkoff.android.coursework.api.model.EmojiWithCountDto
+import ru.tinkoff.android.coursework.api.model.request.NarrowRequest
 import ru.tinkoff.android.coursework.api.model.toMessageDbList
+import ru.tinkoff.android.coursework.data.EmojiCodes
+import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
 import ru.tinkoff.android.coursework.db.AppDatabase
 import ru.tinkoff.android.coursework.db.model.Message
 import ru.tinkoff.android.coursework.ui.customviews.*
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChatMessagesAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnBottomSheetChooseEmojiListener
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnEmojiClickListener
-import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
+import ru.tinkoff.android.coursework.utils.copy
+import ru.tinkoff.android.coursework.utils.getFileNameFromContentUri
+import ru.tinkoff.android.coursework.utils.hasPermissions
+import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
+import java.io.*
+
 
 internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
     OnBottomSheetChooseEmojiListener {
@@ -45,6 +60,7 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
     private lateinit var compositeDisposable: CompositeDisposable
     private lateinit var topicName: String
     private var db: AppDatabase? = null
+    private var selectFileResultLauncher = initializeSelectFileResultLauncher()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,7 +97,7 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
                 onBackPressed()
             }
             topicName.text = adapter.topicName
-            channelName.text = adapter.channelName
+            streamName.text = adapter.streamName
         }
     }
 
@@ -98,9 +114,9 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
             topicName
         )
 
-        adapter.channelName = resources.getString(
-            R.string.channel_name_text,
-            intent.getStringExtra(CHANNEL_NAME_KEY)
+        adapter.streamName = resources.getString(
+            R.string.stream_name_text,
+            intent.getStringExtra(STREAM_NAME_KEY)
         )
 
         loadMessagesFromDb(topicName)
@@ -126,16 +142,11 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
         val sendButton = binding.sendButton
 
         enterMessage.doAfterTextChanged {
-            // TODO сделать кнопку с "+" с прозрачным бэкграундом и менять цвет при вводе
             if (enterMessage.text.isEmpty()) {
-                sendButton.setImageResource(R.drawable.baseline_add_20)
-                //sendButton.backgroundTintList =
-                //    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.darkGreyVariant))
+                sendButton.showAddIcon()
             }
             if (enterMessage.text.length == 1) {
-                sendButton.setImageResource(R.drawable.baseline_send_20)
-                //sendButton.backgroundTintList =
-                //    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.teal_500))
+                sendButton.showSendIcon()
             }
         }
 
@@ -143,15 +154,33 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
             if (enterMessage.text.isNotEmpty()) {
                 sendMessage(
                     content = enterMessage.text.toString(),
-                    stream = intent.getStringExtra(CHANNEL_NAME_KEY) ?: "",
+                    stream = intent.getStringExtra(STREAM_NAME_KEY) ?: "",
                     topic = intent.getStringExtra(TOPIC_NAME_KEY) ?: ""
                 )
                 enterMessage.text.clear()
                 val imm: InputMethodManager =
                     getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(enterMessage.windowToken, 0)
+            } else {
+                if (!hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
+                } else {
+                    selectFileResultLauncher.launch("*/*")
+                }
             }
         }
+    }
+
+    private fun FloatingActionButton.showAddIcon() {
+        setImageResource(R.drawable.ic_add)
+        imageTintList =
+            ColorStateList.valueOf(ContextCompat.getColor(this.context, R.color.grey_500))
+    }
+
+    private fun FloatingActionButton.showSendIcon() {
+        setImageResource(R.drawable.ic_send)
+        imageTintList =
+            ColorStateList.valueOf(ContextCompat.getColor(this.context, R.color.teal_500))
     }
 
     private fun createAndConfigureBottomSheet() {
@@ -322,7 +351,6 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
 
                         val isLastChanged = !oldMessages.isNullOrEmpty()
                                 && adapter.messagesWithDateSeparators.last() != oldMessages.last()
-                                //&& adapter.messagesWithDateSeparators.first() == oldMessages[oldMessages.lastIndex - adapter.messagesWithDateSeparators.lastIndex]
                         if (isLastChanged) adapter.notifyItemChanged(
                             adapter.messagesWithDateSeparators.size - 1
                         )
@@ -427,9 +455,50 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
             ?.addTo(compositeDisposable)
     }
 
+    private fun initializeSelectFileResultLauncher() =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { contentUri ->
+            val fileName = getFileNameFromContentUri(this, contentUri)
+            val file = File(cacheDir, fileName)
+            file.createNewFile()
+
+            try {
+                val oStream = FileOutputStream(file)
+                val inputStream = contentResolver.openInputStream(contentUri)
+                inputStream?.let { copy(inputStream, oStream) }
+                oStream.flush()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            val requestFile: RequestBody = file
+                .asRequestBody(contentResolver.getType(contentUri)?.toMediaTypeOrNull())
+            val body: MultipartBody.Part =
+                MultipartBody.Part.createFormData("file", file.name, requestFile)
+            uploadFile(body, fileName)
+        }
+
+    private fun uploadFile(fileBody: MultipartBody.Part, fileName: String) {
+        NetworkService.getZulipJsonApi().uploadFile(fileBody)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy (
+                onSuccess = {
+                    binding.enterMessage.text.append("[$fileName](${it.uri})\n\n")
+                    binding.sendButton.showSendIcon()
+                },
+                onError = {
+                    binding.root.showSnackBarWithRetryAction(
+                        resources.getString(R.string.uploading_file_error_text),
+                        Snackbar.LENGTH_LONG
+                    ) { uploadFile(fileBody, fileName) }
+                }
+            )
+            .addTo(compositeDisposable)
+    }
+
     companion object {
 
-        const val CHANNEL_NAME_KEY = "channelName"
+        const val STREAM_NAME_KEY = "streamName"
         const val TOPIC_NAME_KEY = "topicName"
         const val TOPIC_NARROW_OPERATOR_KEY = "topic"
         private const val TAG = "ChatActivity"

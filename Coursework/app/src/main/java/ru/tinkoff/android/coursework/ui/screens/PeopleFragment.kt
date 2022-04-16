@@ -22,7 +22,7 @@ import ru.tinkoff.android.coursework.db.model.User
 import ru.tinkoff.android.coursework.db.model.toUsersDtoList
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnUserItemClickListener
 import ru.tinkoff.android.coursework.ui.screens.adapters.PeopleListAdapter
-import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
+import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
 
 internal class PeopleFragment: CompositeDisposableFragment(), OnUserItemClickListener {
 

@@ -2,10 +2,10 @@ package ru.tinkoff.android.coursework.api.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import ru.tinkoff.android.coursework.db.model.Channel
+import ru.tinkoff.android.coursework.db.model.Stream
 
 @Serializable
-internal data class ChannelDto (
+internal data class StreamDto (
 
     @SerialName("stream_id")
     val streamId: Long,
@@ -16,8 +16,8 @@ internal data class ChannelDto (
     var topics: List<TopicDto> = listOf()
 ) {
 
-    fun toChannelDb(): Channel {
-        return Channel(
+    fun toStreamDb(): Stream {
+        return Stream(
             streamId = streamId,
             name = name,
             topics = topics

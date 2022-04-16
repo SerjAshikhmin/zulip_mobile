@@ -17,7 +17,7 @@ import ru.tinkoff.android.coursework.api.model.SELF_USER_ID
 import ru.tinkoff.android.coursework.databinding.FragmentProfileBinding
 import ru.tinkoff.android.coursework.api.model.UserDto
 import ru.tinkoff.android.coursework.db.AppDatabase
-import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
+import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
 
 internal class ProfileFragment: CompositeDisposableFragment() {
 

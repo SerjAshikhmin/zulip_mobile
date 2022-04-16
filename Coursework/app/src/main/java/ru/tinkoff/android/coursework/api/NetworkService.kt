@@ -12,9 +12,9 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 
 internal object NetworkService {
 
+    private const val BASE_URL = "https://tinkoff-android-spring-2022.zulipchat.com/"
     private const val AUTH_HEADER_NAME = "Authorization"
     private const val AUTH_TOKEN_VALUE = "Basic c2VyYXNoaWhtaW5AeWFuZGV4LnJ1OnZ2RUJwcFRwRTVvWmg2dVZCRDJ0WEFoY05sdjl1dXlK"
-    private const val BASE_URL = "https://tinkoff-android-spring-2022.zulipchat.com/"
 
     private val okClient = OkHttpClient.Builder()
         .addInterceptor(HttpLoggingInterceptor())
