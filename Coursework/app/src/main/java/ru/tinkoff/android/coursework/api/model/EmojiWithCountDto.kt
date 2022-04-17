@@ -1,6 +1,9 @@
 package ru.tinkoff.android.coursework.api.model
 
-internal class EmojiWithCount(
+import kotlinx.serialization.Serializable
+
+@Serializable
+internal class EmojiWithCountDto(
     val code: String,
     val count: Int,
     var selectedByCurrentUser: Boolean = false

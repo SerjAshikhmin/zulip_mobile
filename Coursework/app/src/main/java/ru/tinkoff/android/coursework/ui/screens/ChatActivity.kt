@@ -1,34 +1,54 @@
 package ru.tinkoff.android.coursework.ui.screens
 
+import android.Manifest
 import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
+import android.content.res.ColorStateList
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.api.NetworkService
-import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
+import ru.tinkoff.android.coursework.api.ZulipJsonApi.Companion.LAST_MESSAGE_ANCHOR
+import ru.tinkoff.android.coursework.api.ZulipJsonApi.Companion.NUMBER_OF_MESSAGES_BEFORE_ANCHOR
+import ru.tinkoff.android.coursework.api.model.EmojiWithCountDto
 import ru.tinkoff.android.coursework.api.model.request.NarrowRequest
-import ru.tinkoff.android.coursework.api.model.response.SendMessageResponse
+import ru.tinkoff.android.coursework.api.model.toMessageDbList
 import ru.tinkoff.android.coursework.data.EmojiCodes
-import ru.tinkoff.android.coursework.api.model.EmojiWithCount
+import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
+import ru.tinkoff.android.coursework.db.AppDatabase
+import ru.tinkoff.android.coursework.db.model.Message
 import ru.tinkoff.android.coursework.ui.customviews.*
 import ru.tinkoff.android.coursework.ui.screens.adapters.ChatMessagesAdapter
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnBottomSheetChooseEmojiListener
 import ru.tinkoff.android.coursework.ui.screens.adapters.OnEmojiClickListener
-import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
+import ru.tinkoff.android.coursework.utils.copy
+import ru.tinkoff.android.coursework.utils.getFileNameFromContentUri
+import ru.tinkoff.android.coursework.utils.hasPermissions
+import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
+import java.io.*
+
 
 internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
     OnBottomSheetChooseEmojiListener {
@@ -38,6 +58,9 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
     private lateinit var chatRecycler: RecyclerView
     private lateinit var adapter: ChatMessagesAdapter
     private lateinit var compositeDisposable: CompositeDisposable
+    private lateinit var topicName: String
+    private var db: AppDatabase? = null
+    private var selectFileResultLauncher = initializeSelectFileResultLauncher()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +68,7 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
         setContentView(binding.root)
 
         compositeDisposable = CompositeDisposable()
+        db = AppDatabase.getAppDatabase(this)
         createAndConfigureBottomSheet()
         configureEnterMessageSection()
         configureChatRecycler()
@@ -65,6 +89,103 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
                 removeReaction(emojiView, emojiName)
             }
         }
+    }
+
+    private fun configureToolbar() {
+        with(binding) {
+            backIcon.setOnClickListener {
+                onBackPressed()
+            }
+            topicName.text = adapter.topicName
+            streamName.text = adapter.streamName
+        }
+    }
+
+    private fun configureChatRecycler() {
+        chatRecycler = binding.chatRecycler
+        val layoutManager = LinearLayoutManager(this)
+        layoutManager.stackFromEnd = true
+        chatRecycler.layoutManager = layoutManager
+        adapter = ChatMessagesAdapter(dialog, chatRecycler, this)
+
+        topicName = intent.getStringExtra(TOPIC_NAME_KEY)?.lowercase() ?: ""
+        adapter.topicName = resources.getString(
+            R.string.topic_name_text,
+            topicName
+        )
+
+        adapter.streamName = resources.getString(
+            R.string.stream_name_text,
+            intent.getStringExtra(STREAM_NAME_KEY)
+        )
+
+        loadMessagesFromDb(topicName)
+        loadMessagesFromApi(isFirstPortion = true)
+
+        chatRecycler.adapter = adapter
+
+        chatRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
+                if (lastVisibleItemPosition == SCROLL_POSITION_FOR_NEXT_PORTION_LOADING) {
+                    this@ChatActivity.loadMessagesFromApi(isFirstPortion = false)
+                }
+            }
+        })
+    }
+
+    private fun configureEnterMessageSection() {
+        val enterMessage = binding.enterMessage
+        val sendButton = binding.sendButton
+
+        enterMessage.doAfterTextChanged {
+            if (enterMessage.text.isEmpty()) {
+                sendButton.showActionIcon(R.drawable.ic_add, R.color.grey_500)
+            }
+            if (enterMessage.text.length == 1) {
+                sendButton.showActionIcon(R.drawable.ic_send, R.color.teal_500)
+            }
+        }
+
+        sendButton.setOnClickListener {
+            if (enterMessage.text.isNotEmpty()) {
+                sendMessage(
+                    content = enterMessage.text.toString(),
+                    stream = intent.getStringExtra(STREAM_NAME_KEY) ?: "",
+                    topic = intent.getStringExtra(TOPIC_NAME_KEY) ?: ""
+                )
+                enterMessage.text.clear()
+                val imm: InputMethodManager =
+                    getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(enterMessage.windowToken, 0)
+            } else {
+                if (!hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
+                } else {
+                    selectFileResultLauncher.launch("*/*")
+                }
+            }
+        }
+    }
+
+    private fun FloatingActionButton.showActionIcon(drawableId: Int, colorId: Int) {
+        setImageResource(drawableId)
+        imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this.context, colorId))
+    }
+
+    private fun createAndConfigureBottomSheet() {
+        val bottomSheetLayout =
+            layoutInflater.inflate(R.layout.layout_bottom_sheet, null) as LinearLayout
+        dialog = EmojiBottomSheetDialog(
+            context = this,
+            theme = R.style.BottomSheetDialogTheme,
+            bottomSheet = bottomSheetLayout,
+            bottomSheetChooseEmojiListener = this
+        )
+        dialog.setContentView(bottomSheetLayout)
     }
 
     private fun addReaction(
@@ -184,7 +305,7 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
         if (emojiBox != null) {
             val emojiView = EmojiWithCountView.createEmojiWithCountView(
                 emojiBox = emojiBox,
-                emoji = EmojiWithCount(chosenEmojiCode, 0),
+                emoji = EmojiWithCountDto(chosenEmojiCode, 0),
                 messageId = messageId,
                 emojiClickListener = this
             )
@@ -195,85 +316,11 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
         }
     }
 
-    private fun configureToolbar() {
-        with(binding) {
-            backIcon.setOnClickListener {
-                onBackPressed()
-            }
-            topicName.text = adapter.topicName
-            channelName.text = adapter.channelName
-        }
-    }
-
-    private fun configureChatRecycler() {
-        chatRecycler = binding.chatRecycler
-        val layoutManager = LinearLayoutManager(this)
-        layoutManager.stackFromEnd = true
-        chatRecycler.layoutManager = layoutManager
-        adapter = ChatMessagesAdapter(dialog, chatRecycler, this)
-
-        adapter.topicName = resources.getString(
-            R.string.topic_name_text,
-            intent.getStringExtra(TOPIC_NAME_KEY)?.lowercase()
-        )
-
-        adapter.channelName = resources.getString(
-            R.string.channel_name_text,
-            intent.getStringExtra(CHANNEL_NAME_KEY)
-        )
-
-        getMessagesForChat()
-
-        chatRecycler.adapter = adapter
-    }
-
-    private fun configureEnterMessageSection() {
-        val enterMessage = binding.enterMessage
-        val sendButton = binding.sendButton
-
-        enterMessage.doAfterTextChanged {
-            // TODO сделать кнопку с "+" с прозрачным бэкграундом и менять цвет при вводе
-            if (enterMessage.text.isEmpty()) {
-                sendButton.setImageResource(R.drawable.baseline_add_20)
-                //sendButton.backgroundTintList =
-                //    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.darkGreyVariant))
-            }
-            if (enterMessage.text.length == 1) {
-                sendButton.setImageResource(R.drawable.baseline_send_20)
-                //sendButton.backgroundTintList =
-                //    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.teal_500))
-            }
-        }
-
-        sendButton.setOnClickListener {
-            if (enterMessage.text.isNotEmpty()) {
-                sendMessage(
-                    content = enterMessage.text.toString(),
-                    stream = intent.getStringExtra(CHANNEL_NAME_KEY) ?: "",
-                    topic = intent.getStringExtra(TOPIC_NAME_KEY) ?: ""
-                )
-                enterMessage.text.clear()
-                val imm: InputMethodManager =
-                    getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(enterMessage.windowToken, 0)
-            }
-        }
-    }
-
-    private fun createAndConfigureBottomSheet() {
-        val bottomSheetLayout =
-            layoutInflater.inflate(R.layout.layout_bottom_sheet, null) as LinearLayout
-        dialog = EmojiBottomSheetDialog(
-            context = this,
-            theme = R.style.BottomSheetDialogTheme,
-            bottomSheet = bottomSheetLayout,
-            bottomSheetChooseEmojiListener = this
-        )
-        dialog.setContentView(bottomSheetLayout)
-    }
-
-    private fun getMessagesForChat() {
+    private fun loadMessagesFromApi(isFirstPortion: Boolean) {
+        binding.progress.visibility = View.VISIBLE
         NetworkService.getZulipJsonApi().getMessages(
+            numBefore = adapter.messagesBefore,
+            anchor = adapter.anchor.toString(),
             narrow = arrayOf(
                 NarrowRequest(
                     operator = TOPIC_NARROW_OPERATOR_KEY,
@@ -285,13 +332,12 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onSuccess = {
-                    val oldMessages = adapter.messagesWithDateSeparators
-                    adapter.messages = it.messages
-                    val isLastChanged = !oldMessages.isNullOrEmpty()
-                            && adapter.messagesWithDateSeparators.last() != oldMessages.last()
-                    if (isLastChanged) adapter.notifyItemChanged(
-                        adapter.messagesWithDateSeparators.size - 1
-                    )
+                    binding.progress.visibility = View.GONE
+                    if (it.messages.isNotEmpty() && adapter.anchor != it.messages[0].id - 1) {
+                        val newMessages = it.messages.toMessageDbList()
+                        adapter.update(newMessages, isFirstPortion)
+                        cacheMessages(newMessages)
+                    }
                 },
                 onError = {
                     binding.root.showSnackBarWithRetryAction(
@@ -317,7 +363,8 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy (
                 onSuccess = {
-                    getMessagesForChat()
+                    adapter.anchor = LAST_MESSAGE_ANCHOR
+                    loadMessagesFromApi(isFirstPortion = true)
                 },
                 onError = {
                     binding.root.showSnackBarWithRetryAction(
@@ -329,11 +376,118 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
             .addTo(compositeDisposable)
     }
 
+    private fun loadMessagesFromDb(topicName: String) {
+        db?.messageDao()?.getAllByTopic(topicName)
+            ?.subscribeOn(Schedulers.io())
+            ?.observeOn(AndroidSchedulers.mainThread())
+            ?.subscribeBy(
+                onSuccess = {
+                    if (it.isNotEmpty()) {
+                        with(adapter) {
+                            binding.progress.visibility = View.GONE
+                            messages = it
+                            notifyDataSetChanged()
+                        }
+                    }
+                },
+                onError = {
+                    Log.e(TAG, resources.getString(R.string.loading_messages_from_db_error_text), it)
+                }
+            )
+            ?.addTo(compositeDisposable)
+    }
+
+    private fun cacheMessages(newMessages: List<Message>) {
+        if (adapter.messages.size <= MAX_NUMBER_OF_MESSAGES_IN_CACHE) {
+            val remainingMessagesLimit =
+                if (MAX_NUMBER_OF_MESSAGES_IN_CACHE - adapter.messages.size > NUMBER_OF_MESSAGES_PER_PORTION) {
+                    NUMBER_OF_MESSAGES_PER_PORTION
+                } else {
+                    MAX_NUMBER_OF_MESSAGES_IN_CACHE - adapter.messages.size
+                }
+            saveMessagesToDb(newMessages.takeLast(remainingMessagesLimit))
+        } else {
+            saveMessagesToDb(adapter.messages.takeLast(MAX_NUMBER_OF_MESSAGES_IN_CACHE))
+            val actualMessageIds = adapter.messages.takeLast(MAX_NUMBER_OF_MESSAGES_IN_CACHE).map { it.id }
+            removeRedundantMessagesFromDb(topicName, actualMessageIds)
+        }
+
+    }
+
+    private fun removeRedundantMessagesFromDb(topicName: String, actualMessageIds: List<Long>) {
+        db?.messageDao()?.removeRedundant(topicName, actualMessageIds)
+            ?.subscribeOn(Schedulers.io())
+            ?.observeOn(AndroidSchedulers.mainThread())
+            ?.subscribeBy(
+                onError = {
+                    Log.e(TAG, resources.getString(R.string.removing_messages_from_db_error_text), it)
+                }
+            )
+            ?.addTo(compositeDisposable)
+    }
+
+    private fun saveMessagesToDb(messages: List<Message>) {
+        db?.messageDao()?.saveAll(messages)
+            ?.subscribeOn(Schedulers.io())
+            ?.observeOn(AndroidSchedulers.mainThread())
+            ?.subscribeBy(
+                onError = {
+                    Log.e(TAG, resources.getString(R.string.saving_messages_to_db_error_text), it)
+                }
+            )
+            ?.addTo(compositeDisposable)
+    }
+
+    private fun initializeSelectFileResultLauncher() =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { contentUri ->
+            val fileName = getFileNameFromContentUri(this, contentUri)
+            val file = File(cacheDir, fileName)
+            file.createNewFile()
+
+            try {
+                val oStream = FileOutputStream(file)
+                val inputStream = contentResolver.openInputStream(contentUri)
+                inputStream?.let { copy(inputStream, oStream) }
+                oStream.flush()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            val requestFile: RequestBody = file
+                .asRequestBody(contentResolver.getType(contentUri)?.toMediaTypeOrNull())
+            val body: MultipartBody.Part =
+                MultipartBody.Part.createFormData("file", file.name, requestFile)
+            uploadFile(body, fileName)
+        }
+
+    private fun uploadFile(fileBody: MultipartBody.Part, fileName: String) {
+        NetworkService.getZulipJsonApi().uploadFile(fileBody)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy (
+                onSuccess = {
+                    binding.enterMessage.text.append("[$fileName](${it.uri})\n\n")
+                    binding.sendButton.showActionIcon(R.drawable.ic_send, R.color.teal_500)
+                },
+                onError = {
+                    binding.root.showSnackBarWithRetryAction(
+                        resources.getString(R.string.uploading_file_error_text),
+                        Snackbar.LENGTH_LONG
+                    ) { uploadFile(fileBody, fileName) }
+                }
+            )
+            .addTo(compositeDisposable)
+    }
+
     companion object {
 
-        const val CHANNEL_NAME_KEY = "channelName"
+        const val STREAM_NAME_KEY = "streamName"
         const val TOPIC_NAME_KEY = "topicName"
         const val TOPIC_NARROW_OPERATOR_KEY = "topic"
+        private const val TAG = "ChatActivity"
+        private const val MAX_NUMBER_OF_MESSAGES_IN_CACHE = 50
+        private const val NUMBER_OF_MESSAGES_PER_PORTION = NUMBER_OF_MESSAGES_BEFORE_ANCHOR
+        private const val SCROLL_POSITION_FOR_NEXT_PORTION_LOADING = 5
     }
 
 }

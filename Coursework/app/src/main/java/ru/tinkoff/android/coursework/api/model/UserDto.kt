@@ -2,11 +2,12 @@ package ru.tinkoff.android.coursework.api.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import ru.tinkoff.android.coursework.db.model.User
 
 internal const val SELF_USER_ID = 491498L
 
 @Serializable
-internal data class User (
+internal data class UserDto (
 
     @SerialName("user_id")
     val userId: Long,
@@ -21,4 +22,16 @@ internal data class User (
     val avatarUrl: String?,
 
     var presence: String? = "undefined"
-)
+) {
+
+    fun toUserDb(): User {
+        return User(
+            userId = userId,
+            fullName = fullName,
+            email = email,
+            avatarUrl = avatarUrl,
+            presence = presence
+        )
+    }
+
+}

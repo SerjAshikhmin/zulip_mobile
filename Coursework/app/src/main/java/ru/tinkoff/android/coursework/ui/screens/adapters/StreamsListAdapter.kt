@@ -8,15 +8,15 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.disposables.CompositeDisposable
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.databinding.ItemChannelInListBinding
-import ru.tinkoff.android.coursework.api.model.Channel
+import ru.tinkoff.android.coursework.api.model.StreamDto
+import ru.tinkoff.android.coursework.databinding.ItemStreamInListBinding
 
-internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicItemClickListener)
-    : RecyclerView.Adapter<ChannelsListAdapter.ChannelListViewHolder>() {
+internal class StreamsListAdapter(private val topicItemClickListener: OnTopicItemClickListener)
+    : RecyclerView.Adapter<StreamsListAdapter.StreamListViewHolder>() {
 
     var showShimmer = true
 
-    var channels: List<Channel>
+    var streams: List<StreamDto>
         set(value) = differ.submitList(value)
         get() = differ.currentList
 
@@ -24,24 +24,24 @@ internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicIt
 
     private val differ = AsyncListDiffer(this, DiffCallback())
 
-    class DiffCallback: DiffUtil.ItemCallback<Channel>() {
+    class DiffCallback: DiffUtil.ItemCallback<StreamDto>() {
 
-        override fun areItemsTheSame(oldItem: Channel, newItem: Channel): Boolean {
+        override fun areItemsTheSame(oldItem: StreamDto, newItem: StreamDto): Boolean {
             return oldItem.name == newItem.name
         }
 
-        override fun areContentsTheSame(oldItem: Channel, newItem: Channel): Boolean {
+        override fun areContentsTheSame(oldItem: StreamDto, newItem: StreamDto): Boolean {
             return oldItem == newItem
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChannelListViewHolder {
-        val channelItemBinding = ItemChannelInListBinding
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StreamListViewHolder {
+        val streamItemBinding = ItemStreamInListBinding
             .inflate(LayoutInflater.from(parent.context), parent, false)
-        return ChannelListViewHolder(channelItemBinding)
+        return StreamListViewHolder(streamItemBinding)
     }
 
-    override fun onBindViewHolder(holder: ChannelListViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: StreamListViewHolder, position: Int) {
         if (showShimmer) {
             holder.shimmedText.visibility = View.VISIBLE
             holder.shimmerFrameLayout.startShimmer()
@@ -49,16 +49,16 @@ internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicIt
             holder.shimmerFrameLayout.stopShimmer()
             holder.shimmerFrameLayout.setShimmer(null)
             holder.shimmedText.visibility = View.GONE
-            holder.channelName.visibility = View.VISIBLE
+            holder.streamName.visibility = View.VISIBLE
 
-            val channel = channels[position]
-            holder.initChannelListener(channel)
-            holder.bind(channel)
+            val stream = streams[position]
+            holder.initStreamListener(stream)
+            holder.bind(stream)
         }
     }
 
     override fun getItemCount(): Int {
-        return if (showShimmer) SHIMMER_ITEM_COUNT else channels.size
+        return if (showShimmer) SHIMMER_ITEM_COUNT else streams.size
     }
 
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
@@ -66,34 +66,34 @@ internal class ChannelsListAdapter(private val topicItemClickListener: OnTopicIt
         compositeDisposable.dispose()
     }
 
-    inner class ChannelListViewHolder(private val binding: ItemChannelInListBinding)
+    inner class StreamListViewHolder(private val binding: ItemStreamInListBinding)
         : RecyclerView.ViewHolder(binding.root) {
 
-        internal val channelName = binding.channelName
+        internal val streamName = binding.streamName
         internal val shimmedText = binding.shimmedText
         internal val shimmerFrameLayout = binding.shimmerLayout
         private val arrowIcon = binding.arrowIcon
         private var isOpened = false
 
-        fun bind(channel: Channel) {
-            channelName.text =
-                binding.root.resources.getString(R.string.channel_name_text, channel.name)
+        fun bind(stream: StreamDto) {
+            streamName.text =
+                binding.root.resources.getString(R.string.stream_name_text, stream.name)
         }
 
-        fun initChannelListener(channel: Channel) {
+        fun initStreamListener(stream: StreamDto) {
             binding.root.setOnClickListener {
-                configureTopicItemAdapter(channel)
+                configureTopicItemAdapter(stream)
             }
         }
 
-        private fun configureTopicItemAdapter(channel: Channel) {
-            val topItemAdapter = TopicItemAdapter(this@ChannelsListAdapter.topicItemClickListener)
+        private fun configureTopicItemAdapter(stream: StreamDto) {
+            val topItemAdapter = TopicItemAdapter(this@StreamsListAdapter.topicItemClickListener)
 
             if (!isOpened) {
                 with(topItemAdapter) {
                     showShimmer = false
-                    topics = channel.topics
-                    channelName = channel.name
+                    topics = stream.topics
+                    streamName = stream.name
                 }
                 arrowIcon.setImageResource(R.drawable.ic_arrow_up)
                 isOpened = true

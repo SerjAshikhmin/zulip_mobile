@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class Topic (
+internal data class TopicDto (
 
     @SerialName("name")
     val name: String,

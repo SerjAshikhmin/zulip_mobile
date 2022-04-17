@@ -6,7 +6,7 @@
     android:layout_height="wrap_content">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/channel_item"
+        android:id="@+id/stream_item"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -22,8 +22,8 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
+            android:id="@+id/stream_name"
             android:visibility="gone"
-            android:id="@+id/channel_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:padding="16dp"
@@ -48,7 +48,7 @@
             layout="@layout/fragment_item_in_list_separator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/channel_name" />
+            app:layout_constraintTop_toBottomOf="@id/stream_name" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/topics_list"

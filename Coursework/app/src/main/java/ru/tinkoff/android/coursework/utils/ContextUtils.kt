@@ -1,4 +1,4 @@
-package ru.tinkoff.android.coursework.ui.screens.utils
+package ru.tinkoff.android.coursework.utils
 
 import android.content.Context
 import android.util.DisplayMetrics

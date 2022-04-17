@@ -1,4 +1,4 @@
-package ru.tinkoff.android.coursework.ui.screens.utils
+package ru.tinkoff.android.coursework.utils
 
 import java.time.Instant
 import java.time.LocalDateTime

@@ -1,6 +1,7 @@
 package ru.tinkoff.android.coursework.ui.screens
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,13 +13,16 @@ import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.api.NetworkService
+import ru.tinkoff.android.coursework.api.model.SELF_USER_ID
 import ru.tinkoff.android.coursework.databinding.FragmentProfileBinding
-import ru.tinkoff.android.coursework.api.model.User
-import ru.tinkoff.android.coursework.ui.screens.utils.showSnackBarWithRetryAction
+import ru.tinkoff.android.coursework.api.model.UserDto
+import ru.tinkoff.android.coursework.db.AppDatabase
+import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
 
 internal class ProfileFragment: CompositeDisposableFragment() {
 
     private lateinit var binding: FragmentProfileBinding
+    private var db: AppDatabase? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -32,15 +36,18 @@ internal class ProfileFragment: CompositeDisposableFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        db = AppDatabase.getAppDatabase(requireContext())
+
         binding.backIcon.setOnClickListener {
             requireActivity().onBackPressed()
         }
 
-        val user: User
+        val user: UserDto
         if (arguments == null) {
-            getOwnUser()
+            getUserFromDb(SELF_USER_ID)
+            getOwnUserFromApi()
         } else {
-            user = User(
+            user = UserDto(
                 userId = requireArguments().getLong(USER_ID_KEY),
                 fullName = requireArguments().getString(USERNAME_KEY),
                 email = requireArguments().getString(EMAIL_KEY),
@@ -51,7 +58,7 @@ internal class ProfileFragment: CompositeDisposableFragment() {
         }
     }
 
-    private fun fillViewsWithUserData(user: User) {
+    private fun fillViewsWithUserData(user: UserDto) {
         binding.username.text = user.fullName
         binding.userPresence.text = user.presence
         when (user.presence) {
@@ -77,7 +84,22 @@ internal class ProfileFragment: CompositeDisposableFragment() {
         }
     }
 
-    private fun getOwnUser() {
+    private fun getUserFromDb(userId: Long) {
+        db?.userDao()?.getById(userId)
+            ?.subscribeOn(Schedulers.io())
+            ?.observeOn(AndroidSchedulers.mainThread())
+            ?.subscribeBy(
+                onSuccess = {
+                    fillViewsWithUserData(it.toUserDto())
+                },
+                onError = {
+                    Log.e(TAG, resources.getString(R.string.loading_users_from_db_error_text), it)
+                }
+            )
+            ?.addTo(compositeDisposable)
+    }
+
+    private fun getOwnUserFromApi() {
         NetworkService.getZulipJsonApi().getOwnUser()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -89,13 +111,13 @@ internal class ProfileFragment: CompositeDisposableFragment() {
                     binding.root.showSnackBarWithRetryAction(
                         resources.getString(R.string.user_not_found_error_text),
                         Snackbar.LENGTH_LONG
-                    ) { getOwnUser() }
+                    ) { getOwnUserFromApi() }
                 }
             )
             .addTo(compositeDisposable)
     }
 
-    private fun getUserPresence(user: User) {
+    private fun getUserPresence(user: UserDto) {
         NetworkService.getZulipJsonApi().getUserPresence(
             userIdOrEmail = user.userId.toString()
         )
@@ -130,6 +152,8 @@ internal class ProfileFragment: CompositeDisposableFragment() {
         const val ACTIVE_PRESENCE_COLOR = R.color.green_500
         const val IDLE_PRESENCE_COLOR = R.color.orange_500
         const val OFFLINE_PRESENCE_COLOR = R.color.red_500
+
+        private const val TAG = "ProfileFragment"
     }
 
 }

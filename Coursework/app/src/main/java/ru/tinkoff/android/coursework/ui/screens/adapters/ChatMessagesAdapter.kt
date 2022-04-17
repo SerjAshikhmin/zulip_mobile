@@ -6,20 +6,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.core.text.HtmlCompat
 import androidx.core.view.setMargins
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.api.model.EmojiWithCount
-import ru.tinkoff.android.coursework.api.model.Message
-import ru.tinkoff.android.coursework.api.model.Reaction
+import ru.tinkoff.android.coursework.api.ZulipJsonApi.Companion.LAST_MESSAGE_ANCHOR
+import ru.tinkoff.android.coursework.api.ZulipJsonApi.Companion.NUMBER_OF_MESSAGES_BEFORE_ANCHOR
 import ru.tinkoff.android.coursework.api.model.SELF_USER_ID
+import ru.tinkoff.android.coursework.db.model.Message
 import ru.tinkoff.android.coursework.ui.customviews.*
-import ru.tinkoff.android.coursework.ui.screens.utils.dpToPx
-import ru.tinkoff.android.coursework.ui.screens.utils.getDateTimeFromTimestamp
+import ru.tinkoff.android.coursework.utils.dpToPx
+import ru.tinkoff.android.coursework.utils.getDateTimeFromTimestamp
+import ru.tinkoff.android.coursework.utils.getFormattedContentFromHtml
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -29,12 +29,17 @@ internal class ChatMessagesAdapter(
     private val emojiClickListener: OnEmojiClickListener,
 ) : RecyclerView.Adapter<ChatMessagesAdapter.BaseViewHolder>() {
 
-    var channelName = ""
+    var streamName = ""
     var topicName = ""
+
+    var messagesBefore = NUMBER_OF_MESSAGES_BEFORE_ANCHOR
+    var anchor = LAST_MESSAGE_ANCHOR
 
     var messagesWithDateSeparators: List<Any>
         set(value) {
-            if (messagesWithDateSeparators.isNotEmpty() && messagesWithDateSeparators[0] == value[0]) {
+            // переходим на последнее сообщение в чате, если было добавлено новое сообщение
+            if (messages.isNotEmpty() && value.isNotEmpty() && messagesWithDateSeparators.isNotEmpty()
+                && messagesWithDateSeparators.last() != value.last()) {
                 differ.submitList(value) {
                     chatRecycler.scrollToPosition(value.size - 1)
                 }
@@ -134,9 +139,15 @@ internal class ChatMessagesAdapter(
         }
     }
 
-    fun update(newMessages: List<Any>, position: Int) {
-        messagesWithDateSeparators = newMessages
-        notifyItemInserted(position)
+    fun update(newMessages: List<Message>, isFirstPortion: Boolean) {
+        if (isFirstPortion) messages = mutableListOf()
+        anchor = newMessages[0].id - 1
+        val oldMessages = messagesWithDateSeparators
+        messages = newMessages.plus(messages)
+
+        val isLastChanged = !oldMessages.isNullOrEmpty()
+                && messagesWithDateSeparators.last() != oldMessages.last()
+        if (isLastChanged) notifyItemChanged(messagesWithDateSeparators.size - 1)
     }
 
     override fun getItemCount(): Int = messagesWithDateSeparators.size
@@ -154,7 +165,7 @@ internal class ChatMessagesAdapter(
             message?.let {
                 messageView.messageId = message.id
                 username.text = it.userFullName
-                messageTextView.text = HtmlCompat.fromHtml(it.content, HtmlCompat.FROM_HTML_MODE_LEGACY)
+                messageTextView.text = getFormattedContentFromHtml(it.content)
 
                 if (it.avatarUrl != null) {
                     Glide.with(messageTextView)
@@ -180,7 +191,7 @@ internal class ChatMessagesAdapter(
         fun bind(message: Message?) {
             message?.let {
                 selfMessageView.messageId = message.id
-                messageTextView.text = HtmlCompat.fromHtml(it.content, HtmlCompat.FROM_HTML_MODE_LEGACY)
+                messageTextView.text = getFormattedContentFromHtml(it.content)
                 fillEmojiBox(it, emojiBox)
             }
         }
@@ -224,8 +235,6 @@ internal class ChatMessagesAdapter(
     }
 
     private fun fillEmojiBox(message: Message, emojiBox: FlexBoxLayout) {
-        val emojis = getEmojisWithCountList(message.reactions)
-
         emojiBox.removeAllViews()
         val addEmojiView = LayoutInflater.from(emojiBox.context).inflate(
             R.layout.view_image_add_emoji,
@@ -237,8 +246,8 @@ internal class ChatMessagesAdapter(
         }
         emojiBox.addView(addEmojiView)
 
-        if (emojis.isNotEmpty()) {
-            emojis.forEach { emoji ->
+        if (message.emojis.isNotEmpty()) {
+            message.emojis.forEach { emoji ->
                 val emojiView = EmojiWithCountView.createEmojiWithCountView(
                     emojiBox = emojiBox,
                     emoji = emoji,
@@ -250,27 +259,6 @@ internal class ChatMessagesAdapter(
             }
             addEmojiView?.visibility = View.VISIBLE
         }
-    }
-
-    /**
-     * Преобразует список реакций всего сообщения в список эмоджи.
-     * Для каждой реакции подсчитывает ее количество в сообщении.
-     * В полученном списке находит и помечает эмоджи, отмеченные текущим пользователем.
-     *
-     * @param reactions список реакций
-     * @return список эмоджи с количеством вхождений в сообщение
-     */
-    private fun getEmojisWithCountList(reactions: List<Reaction>): List<EmojiWithCount> {
-        return reactions
-            .groupBy { reaction -> reaction.emojiCode }
-            .map { emoji -> EmojiWithCount(emoji.key, emoji.value.size) }
-            .map { emojiWithCount ->
-                val selfReaction = reactions.firstOrNull { reaction ->
-                    reaction.userId == SELF_USER_ID && reaction.emojiCode == emojiWithCount.code
-                }
-                if (selfReaction != null) emojiWithCount.selectedByCurrentUser = true
-                emojiWithCount
-            }
     }
 
     companion object {
