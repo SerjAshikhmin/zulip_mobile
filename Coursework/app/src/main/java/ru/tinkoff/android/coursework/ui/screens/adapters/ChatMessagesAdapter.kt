@@ -139,9 +139,15 @@ internal class ChatMessagesAdapter(
         }
     }
 
-    fun update(newMessages: List<Any>, position: Int) {
-        messagesWithDateSeparators = newMessages
-        notifyItemInserted(position)
+    fun update(newMessages: List<Message>, isFirstPortion: Boolean) {
+        if (isFirstPortion) messages = mutableListOf()
+        anchor = newMessages[0].id - 1
+        val oldMessages = messagesWithDateSeparators
+        messages = newMessages.plus(messages)
+
+        val isLastChanged = !oldMessages.isNullOrEmpty()
+                && messagesWithDateSeparators.last() != oldMessages.last()
+        if (isLastChanged) notifyItemChanged(messagesWithDateSeparators.size - 1)
     }
 
     override fun getItemCount(): Int = messagesWithDateSeparators.size

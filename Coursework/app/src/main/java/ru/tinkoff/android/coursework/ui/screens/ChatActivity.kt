@@ -130,7 +130,7 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
                 super.onScrolled(recyclerView, dx, dy)
 
                 val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
-                if (lastVisibleItemPosition == 5) {
+                if (lastVisibleItemPosition == SCROLL_POSITION_FOR_NEXT_PORTION_LOADING) {
                     this@ChatActivity.loadMessagesFromApi(isFirstPortion = false)
                 }
             }
@@ -143,10 +143,10 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
 
         enterMessage.doAfterTextChanged {
             if (enterMessage.text.isEmpty()) {
-                sendButton.showAddIcon()
+                sendButton.showActionIcon(R.drawable.ic_add, R.color.grey_500)
             }
             if (enterMessage.text.length == 1) {
-                sendButton.showSendIcon()
+                sendButton.showActionIcon(R.drawable.ic_send, R.color.teal_500)
             }
         }
 
@@ -171,16 +171,9 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
         }
     }
 
-    private fun FloatingActionButton.showAddIcon() {
-        setImageResource(R.drawable.ic_add)
-        imageTintList =
-            ColorStateList.valueOf(ContextCompat.getColor(this.context, R.color.grey_500))
-    }
-
-    private fun FloatingActionButton.showSendIcon() {
-        setImageResource(R.drawable.ic_send)
-        imageTintList =
-            ColorStateList.valueOf(ContextCompat.getColor(this.context, R.color.teal_500))
+    private fun FloatingActionButton.showActionIcon(drawableId: Int, colorId: Int) {
+        setImageResource(drawableId)
+        imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this.context, colorId))
     }
 
     private fun createAndConfigureBottomSheet() {
@@ -341,19 +334,9 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
                 onSuccess = {
                     binding.progress.visibility = View.GONE
                     if (it.messages.isNotEmpty() && adapter.anchor != it.messages[0].id - 1) {
-                        if (isFirstPortion) adapter.messages = mutableListOf()
-                        adapter.anchor = it.messages[0].id - 1
-                        val oldMessages = adapter.messagesWithDateSeparators
                         val newMessages = it.messages.toMessageDbList()
-                        adapter.messages = newMessages.plus(adapter.messages)
-
+                        adapter.update(newMessages, isFirstPortion)
                         cacheMessages(newMessages)
-
-                        val isLastChanged = !oldMessages.isNullOrEmpty()
-                                && adapter.messagesWithDateSeparators.last() != oldMessages.last()
-                        if (isLastChanged) adapter.notifyItemChanged(
-                            adapter.messagesWithDateSeparators.size - 1
-                        )
                     }
                 },
                 onError = {
@@ -484,7 +467,7 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
             .subscribeBy (
                 onSuccess = {
                     binding.enterMessage.text.append("[$fileName](${it.uri})\n\n")
-                    binding.sendButton.showSendIcon()
+                    binding.sendButton.showActionIcon(R.drawable.ic_send, R.color.teal_500)
                 },
                 onError = {
                     binding.root.showSnackBarWithRetryAction(
@@ -504,6 +487,7 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
         private const val TAG = "ChatActivity"
         private const val MAX_NUMBER_OF_MESSAGES_IN_CACHE = 50
         private const val NUMBER_OF_MESSAGES_PER_PORTION = NUMBER_OF_MESSAGES_BEFORE_ANCHOR
+        private const val SCROLL_POSITION_FOR_NEXT_PORTION_LOADING = 5
     }
 
 }
