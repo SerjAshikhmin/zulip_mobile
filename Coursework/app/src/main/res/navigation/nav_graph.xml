@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/nav_channels"
-        android:name="ru.tinkoff.android.coursework.ui.screens.ChannelsFragment"
+        android:name="ru.tinkoff.android.coursework.presentation.screens.ChannelsFragment"
         android:label="@string/channels_menu_title"
         tools:layout="@layout/fragment_channels">
 
@@ -19,7 +19,7 @@
 
     <fragment
         android:id="@+id/nav_people"
-        android:name="ru.tinkoff.android.coursework.ui.screens.PeopleFragment"
+        android:name="ru.tinkoff.android.coursework.presentation.screens.PeopleFragment"
         android:label="@string/people_menu_title"
         tools:layout="@layout/fragment_people">
 
@@ -31,7 +31,7 @@
 
     <fragment
         android:id="@+id/nav_profile"
-        android:name="ru.tinkoff.android.coursework.ui.screens.ProfileFragment"
+        android:name="ru.tinkoff.android.coursework.presentation.screens.ProfileFragment"
         android:label="@string/profile_menu_title"
         tools:layout="@layout/fragment_profile">
 
@@ -39,7 +39,7 @@
 
     <activity
         android:id="@+id/nav_chat"
-        android:name="ru.tinkoff.android.coursework.ui.screens.ChatActivity"
+        android:name="ru.tinkoff.android.coursework.presentation.screens.ChatActivity"
         android:label="@string/chat_menu_title"
         tools:layout="@layout/activity_chat">
 
@@ -47,7 +47,7 @@
 
     <activity
         android:id="@+id/nav_user"
-        android:name="ru.tinkoff.android.coursework.ui.screens.UserActivity"
+        android:name="ru.tinkoff.android.coursework.presentation.screens.UserActivity"
         android:label="@string/user_menu_title"
         tools:layout="@layout/activity_user">
 

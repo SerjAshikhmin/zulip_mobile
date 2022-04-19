@@ -16,7 +16,7 @@
         android:textColor="@color/whiteVariant"
         android:textSize="16sp" />
 
-    <ru.tinkoff.android.coursework.ui.customviews.FlexBoxLayout
+    <ru.tinkoff.android.coursework.presentation.customviews.FlexBoxLayout
         android:id="@+id/emoji_box"
         android:layout_width="wrap_content"
         app:flexBoxMaxWidth="250dp"
