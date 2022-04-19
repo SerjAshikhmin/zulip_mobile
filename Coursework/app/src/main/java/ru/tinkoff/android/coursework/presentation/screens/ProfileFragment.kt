@@ -17,10 +17,18 @@ import ru.tinkoff.android.coursework.data.api.model.SELF_USER_ID
 import ru.tinkoff.android.coursework.databinding.FragmentProfileBinding
 import ru.tinkoff.android.coursework.data.api.model.UserDto
 import ru.tinkoff.android.coursework.data.db.AppDatabase
+import ru.tinkoff.android.coursework.di.GlobalDi
+import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleEvent
+import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileEffect
+import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileEvent
+import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileState
 import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
+import vivid.money.elmslie.android.base.ElmFragment
+import vivid.money.elmslie.core.store.Store
 
-internal class ProfileFragment: CompositeDisposableFragment() {
+internal class ProfileFragment : ElmFragment<ProfileEvent, ProfileEffect, ProfileState>() {
 
+    override var initEvent: ProfileEvent = ProfileEvent.Ui.InitEvent
     private lateinit var binding: FragmentProfileBinding
     private var db: AppDatabase? = null
 
@@ -35,14 +43,20 @@ internal class ProfileFragment: CompositeDisposableFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         db = AppDatabase.getAppDatabase(requireContext())
-
         binding.backIcon.setOnClickListener {
             requireActivity().onBackPressed()
         }
 
-        val user: UserDto
+        if (arguments == null) store.accept(ProfileEvent.Ui.LoadOwnProfile) else store.accept(ProfileEvent.Ui.LoadProfile(requireArguments()))
+
+        /*if (arguments != null) {
+            store.stop()
+            store.start()
+            store.accept(ProfileEvent.Ui.LoadProfile(requireArguments()))
+        }*/
+
+        /*val user: UserDto
         if (arguments == null) {
             getUserFromDb(SELF_USER_ID)
             getOwnUserFromApi()
@@ -55,7 +69,19 @@ internal class ProfileFragment: CompositeDisposableFragment() {
                 presence = requireArguments().getString(USER_PRESENCE_KEY)
             )
             fillViewsWithUserData(user)
-        }
+        }*/
+    }
+
+    override fun createStore(): Store<ProfileEvent, ProfileEffect, ProfileState> {
+        return GlobalDi.INSTANCE.profileElmStoreFactory.provide()
+    }
+
+    override fun render(state: ProfileState) {
+        if (state.items.isNotEmpty()) fillViewsWithUserData(state.items[0])
+    }
+
+    override fun handleEffect(effect: ProfileEffect): Unit? {
+        return super.handleEffect(effect)
     }
 
     private fun fillViewsWithUserData(user: UserDto) {
@@ -84,7 +110,7 @@ internal class ProfileFragment: CompositeDisposableFragment() {
         }
     }
 
-    private fun getUserFromDb(userId: Long) {
+   /* private fun getUserFromDb(userId: Long) {
         db?.userDao()?.getById(userId)
             ?.subscribeOn(Schedulers.io())
             ?.observeOn(AndroidSchedulers.mainThread())
@@ -136,7 +162,7 @@ internal class ProfileFragment: CompositeDisposableFragment() {
                 }
             )
             .addTo(disposables)
-    }
+    }*/
 
     companion object {
 
