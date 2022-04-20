@@ -44,7 +44,6 @@ internal class PeopleFragment
         super.onViewCreated(view, savedInstanceState)
         db = AppDatabase.getAppDatabase(requireContext())
         binding.peopleList.adapter = adapter
-        //store.accept(PeopleEvent.Ui.LoadPeopleList)
     }
 
     override fun createStore(): Store<PeopleEvent, PeopleEffect, PeopleState> {
@@ -54,7 +53,7 @@ internal class PeopleFragment
     override fun render(state: PeopleState) {
         with(adapter) {
             showShimmer = state.isLoading
-            users = state.items as List<UserDto>
+            users = state.items
             notifyDataSetChanged()
         }
     }

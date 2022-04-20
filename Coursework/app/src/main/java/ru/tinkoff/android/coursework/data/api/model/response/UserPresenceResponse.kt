@@ -7,5 +7,5 @@ import kotlinx.serialization.Serializable
 internal class UserPresenceResponse (
 
     @SerialName("presence")
-    val presence: UserPresenceValues
+    val presence: UserPresenceValues = UserPresenceValues()
 )

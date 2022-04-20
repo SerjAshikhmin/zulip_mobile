@@ -7,18 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.rxkotlin.subscribeBy
-import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.api.NetworkService
-import ru.tinkoff.android.coursework.data.api.model.SELF_USER_ID
 import ru.tinkoff.android.coursework.databinding.FragmentProfileBinding
 import ru.tinkoff.android.coursework.data.api.model.UserDto
 import ru.tinkoff.android.coursework.data.db.AppDatabase
 import ru.tinkoff.android.coursework.di.GlobalDi
-import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleEvent
 import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileEffect
 import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileEvent
 import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileState
@@ -48,28 +41,11 @@ internal class ProfileFragment : ElmFragment<ProfileEvent, ProfileEffect, Profil
             requireActivity().onBackPressed()
         }
 
-        if (arguments == null) store.accept(ProfileEvent.Ui.LoadOwnProfile) else store.accept(ProfileEvent.Ui.LoadProfile(requireArguments()))
-
-        /*if (arguments != null) {
-            store.stop()
-            store.start()
-            store.accept(ProfileEvent.Ui.LoadProfile(requireArguments()))
-        }*/
-
-        /*val user: UserDto
         if (arguments == null) {
-            getUserFromDb(SELF_USER_ID)
-            getOwnUserFromApi()
+            store.accept(ProfileEvent.Ui.LoadOwnProfile)
         } else {
-            user = UserDto(
-                userId = requireArguments().getLong(USER_ID_KEY),
-                fullName = requireArguments().getString(USERNAME_KEY),
-                email = requireArguments().getString(EMAIL_KEY),
-                avatarUrl = requireArguments().getString(AVATAR_KEY),
-                presence = requireArguments().getString(USER_PRESENCE_KEY)
-            )
-            fillViewsWithUserData(user)
-        }*/
+            store.accept(ProfileEvent.Ui.LoadProfile(requireArguments()))
+        }
     }
 
     override fun createStore(): Store<ProfileEvent, ProfileEffect, ProfileState> {
@@ -80,8 +56,16 @@ internal class ProfileFragment : ElmFragment<ProfileEvent, ProfileEffect, Profil
         if (state.items.isNotEmpty()) fillViewsWithUserData(state.items[0])
     }
 
-    override fun handleEffect(effect: ProfileEffect): Unit? {
-        return super.handleEffect(effect)
+    override fun handleEffect(effect: ProfileEffect) {
+        when(effect) {
+            is ProfileEffect.ProfileLoadError -> {
+                Log.e(TAG, resources.getString(R.string.user_not_found_error_text), effect.error)
+                binding.root.showSnackBarWithRetryAction(
+                    resources.getString(R.string.user_not_found_error_text),
+                    Snackbar.LENGTH_LONG
+                ) { store.accept(ProfileEvent.Ui.LoadOwnProfile) }
+            }
+        }
     }
 
     private fun fillViewsWithUserData(user: UserDto) {
@@ -109,60 +93,6 @@ internal class ProfileFragment : ElmFragment<ProfileEvent, ProfileEffect, Profil
             binding.profileAvatarImg.setImageResource(R.drawable.default_avatar)
         }
     }
-
-   /* private fun getUserFromDb(userId: Long) {
-        db?.userDao()?.getById(userId)
-            ?.subscribeOn(Schedulers.io())
-            ?.observeOn(AndroidSchedulers.mainThread())
-            ?.subscribeBy(
-                onSuccess = {
-                    fillViewsWithUserData(it.toUserDto())
-                },
-                onError = {
-                    Log.e(TAG, resources.getString(R.string.loading_users_from_db_error_text), it)
-                }
-            )
-            ?.addTo(disposables)
-    }
-
-    private fun getOwnUserFromApi() {
-        NetworkService.getZulipJsonApi().getOwnUser()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy (
-                onSuccess = {
-                    getUserPresence(it)
-                },
-                onError = {
-                    binding.root.showSnackBarWithRetryAction(
-                        resources.getString(R.string.user_not_found_error_text),
-                        Snackbar.LENGTH_LONG
-                    ) { getOwnUserFromApi() }
-                }
-            )
-            .addTo(disposables)
-    }
-
-    private fun getUserPresence(user: UserDto) {
-        NetworkService.getZulipJsonApi().getUserPresence(
-            userIdOrEmail = user.userId.toString()
-        )
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy (
-                onSuccess = {
-                    user.presence = it?.presence?.aggregated?.status
-                    fillViewsWithUserData(user)
-                },
-                onError = {
-                    binding.root.showSnackBarWithRetryAction(
-                        resources.getString(R.string.user_not_found_error_text),
-                        Snackbar.LENGTH_LONG
-                    ) { getUserPresence(user) }
-                }
-            )
-            .addTo(disposables)
-    }*/
 
     companion object {
 
