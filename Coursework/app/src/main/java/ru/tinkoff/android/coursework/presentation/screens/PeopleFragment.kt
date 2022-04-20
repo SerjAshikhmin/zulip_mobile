@@ -27,7 +27,7 @@ internal class PeopleFragment
     : ElmFragment<PeopleEvent, PeopleEffect, PeopleState>(), OnUserItemClickListener {
 
     override val initEvent: PeopleEvent = PeopleEvent.Ui.LoadPeopleList
-    private val adapter = PeopleListAdapter(this)
+    private lateinit var adapter: PeopleListAdapter
     private lateinit var binding: FragmentPeopleBinding
     private var db: AppDatabase? = null
 
@@ -43,6 +43,7 @@ internal class PeopleFragment
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         db = AppDatabase.getAppDatabase(requireContext())
+        adapter = PeopleListAdapter(this)
         binding.peopleList.adapter = adapter
     }
 

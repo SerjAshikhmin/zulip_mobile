@@ -25,8 +25,10 @@
     <string name="sending_message_error_text">Sending message error</string>
     <string name="uploading_file_error_text">Uploading file error</string>
     <string name="loading_streams_from_db_error_text">Loading streams from db error</string>
+    <string name="loading_streams_from_api_error_text">Loading streams from api error</string>
     <string name="saving_streams_to_db_error_text">Saving streams to db error</string>
     <string name="loading_users_from_db_error_text">Loading users from db error</string>
+    <string name="loading_users_from_api_error_text">Loading users from api error</string>
     <string name="saving_user_to_db_error_text">Saving user to db error</string>
     <string name="loading_messages_from_db_error_text">Loading messages from db error</string>
     <string name="saving_messages_to_db_error_text">Saving messages to db error</string>

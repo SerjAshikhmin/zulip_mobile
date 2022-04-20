@@ -16,4 +16,5 @@ internal class ProfileElmStoreFactory(
     }
 
     fun provide() = store
+
 }

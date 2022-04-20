@@ -1,31 +1,27 @@
 package ru.tinkoff.android.coursework.presentation.screens
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.findFragment
 import androidx.navigation.fragment.NavHostFragment
-import com.google.android.material.snackbar.Snackbar
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.rxkotlin.subscribeBy
-import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.api.NetworkService
-import ru.tinkoff.android.coursework.data.api.model.StreamDto
 import ru.tinkoff.android.coursework.data.api.model.TopicDto
 import ru.tinkoff.android.coursework.databinding.FragmentStreamsListBinding
 import ru.tinkoff.android.coursework.data.db.AppDatabase
-import ru.tinkoff.android.coursework.data.db.model.Stream
-import ru.tinkoff.android.coursework.data.db.model.toStreamsDtoList
+import ru.tinkoff.android.coursework.di.GlobalDi
+import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEffect
+import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEvent
+import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsState
 import ru.tinkoff.android.coursework.presentation.screens.adapters.StreamsListAdapter
 import ru.tinkoff.android.coursework.presentation.screens.adapters.OnTopicItemClickListener
-import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
+import vivid.money.elmslie.android.base.ElmFragment
+import vivid.money.elmslie.core.store.Store
 
-internal abstract class StreamsListFragment: CompositeDisposableFragment(), OnTopicItemClickListener {
+internal abstract class StreamsListFragment
+    : ElmFragment<StreamsEvent, StreamsEffect, StreamsState>(), OnTopicItemClickListener {
 
     lateinit var binding: FragmentStreamsListBinding
     protected lateinit var adapter: StreamsListAdapter
@@ -43,7 +39,30 @@ internal abstract class StreamsListFragment: CompositeDisposableFragment(), OnTo
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         db = AppDatabase.getAppDatabase(requireContext())
-        configureStreamsListRecyclerAdapter()
+        adapter = StreamsListAdapter(this)
+        binding.streamsList.adapter = adapter
+    }
+
+    override fun createStore(): Store<StreamsEvent, StreamsEffect, StreamsState> {
+        return GlobalDi.INSTANCE.streamsElmStoreFactory.provide()
+    }
+
+    override fun render(state: StreamsState) {
+        with(adapter) {
+            showShimmer = state.isLoading
+            streams = state.items
+            notifyDataSetChanged()
+        }
+    }
+
+    override fun handleEffect(effect: StreamsEffect) {
+        super.handleEffect(effect)
+        when(effect) {
+            is StreamsEffect.NavigateToChat -> {
+                NavHostFragment.findNavController(binding.root.findFragment())
+                    .navigate(R.id.action_nav_channels_to_nav_chat, effect.bundle)
+            }
+        }
     }
 
     override fun onTopicItemClick(topic: TopicDto, streamName: String) {
@@ -51,78 +70,7 @@ internal abstract class StreamsListFragment: CompositeDisposableFragment(), OnTo
             ChatActivity.STREAM_NAME_KEY to streamName,
             ChatActivity.TOPIC_NAME_KEY to topic.name
         )
-        NavHostFragment.findNavController(binding.root.findFragment())
-            .navigate(R.id.action_nav_channels_to_nav_chat, bundle)
-    }
-
-    abstract fun loadStreamsFromApi()
-
-    fun configureStreamsListRecyclerAdapter() {
-        adapter = StreamsListAdapter(this)
-
-        loadStreamsFromDb()
-        loadStreamsFromApi()
-
-        binding.streamsList.adapter = adapter
-    }
-
-    fun getTopicsInStream(stream: StreamDto) {
-        NetworkService.getZulipJsonApi().getTopicsInStream(streamId = stream.streamId)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy(
-                onSuccess = {
-                    stream.topics = it.topics
-                    saveStreamsToDb(stream.toStreamDb())
-                },
-                onError = {
-                    stream.topics = listOf()
-
-                    binding.root.showSnackBarWithRetryAction(
-                        binding.root.resources.getString(R.string.topics_not_found_error_text),
-                        Snackbar.LENGTH_LONG
-                    ) { getTopicsInStream(stream) }
-                }
-            )
-            .addTo(disposables)
-    }
-
-    private fun loadStreamsFromDb() {
-        db?.streamDao()?.getAll()
-            ?.subscribeOn(Schedulers.io())
-            ?.observeOn(AndroidSchedulers.mainThread())
-            ?.subscribeBy(
-                onSuccess = {
-                    if (it.isNotEmpty()) {
-                        with(adapter) {
-                            showShimmer = false
-                            streams = it.toStreamsDtoList()
-                            notifyDataSetChanged()
-                        }
-                    }
-                },
-                onError = {
-                    Log.e(TAG, resources.getString(R.string.loading_streams_from_db_error_text), it)
-                }
-            )
-            ?.addTo(disposables)
-    }
-
-    private fun saveStreamsToDb(stream: Stream) {
-        db?.streamDao()?.save(stream)
-            ?.subscribeOn(Schedulers.io())
-            ?.observeOn(AndroidSchedulers.mainThread())
-            ?.subscribeBy(
-                onError = {
-                    Log.e(TAG, resources.getString(R.string.saving_streams_to_db_error_text), it)
-                }
-            )
-            ?.addTo(disposables)
-    }
-
-    companion object {
-
-        private const val TAG = "StreamsListFragment"
+        store.accept(StreamsEvent.Ui.LoadChat(bundle))
     }
 
 }
