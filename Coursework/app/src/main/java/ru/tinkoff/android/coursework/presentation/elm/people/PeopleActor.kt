@@ -14,12 +14,12 @@ internal class PeopleActor(
         is PeopleCommand.LoadPeopleListFromDb -> peopleRepository.loadUsersFromDb()
             .mapEvents(
                 { list -> PeopleEvent.Internal.PeopleListLoadedFromDb(list) },
-                { error -> PeopleEvent.Internal.PeopleListErrorLoading(error) }
+                { error -> PeopleEvent.Internal.PeopleListLoadingError(error) }
             )
         is PeopleCommand.LoadPeopleListFromApi -> peopleRepository.loadUsersFromApi()
             .mapEvents(
                 { list -> PeopleEvent.Internal.PeopleListLoadedFromApi(list) },
-                { error -> PeopleEvent.Internal.PeopleListErrorLoading(error) }
+                { error -> PeopleEvent.Internal.PeopleListLoadingError(error) }
             )
     }
 

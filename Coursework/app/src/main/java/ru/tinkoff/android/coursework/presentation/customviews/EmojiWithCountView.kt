@@ -27,7 +27,6 @@ internal class EmojiWithCountView @JvmOverloads constructor(
 
     var emojiCode = ""
 
-    private lateinit var emojiClickListener: OnEmojiClickListener
     var messageId = 0L
 
     private val paint = TextPaint().apply {

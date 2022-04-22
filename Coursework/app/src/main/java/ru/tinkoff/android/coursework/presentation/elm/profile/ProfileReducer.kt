@@ -22,19 +22,16 @@ internal class ProfileReducer : DslReducer<ProfileEvent, ProfileState, ProfileEf
                 commands { +ProfileCommand.CreateUserFromBundle(event.bundle) }
             }
             is ProfileEvent.Internal.ProfileLoadedFromDb -> {
-                val itemsList = event.items
-                state { copy(items = itemsList, isLoading = false, error = null) }
+                state { copy(items = event.items, isLoading = false, error = null) }
                 commands { +ProfileCommand.LoadProfileFromApi }
             }
             is ProfileEvent.Internal.ProfileLoadedFromApi -> {
-                val itemsList = event.items
-                state { copy(items = itemsList, isLoading = false, error = null) }
+                state { copy(items = event.items, isLoading = false, error = null) }
             }
             is ProfileEvent.Internal.UserCreatedFromBundle -> {
-                val itemsList = event.items
-                state { copy(items = itemsList, isLoading = false, error = null) }
+                state { copy(items = event.items, isLoading = false, error = null) }
             }
-            is ProfileEvent.Internal.ProfileErrorLoading -> {
+            is ProfileEvent.Internal.ProfileLoadingError -> {
                 state { copy(error = event.error, isLoading = false) }
                 effects { +ProfileEffect.ProfileLoadError(event.error) }
             }

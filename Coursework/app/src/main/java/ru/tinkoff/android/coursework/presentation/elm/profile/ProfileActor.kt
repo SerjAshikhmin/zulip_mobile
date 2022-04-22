@@ -14,17 +14,17 @@ internal class ProfileActor(private val peopleRepository: PeopleRepository
         is ProfileCommand.LoadProfileFromDb -> peopleRepository.loadUserFromDb(SELF_USER_ID)
             ?.mapEvents(
                 { user -> ProfileEvent.Internal.ProfileLoadedFromDb(listOf(user)) },
-                { error -> ProfileEvent.Internal.ProfileErrorLoading(error) }
+                { error -> ProfileEvent.Internal.ProfileLoadingError(error) }
             ) ?: Observable.empty()
         is ProfileCommand.LoadProfileFromApi -> peopleRepository.loadOwnUserFromApi()
             .mapEvents(
                 { user -> ProfileEvent.Internal.ProfileLoadedFromApi(listOf(user)) },
-                { error -> ProfileEvent.Internal.ProfileErrorLoading(error) }
+                { error -> ProfileEvent.Internal.ProfileLoadingError(error) }
             )
         is ProfileCommand.CreateUserFromBundle -> peopleRepository.createUserFromBundle(command.bundle)
             .mapEvents(
                 { user -> ProfileEvent.Internal.UserCreatedFromBundle(listOf(user)) },
-                { error -> ProfileEvent.Internal.ProfileErrorLoading(error) }
+                { error -> ProfileEvent.Internal.ProfileLoadingError(error) }
             )
     }
 

@@ -10,7 +10,6 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
@@ -19,27 +18,21 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.rxkotlin.subscribeBy
-import io.reactivex.schedulers.Schedulers
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.api.NetworkService
 import ru.tinkoff.android.coursework.data.api.ZulipJsonApi.Companion.LAST_MESSAGE_ANCHOR
-import ru.tinkoff.android.coursework.data.api.ZulipJsonApi.Companion.NUMBER_OF_MESSAGES_BEFORE_ANCHOR
 import ru.tinkoff.android.coursework.data.api.model.EmojiWithCountDto
-import ru.tinkoff.android.coursework.data.api.model.request.NarrowRequest
-import ru.tinkoff.android.coursework.data.api.model.toMessageDbList
 import ru.tinkoff.android.coursework.data.EmojiCodes
 import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
 import ru.tinkoff.android.coursework.data.db.AppDatabase
-import ru.tinkoff.android.coursework.data.db.model.Message
+import ru.tinkoff.android.coursework.di.GlobalDi
 import ru.tinkoff.android.coursework.presentation.customviews.*
+import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatEffect
+import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatEvent
+import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatState
 import ru.tinkoff.android.coursework.presentation.screens.adapters.ChatMessagesAdapter
 import ru.tinkoff.android.coursework.presentation.screens.adapters.OnBottomSheetChooseEmojiListener
 import ru.tinkoff.android.coursework.presentation.screens.adapters.OnEmojiClickListener
@@ -47,27 +40,35 @@ import ru.tinkoff.android.coursework.utils.copy
 import ru.tinkoff.android.coursework.utils.getFileNameFromContentUri
 import ru.tinkoff.android.coursework.utils.hasPermissions
 import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
+import vivid.money.elmslie.android.base.ElmActivity
+import vivid.money.elmslie.core.store.Store
 import java.io.*
 
 
-internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
+internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), OnEmojiClickListener,
     OnBottomSheetChooseEmojiListener {
 
+    override var initEvent: ChatEvent = ChatEvent.Ui.InitEvent
     private lateinit var binding: ActivityChatBinding
     private lateinit var dialog: EmojiBottomSheetDialog
     private lateinit var chatRecycler: RecyclerView
     private lateinit var adapter: ChatMessagesAdapter
-    private lateinit var compositeDisposable: CompositeDisposable
+    private lateinit var streamName: String
     private lateinit var topicName: String
     private var db: AppDatabase? = null
     private var selectFileResultLauncher = initializeSelectFileResultLauncher()
+    private var selectedEmojiView: EmojiWithCountView? = null
+    private var selectedEmojiName: String? = null
+    private var isNewSelectedEmojiView: Boolean = false
+    private var emojiBox: FlexBoxLayout? = null
+    private var uploadingFileName: String? = null
+    private var uploadingFileBody: MultipartBody.Part? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        compositeDisposable = CompositeDisposable()
         db = AppDatabase.getAppDatabase(this)
         createAndConfigureBottomSheet()
         configureEnterMessageSection()
@@ -75,18 +76,92 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
         configureToolbar()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        compositeDisposable.dispose()
+    override fun createStore(): Store<ChatEvent, ChatEffect, ChatState> {
+        return GlobalDi.INSTANCE.chatElmStoreFactory.provide()
+    }
+
+    override fun render(state: ChatState) {
+        binding.progress.visibility = if (state.isLoading) View.VISIBLE else View.GONE
+        if (state.updateAllMessages) {
+            adapter.messages = state.items
+            adapter.notifyDataSetChanged()
+        }
+        if (state.updateWithPortion && state.items.isNotEmpty() && adapter.anchor != state.items[0].id - 1) {
+            val newMessages = state.items
+            adapter.updateWithNextPortion(newMessages, state.isFirstPortion)
+            store.accept(ChatEvent.Ui.CacheMessages(topicName = topicName, newMessages = newMessages, adapterMessages = adapter.messages))
+        }
+        if (state.isMessageSent) {
+            binding.enterMessage.text.clear()
+            adapter.anchor = LAST_MESSAGE_ANCHOR
+            store.accept(ChatEvent.Ui.LoadMessages(topicName = topicName, adapterAnchor = adapter.anchor, isFirstPortion = true))
+        }
+        if (state.isReactionAdded) {
+            selectedEmojiView?.isSelected = true
+            selectedEmojiView?.emojiCount = selectedEmojiView?.emojiCount?.plus(1)!!
+            if (isNewSelectedEmojiView) {
+                selectedEmojiView?.let { addNewEmojiToEmojiBox(emojiBox, it) }
+            }
+        }
+        if (state.isReactionRemoved) {
+            selectedEmojiView?.isSelected = false
+            selectedEmojiView?.emojiCount = selectedEmojiView?.emojiCount?.minus(1)!!
+            if (selectedEmojiView?.emojiCount == 0) {
+                val emojiBox = (selectedEmojiView?.parent as FlexBoxLayout)
+                emojiBox.removeView(selectedEmojiView)
+                if (emojiBox.childCount == 1) {
+                    emojiBox.getChildAt(0).visibility = View.GONE
+                }
+            }
+        }
+        if (state.isFileUploaded) {
+            binding.enterMessage.text.append("[$uploadingFileName](${state.fileUri})\n\n")
+            binding.sendButton.showActionIcon(R.drawable.ic_send, R.color.teal_500)
+        }
+    }
+
+    override fun handleEffect(effect: ChatEffect) {
+        when(effect) {
+            is ChatEffect.MessagesLoadingError -> {
+                binding.root.showSnackBarWithRetryAction(
+                    resources.getString(R.string.messages_not_found_error_text),
+                    Snackbar.LENGTH_LONG
+                ) { configureChatRecycler() }
+            }
+            is ChatEffect.MessageSendingError -> {
+                binding.root.showSnackBarWithRetryAction(
+                    resources.getString(R.string.sending_message_error_text),
+                    Snackbar.LENGTH_LONG
+                ) { }
+            }
+            is ChatEffect.ReactionAddingError -> {
+                Log.e(TAG, applicationContext.resources.getString(R.string.adding_emoji_error_text), effect.error)
+            }
+            is ChatEffect.ReactionRemovingError -> {
+                Log.e(TAG, applicationContext.resources.getString(R.string.removing_emoji_error_text), effect.error)
+            }
+            is ChatEffect.FileUploadingError -> {
+                binding.root.showSnackBarWithRetryAction(
+                    resources.getString(R.string.uploading_file_error_text),
+                    Snackbar.LENGTH_LONG
+                ) { uploadingFileBody?.let { ChatEvent.Ui.UploadFile(it) }?.let { store.accept(it) } }
+            }
+        }
     }
 
     override fun onEmojiClick(emojiView: EmojiWithCountView) {
         val emojiName = EmojiCodes.emojiMap[emojiView.emojiCode]
         if (emojiName != null) {
             if (!emojiView.isSelected) {
-                addReaction(emojiView, emojiName, false, null)
+                selectedEmojiView = emojiView
+                selectedEmojiName = emojiName
+                isNewSelectedEmojiView = false
+                emojiBox = null
+                store.accept(ChatEvent.Ui.AddReaction(emojiView.messageId, emojiName))
             } else {
-                removeReaction(emojiView, emojiName)
+                selectedEmojiView = emojiView
+                selectedEmojiName = emojiName
+                store.accept(ChatEvent.Ui.RemoveReaction(emojiView.messageId, emojiName))
             }
         }
     }
@@ -114,13 +189,13 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
             topicName
         )
 
+        streamName = intent.getStringExtra(STREAM_NAME_KEY)?.lowercase() ?: ""
         adapter.streamName = resources.getString(
             R.string.stream_name_text,
             intent.getStringExtra(STREAM_NAME_KEY)
         )
 
-        loadMessagesFromDb(topicName)
-        loadMessagesFromApi(isFirstPortion = true)
+        store.accept(ChatEvent.Ui.LoadMessages(topicName = topicName, adapterAnchor = adapter.anchor, isFirstPortion = true))
 
         chatRecycler.adapter = adapter
 
@@ -131,7 +206,7 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
 
                 val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
                 if (lastVisibleItemPosition == SCROLL_POSITION_FOR_NEXT_PORTION_LOADING) {
-                    this@ChatActivity.loadMessagesFromApi(isFirstPortion = false)
+                    store.accept(ChatEvent.Ui.LoadMessages(topicName = topicName, adapterAnchor = adapter.anchor, isFirstPortion = false))
                 }
             }
         })
@@ -152,12 +227,7 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
 
         sendButton.setOnClickListener {
             if (enterMessage.text.isNotEmpty()) {
-                sendMessage(
-                    content = enterMessage.text.toString(),
-                    stream = intent.getStringExtra(STREAM_NAME_KEY) ?: "",
-                    topic = intent.getStringExtra(TOPIC_NAME_KEY) ?: ""
-                )
-                enterMessage.text.clear()
+                store.accept(ChatEvent.Ui.SendMessage(topicName = topicName, streamName = streamName, content = enterMessage.text.toString()))
                 val imm: InputMethodManager =
                     getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(enterMessage.windowToken, 0)
@@ -188,36 +258,6 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
         dialog.setContentView(bottomSheetLayout)
     }
 
-    private fun addReaction(
-        emojiView: EmojiWithCountView,
-        emojiName: String,
-        isNewEmojiView: Boolean,
-        emojiBox: FlexBoxLayout?
-    ) {
-        NetworkService.getZulipJsonApi().addReaction(
-            messageId = emojiView.messageId,
-            emojiName = emojiName
-        )
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy(
-                onSuccess = {
-                    emojiView.isSelected = true
-                    emojiView.emojiCount++
-                    if (isNewEmojiView) {
-                        addNewEmojiToEmojiBox(emojiBox, emojiView)
-                    }
-                },
-                onError = {
-                    binding.root.showSnackBarWithRetryAction(
-                        resources.getString(R.string.adding_emoji_error_text),
-                        Snackbar.LENGTH_LONG
-                    ) { addReaction(emojiView, emojiName, isNewEmojiView, emojiBox) }
-                }
-            )
-            .addTo(compositeDisposable)
-    }
-
     private fun addNewEmojiToEmojiBox(
         emojiBox: FlexBoxLayout?,
         emojiView: EmojiWithCountView
@@ -228,38 +268,6 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
                 emojiBox.getChildAt(emojiBox.childCount - 1).visibility = View.VISIBLE
             }
         }
-    }
-
-    private fun removeReaction(
-        emojiView: EmojiWithCountView,
-        emojiName: String
-    ) {
-        NetworkService.getZulipJsonApi().removeReaction(
-            messageId = emojiView.messageId,
-            emojiName = emojiName
-        )
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy(
-                onSuccess = {
-                    emojiView.isSelected = false
-                    emojiView.emojiCount--
-                    if (emojiView.emojiCount == 0) {
-                        val emojiBox = (emojiView.parent as FlexBoxLayout)
-                        emojiBox.removeView(emojiView)
-                        if (emojiBox.childCount == 1) {
-                            emojiBox.getChildAt(0).visibility = View.GONE
-                        }
-                    }
-                },
-                onError = {
-                    binding.root.showSnackBarWithRetryAction(
-                        resources.getString(R.string.removing_emoji_error_text),
-                        Snackbar.LENGTH_LONG
-                    ) { removeReaction(emojiView, emojiName) }
-                }
-            )
-            .addTo(compositeDisposable)
     }
 
     override fun onBottomSheetChooseEmoji(
@@ -311,131 +319,13 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
             )
             val emojiName = EmojiCodes.emojiMap[emojiView.emojiCode]
             if (emojiName != null) {
-                addReaction(emojiView, emojiName, true, emojiBox)
+                selectedEmojiView = emojiView
+                selectedEmojiName = emojiName
+                isNewSelectedEmojiView = true
+                this.emojiBox = emojiBox
+                store.accept(ChatEvent.Ui.AddReaction(emojiView.messageId, emojiName))
             }
         }
-    }
-
-    private fun loadMessagesFromApi(isFirstPortion: Boolean) {
-        binding.progress.visibility = View.VISIBLE
-        NetworkService.getZulipJsonApi().getMessages(
-            numBefore = adapter.messagesBefore,
-            anchor = adapter.anchor.toString(),
-            narrow = arrayOf(
-                NarrowRequest(
-                    operator = TOPIC_NARROW_OPERATOR_KEY,
-                    operand = intent.getStringExtra(TOPIC_NAME_KEY) ?: ""
-                )
-            ).contentToString()
-        )
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy(
-                onSuccess = {
-                    binding.progress.visibility = View.GONE
-                    if (it.messages.isNotEmpty() && adapter.anchor != it.messages[0].id - 1) {
-                        val newMessages = it.messages.toMessageDbList()
-                        adapter.update(newMessages, isFirstPortion)
-                        cacheMessages(newMessages)
-                    }
-                },
-                onError = {
-                    binding.root.showSnackBarWithRetryAction(
-                        resources.getString(R.string.messages_not_found_error_text),
-                        Snackbar.LENGTH_LONG
-                    ) { configureChatRecycler() }
-                }
-            )
-            .addTo(compositeDisposable)
-    }
-
-    private fun sendMessage(
-        content: String,
-        stream: String,
-        topic: String,
-    ) {
-        NetworkService.getZulipJsonApi().sendMessage(
-            to = stream,
-            content = content,
-            topic = topic
-        )
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy (
-                onSuccess = {
-                    adapter.anchor = LAST_MESSAGE_ANCHOR
-                    loadMessagesFromApi(isFirstPortion = true)
-                },
-                onError = {
-                    binding.root.showSnackBarWithRetryAction(
-                        resources.getString(R.string.sending_message_error_text),
-                        Snackbar.LENGTH_LONG
-                    ) { sendMessage(content, stream, topic) }
-                }
-            )
-            .addTo(compositeDisposable)
-    }
-
-    private fun loadMessagesFromDb(topicName: String) {
-        db?.messageDao()?.getAllByTopic(topicName)
-            ?.subscribeOn(Schedulers.io())
-            ?.observeOn(AndroidSchedulers.mainThread())
-            ?.subscribeBy(
-                onSuccess = {
-                    if (it.isNotEmpty()) {
-                        with(adapter) {
-                            binding.progress.visibility = View.GONE
-                            messages = it
-                            notifyDataSetChanged()
-                        }
-                    }
-                },
-                onError = {
-                    Log.e(TAG, resources.getString(R.string.loading_messages_from_db_error_text), it)
-                }
-            )
-            ?.addTo(compositeDisposable)
-    }
-
-    private fun cacheMessages(newMessages: List<Message>) {
-        if (adapter.messages.size <= MAX_NUMBER_OF_MESSAGES_IN_CACHE) {
-            val remainingMessagesLimit =
-                if (MAX_NUMBER_OF_MESSAGES_IN_CACHE - adapter.messages.size > NUMBER_OF_MESSAGES_PER_PORTION) {
-                    NUMBER_OF_MESSAGES_PER_PORTION
-                } else {
-                    MAX_NUMBER_OF_MESSAGES_IN_CACHE - adapter.messages.size
-                }
-            saveMessagesToDb(newMessages.takeLast(remainingMessagesLimit))
-        } else {
-            saveMessagesToDb(adapter.messages.takeLast(MAX_NUMBER_OF_MESSAGES_IN_CACHE))
-            val actualMessageIds = adapter.messages.takeLast(MAX_NUMBER_OF_MESSAGES_IN_CACHE).map { it.id }
-            removeRedundantMessagesFromDb(topicName, actualMessageIds)
-        }
-
-    }
-
-    private fun removeRedundantMessagesFromDb(topicName: String, actualMessageIds: List<Long>) {
-        db?.messageDao()?.removeRedundant(topicName, actualMessageIds)
-            ?.subscribeOn(Schedulers.io())
-            ?.observeOn(AndroidSchedulers.mainThread())
-            ?.subscribeBy(
-                onError = {
-                    Log.e(TAG, resources.getString(R.string.removing_messages_from_db_error_text), it)
-                }
-            )
-            ?.addTo(compositeDisposable)
-    }
-
-    private fun saveMessagesToDb(messages: List<Message>) {
-        db?.messageDao()?.saveAll(messages)
-            ?.subscribeOn(Schedulers.io())
-            ?.observeOn(AndroidSchedulers.mainThread())
-            ?.subscribeBy(
-                onError = {
-                    Log.e(TAG, resources.getString(R.string.saving_messages_to_db_error_text), it)
-                }
-            )
-            ?.addTo(compositeDisposable)
     }
 
     private fun initializeSelectFileResultLauncher() =
@@ -457,27 +347,10 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
                 .asRequestBody(contentResolver.getType(contentUri)?.toMediaTypeOrNull())
             val body: MultipartBody.Part =
                 MultipartBody.Part.createFormData("file", file.name, requestFile)
-            uploadFile(body, fileName)
+            uploadingFileName = fileName
+            uploadingFileBody = body
+            store.accept(ChatEvent.Ui.UploadFile(body))
         }
-
-    private fun uploadFile(fileBody: MultipartBody.Part, fileName: String) {
-        NetworkService.getZulipJsonApi().uploadFile(fileBody)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy (
-                onSuccess = {
-                    binding.enterMessage.text.append("[$fileName](${it.uri})\n\n")
-                    binding.sendButton.showActionIcon(R.drawable.ic_send, R.color.teal_500)
-                },
-                onError = {
-                    binding.root.showSnackBarWithRetryAction(
-                        resources.getString(R.string.uploading_file_error_text),
-                        Snackbar.LENGTH_LONG
-                    ) { uploadFile(fileBody, fileName) }
-                }
-            )
-            .addTo(compositeDisposable)
-    }
 
     companion object {
 
@@ -485,8 +358,6 @@ internal class ChatActivity : AppCompatActivity(), OnEmojiClickListener,
         const val TOPIC_NAME_KEY = "topicName"
         const val TOPIC_NARROW_OPERATOR_KEY = "topic"
         private const val TAG = "ChatActivity"
-        private const val MAX_NUMBER_OF_MESSAGES_IN_CACHE = 50
-        private const val NUMBER_OF_MESSAGES_PER_PORTION = NUMBER_OF_MESSAGES_BEFORE_ANCHOR
         private const val SCROLL_POSITION_FOR_NEXT_PORTION_LOADING = 5
     }
 

@@ -23,15 +23,13 @@ internal class StreamsReducer : DslReducer<StreamsEvent, StreamsState, StreamsEf
                 effects { +StreamsEffect.NavigateToChat(event.bundle) }
             }
             is StreamsEvent.Internal.StreamsListLoadedFromDb -> {
-                val itemsList = event.items
-                state { copy(items = itemsList, isLoading = false, error = null) }
+                state { copy(items = event.items, isLoading = false, error = null) }
                 commands { +StreamsCommand.LoadStreamsListFromApi(isSubscribedStreams = event.isSubscribedStreams) }
             }
             is StreamsEvent.Internal.StreamsListLoadedFromApi -> {
-                val itemsList = event.items
-                state { copy(items = itemsList, isLoading = false, error = null) }
+                state { copy(items = event.items, isLoading = false, error = null) }
             }
-            is StreamsEvent.Internal.StreamsListErrorLoading -> {
+            is StreamsEvent.Internal.StreamsListLoadingError -> {
                 state { copy(error = event.error, isLoading = false) }
                 effects { +StreamsEffect.StreamsListLoadError(event.error) }
             }

@@ -14,12 +14,12 @@ internal class StreamsActor(
         is StreamsCommand.LoadStreamsListFromDb -> streamsRepository.loadStreamsFromDb()
             ?.mapEvents(
                 { streams -> StreamsEvent.Internal.StreamsListLoadedFromDb(items = streams, isSubscribedStreams = command.isSubscribedStreams) },
-                { error -> StreamsEvent.Internal.StreamsListErrorLoading(error) }
+                { error -> StreamsEvent.Internal.StreamsListLoadingError(error) }
             ) ?: Observable.empty()
         is StreamsCommand.LoadStreamsListFromApi -> streamsRepository.loadStreamsFromApi(command.isSubscribedStreams)
             .mapEvents(
                 { streams -> StreamsEvent.Internal.StreamsListLoadedFromApi(streams) },
-                { error -> StreamsEvent.Internal.StreamsListErrorLoading(error) }
+                { error -> StreamsEvent.Internal.StreamsListLoadingError(error) }
             )
     }
 

@@ -22,7 +22,7 @@ internal sealed class ProfileEvent {
 
         data class UserCreatedFromBundle(val items: List<UserDto>) : Internal()
 
-        data class ProfileErrorLoading(val error: Throwable) : Internal()
+        data class ProfileLoadingError(val error: Throwable) : Internal()
 
     }
 

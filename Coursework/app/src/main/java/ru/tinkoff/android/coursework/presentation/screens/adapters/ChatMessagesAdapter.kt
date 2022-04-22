@@ -32,7 +32,6 @@ internal class ChatMessagesAdapter(
     var streamName = ""
     var topicName = ""
 
-    var messagesBefore = NUMBER_OF_MESSAGES_BEFORE_ANCHOR
     var anchor = LAST_MESSAGE_ANCHOR
 
     var messagesWithDateSeparators: List<Any>
@@ -139,7 +138,7 @@ internal class ChatMessagesAdapter(
         }
     }
 
-    fun update(newMessages: List<Message>, isFirstPortion: Boolean) {
+    fun updateWithNextPortion(newMessages: List<Message>, isFirstPortion: Boolean) {
         if (isFirstPortion) messages = mutableListOf()
         anchor = newMessages[0].id - 1
         val oldMessages = messagesWithDateSeparators

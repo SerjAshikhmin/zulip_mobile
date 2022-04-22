@@ -20,7 +20,7 @@ internal sealed class StreamsEvent {
 
         data class StreamsListLoadedFromDb(val items: List<StreamDto>, val isSubscribedStreams: Boolean = false) : Internal()
 
-        data class StreamsListErrorLoading(val error: Throwable) : Internal()
+        data class StreamsListLoadingError(val error: Throwable) : Internal()
     }
 
 }

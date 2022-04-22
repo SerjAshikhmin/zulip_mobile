@@ -19,15 +19,13 @@ internal class PeopleReducer : DslReducer<PeopleEvent, PeopleState, PeopleEffect
                 effects { +PeopleEffect.NavigateToProfile(event.bundle) }
             }
             is PeopleEvent.Internal.PeopleListLoadedFromDb -> {
-                val itemsList = event.items
-                state { copy(items = itemsList, isLoading = false, error = null) }
+                state { copy(items = event.items, isLoading = false, error = null) }
                 commands { +PeopleCommand.LoadPeopleListFromApi }
             }
             is PeopleEvent.Internal.PeopleListLoadedFromApi -> {
-                val itemsList = event.items
-                state { copy(items = itemsList, isLoading = false, error = null) }
+                state { copy(items = event.items, isLoading = false, error = null) }
             }
-            is PeopleEvent.Internal.PeopleListErrorLoading -> {
+            is PeopleEvent.Internal.PeopleListLoadingError -> {
                 state { copy(error = event.error, isLoading = false) }
                 effects { +PeopleEffect.PeopleListLoadError(event.error) }
             }

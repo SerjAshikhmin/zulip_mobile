@@ -18,7 +18,7 @@ internal sealed class PeopleEvent {
 
         data class PeopleListLoadedFromDb(val items: List<UserDto>) : Internal()
 
-        data class PeopleListErrorLoading(val error: Throwable) : Internal()
+        data class PeopleListLoadingError(val error: Throwable) : Internal()
     }
 
 }
