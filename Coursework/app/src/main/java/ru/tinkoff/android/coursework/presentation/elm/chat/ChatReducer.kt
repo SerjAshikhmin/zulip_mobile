@@ -11,74 +11,136 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
     override fun Result.reduce(event: ChatEvent): Any {
         return when (event) {
             is ChatEvent.Ui.InitEvent -> {
-                state { copy(isLoading = true, error = null) }
-            }
-            is ChatEvent.Ui.LoadMessages -> {
-                if (event.isFirstPortion) {
-                    state { copy(
+                state {
+                    copy(
                         isLoading = true,
-                        error = null,
-                        updateAllMessages = true,
-                        updateWithPortion = false,
-                        isFirstPortion = true,
-                        isMessageSent = false,
-                        isReactionAdded = false,
-                        isReactionRemoved = false,
-                        isFileUploaded = false
-                    ) }
-                    commands { +ChatCommand.LoadMessagesFromDb(event.topicName, event.adapterAnchor) }
-                } else {
-                    state { copy(
-                        isLoading = true,
-                        error = null,
-                        updateAllMessages = false,
-                        updateWithPortion = false,
-                        isFirstPortion = false,
-                        isMessageSent = false,
-                        isReactionAdded = false,
-                        isReactionRemoved = false,
-                        isFileUploaded = false
-                    ) }
-                    commands { +ChatCommand.LoadMessagesFromApi(event.topicName, event.adapterAnchor) }
+                        error = null
+                    )
                 }
             }
+            is ChatEvent.Ui.LoadMessages -> {
+                state {
+                    copy(
+                        isLoading = true,
+                        error = null,
+                        updateAllMessages = event.isFirstPortion,
+                        updateWithPortion = false,
+                        isFirstPortion = event.isFirstPortion,
+                        isMessageSent = false,
+                        isReactionAdded = false,
+                        isReactionRemoved = false,
+                        isFileUploaded = false
+                    )
+                }
+                commands { +ChatCommand.LoadMessages(
+                    topicName = event.topicName,
+                    adapterAnchor = event.adapterAnchor,
+                    isFirstPosition = event.isFirstPortion
+                ) }
+            }
             is ChatEvent.Ui.CacheMessages -> {
-                state { copy(isLoading = false, error = null) }
-                commands { +ChatCommand.CacheMessages(event.topicName, event.newMessages, event.adapterMessages) }
+                state {
+                    copy(
+                        isLoading = false,
+                        error = null
+                    )
+                }
+                commands { +ChatCommand.CacheMessages(
+                    topicName = event.topicName,
+                    newMessages = event.newMessages,
+                    adapterMessages = event.adapterMessages
+                ) }
             }
             is ChatEvent.Ui.SendMessage -> {
-                commands { +ChatCommand.SendMessage(event.topicName, event.streamName, event.content) }
+                commands { +ChatCommand.SendMessage(
+                    topicName = event.topicName,
+                    streamName = event.streamName,
+                    content = event.content
+                ) }
             }
             is ChatEvent.Ui.AddReaction -> {
-                state { copy(isReactionAdded = false, error = null) }
-                commands { +ChatCommand.AddReaction(event.messageId, event.emojiName) }
+                state {
+                    copy(
+                        isReactionAdded = false,
+                        error = null
+                    )
+                }
+                commands { +ChatCommand.AddReaction(
+                    messageId = event.messageId,
+                    emojiName = event.emojiName
+                ) }
             }
             is ChatEvent.Ui.RemoveReaction -> {
-                state { copy(isReactionRemoved = false, error = null) }
-                commands { +ChatCommand.RemoveReaction(event.messageId, event.emojiName) }
+                state {
+                    copy(
+                        isReactionRemoved = false,
+                        error = null
+                    )
+                }
+                commands { +ChatCommand.RemoveReaction(
+                    messageId = event.messageId,
+                    emojiName = event.emojiName
+                ) }
             }
             is ChatEvent.Ui.UploadFile -> {
                 commands { +ChatCommand.UploadFile(event.fileBody) }
             }
 
-            is ChatEvent.Internal.MessagesLoadedFromDb -> {
-                state { copy(items = event.items, isLoading = false, error = null, updateAllMessages = false, updateWithPortion = false) }
-                commands { +ChatCommand.LoadMessagesFromApi(event.topicName, event.adapterAnchor) }
-            }
-            is ChatEvent.Internal.MessagesLoadedFromApi -> {
-                state { copy(items = event.items, isLoading = false, error = null, updateWithPortion = true) }
+            is ChatEvent.Internal.MessagesLoaded -> {
+                state {
+                    copy(
+                        items = event.items,
+                        isLoading = false,
+                        error = null,
+                        updateAllMessages = false,
+                        updateWithPortion = if (event.isFirstPortion) isFirstPortion else true
+                    )
+                }
             }
             is ChatEvent.Internal.MessageSent -> {
-                state { copy(isMessageSent = true, isFileUploaded = false, isReactionAdded = false, isReactionRemoved = false, error = null) }
+                state {
+                    copy(
+                        isMessageSent = true,
+                        isFileUploaded = false,
+                        isReactionAdded = false,
+                        isReactionRemoved = false,
+                        error = null
+                    )
+                }
             }
             is ChatEvent.Internal.ReactionAdded -> {
-                state { copy(isReactionAdded = true, isReactionRemoved = false, isMessageSent = false, isFileUploaded = false, error = null) }
+                state {
+                    copy(
+                        isReactionAdded = true,
+                        isReactionRemoved = false,
+                        isMessageSent = false,
+                        isFileUploaded = false,
+                        error = null
+                    )
+                }
             }
             is ChatEvent.Internal.ReactionRemoved -> {
-                state { copy(isReactionRemoved = true, isReactionAdded = false, isMessageSent = false, isFileUploaded = false, error = null) }
+                state {
+                    copy(
+                        isReactionRemoved = true,
+                        isReactionAdded = false,
+                        isMessageSent = false,
+                        isFileUploaded = false,
+                        error = null
+                    )
+                }
             }
             is ChatEvent.Internal.FileUploaded -> {
-                state { copy(isFileUploaded = true, fileUri = event.uri, isReactionAdded = false, isReactionRemoved = false, isMessageSent = false, error = null) }
+                state {
+                    copy(
+                        isFileUploaded = true,
+                        fileUri = event.uri,
+                        isReactionAdded = false,
+                        isReactionRemoved = false,
+                        isMessageSent = false,
+                        error = null
+                    )
+                }
             }
 
             is ChatEvent.Internal.MessagesLoadingError -> {

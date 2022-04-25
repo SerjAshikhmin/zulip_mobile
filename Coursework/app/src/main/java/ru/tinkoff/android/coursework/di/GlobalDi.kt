@@ -1,9 +1,13 @@
 package ru.tinkoff.android.coursework.di
 
 import android.content.Context
-import ru.tinkoff.android.coursework.data.ChatRepository
-import ru.tinkoff.android.coursework.data.StreamsRepository
-import ru.tinkoff.android.coursework.data.PeopleRepository
+import ru.tinkoff.android.coursework.data.ChatRepositoryImpl
+import ru.tinkoff.android.coursework.data.StreamsRepositoryImpl
+import ru.tinkoff.android.coursework.data.PeopleRepositoryImpl
+import ru.tinkoff.android.coursework.domain.channels.ChannelsUseCases
+import ru.tinkoff.android.coursework.domain.chat.ChatUseCases
+import ru.tinkoff.android.coursework.domain.people.PeopleUseCases
+import ru.tinkoff.android.coursework.domain.profile.ProfileUseCases
 import ru.tinkoff.android.coursework.presentation.elm.channels.StreamsActor
 import ru.tinkoff.android.coursework.presentation.elm.channels.StreamsElmStoreFactory
 import ru.tinkoff.android.coursework.presentation.elm.chat.ChatActor
@@ -17,25 +21,33 @@ internal class GlobalDi private constructor(
     applicationContext: Context
 ) {
 
-    private val peopleRepository by lazy { PeopleRepository(applicationContext) }
+    private val peopleRepository by lazy { PeopleRepositoryImpl(applicationContext) }
 
-    private val peopleActor by lazy { PeopleActor(peopleRepository) }
+    private val peopleUseCases by lazy { PeopleUseCases(peopleRepository) }
+
+    private val peopleActor by lazy { PeopleActor(peopleUseCases) }
 
     val peopleElmStoreFactory by lazy { PeopleElmStoreFactory(peopleActor) }
 
-    private val profileActor by lazy { ProfileActor(peopleRepository) }
+    private val profileUseCases by lazy { ProfileUseCases(peopleRepository) }
+
+    private val profileActor by lazy { ProfileActor(profileUseCases) }
 
     val profileElmStoreFactory by lazy { ProfileElmStoreFactory(profileActor) }
 
-    private val streamsRepository by lazy { StreamsRepository(applicationContext) }
+    private val streamsRepository by lazy { StreamsRepositoryImpl(applicationContext) }
 
-    private val streamsActor by lazy { StreamsActor(streamsRepository) }
+    private val channelsUseCases by lazy { ChannelsUseCases(streamsRepository) }
+
+    private val streamsActor by lazy { StreamsActor(channelsUseCases) }
 
     val streamsElmStoreFactory by lazy { StreamsElmStoreFactory(streamsActor) }
 
-    private val chatRepository by lazy { ChatRepository(applicationContext) }
+    private val chatRepository by lazy { ChatRepositoryImpl(applicationContext) }
 
-    private val chatActor by lazy { ChatActor(chatRepository) }
+    private val chatUseCases by lazy { ChatUseCases(chatRepository) }
+
+    private val chatActor by lazy { ChatActor(chatUseCases) }
 
     val chatElmStoreFactory by lazy { ChatElmStoreFactory(chatActor) }
 

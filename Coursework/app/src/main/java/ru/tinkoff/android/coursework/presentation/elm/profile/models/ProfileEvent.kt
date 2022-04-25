@@ -16,9 +16,7 @@ internal sealed class ProfileEvent {
 
     sealed class Internal : ProfileEvent() {
 
-        data class ProfileLoadedFromApi(val items: List<UserDto>) : Internal()
-
-        data class ProfileLoadedFromDb(val items: List<UserDto>) : Internal()
+        data class ProfileLoaded(val items: List<UserDto>) : Internal()
 
         data class UserCreatedFromBundle(val items: List<UserDto>) : Internal()
 

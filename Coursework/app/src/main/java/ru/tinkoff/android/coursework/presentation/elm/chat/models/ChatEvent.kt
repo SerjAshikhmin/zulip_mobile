@@ -9,15 +9,33 @@ internal sealed class ChatEvent {
 
         object InitEvent : ChatEvent.Ui()
 
-        data class LoadMessages(val topicName: String, val adapterAnchor: Long, val isFirstPortion: Boolean = false) : ChatEvent.Ui()
+        data class LoadMessages(
+            val topicName: String,
+            val adapterAnchor: Long,
+            val isFirstPortion: Boolean = false
+        ) : ChatEvent.Ui()
 
-        data class CacheMessages(val topicName: String, val newMessages: List<Message>, val adapterMessages: List<Message>) : ChatEvent.Ui()
+        data class CacheMessages(
+            val topicName: String,
+            val newMessages: List<Message>,
+            val adapterMessages: List<Message>
+        ) : ChatEvent.Ui()
 
-        data class SendMessage(val topicName: String, val streamName: String, val content: String) : ChatEvent.Ui()
+        data class SendMessage(
+            val topicName: String,
+            val streamName: String,
+            val content: String
+        ) : ChatEvent.Ui()
 
-        data class AddReaction(val messageId: Long, val emojiName: String) : ChatEvent.Ui()
+        data class AddReaction(
+            val messageId: Long,
+            val emojiName: String
+        ) : ChatEvent.Ui()
 
-        data class RemoveReaction(val messageId: Long, val emojiName: String) : ChatEvent.Ui()
+        data class RemoveReaction(
+            val messageId: Long,
+            val emojiName: String
+        ) : ChatEvent.Ui()
 
         data class UploadFile(val fileBody: MultipartBody.Part) : ChatEvent.Ui()
 
@@ -25,12 +43,9 @@ internal sealed class ChatEvent {
 
     sealed class Internal : ChatEvent() {
 
-        data class MessagesLoadedFromApi(val items: List<Message>) : Internal()
-
-        data class MessagesLoadedFromDb(
+        data class MessagesLoaded(
             val items: List<Message>,
             val topicName: String,
-            val adapterAnchor: Long,
             val isFirstPortion: Boolean = false
         ) : Internal()
 

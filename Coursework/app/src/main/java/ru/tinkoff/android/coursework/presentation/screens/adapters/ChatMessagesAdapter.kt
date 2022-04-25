@@ -153,7 +153,8 @@ internal class ChatMessagesAdapter(
 
     sealed class BaseViewHolder(view: View) : RecyclerView.ViewHolder(view)
 
-    inner class MessageViewHolder(private val messageView: MessageViewGroup) : BaseViewHolder(messageView) {
+    inner class MessageViewHolder(private val messageView: MessageViewGroup)
+        : BaseViewHolder(messageView) {
 
         private val avatar = messageView.binding.avatarImage
         private val username = messageView.binding.username

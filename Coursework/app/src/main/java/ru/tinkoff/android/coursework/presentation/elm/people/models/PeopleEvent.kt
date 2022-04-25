@@ -14,9 +14,7 @@ internal sealed class PeopleEvent {
 
     sealed class Internal : PeopleEvent() {
 
-        data class PeopleListLoadedFromApi(val items: List<UserDto>) : Internal()
-
-        data class PeopleListLoadedFromDb(val items: List<UserDto>) : Internal()
+        data class PeopleListLoaded(val items: List<UserDto>) : Internal()
 
         data class PeopleListLoadingError(val error: Throwable) : Internal()
     }

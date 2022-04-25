@@ -4,9 +4,7 @@ import android.os.Bundle
 
 internal sealed class ProfileCommand {
 
-    object LoadProfileFromApi : ProfileCommand()
-
-    object LoadProfileFromDb : ProfileCommand()
+    object LoadOwnProfile : ProfileCommand()
 
     data class CreateUserFromBundle(val bundle: Bundle) : ProfileCommand()
 

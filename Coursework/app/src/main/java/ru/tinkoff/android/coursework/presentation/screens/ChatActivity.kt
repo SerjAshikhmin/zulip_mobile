@@ -44,9 +44,8 @@ import vivid.money.elmslie.android.base.ElmActivity
 import vivid.money.elmslie.core.store.Store
 import java.io.*
 
-
-internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), OnEmojiClickListener,
-    OnBottomSheetChooseEmojiListener {
+internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
+    OnEmojiClickListener, OnBottomSheetChooseEmojiListener {
 
     override var initEvent: ChatEvent = ChatEvent.Ui.InitEvent
     private lateinit var binding: ActivityChatBinding
@@ -86,15 +85,24 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
             adapter.messages = state.items
             adapter.notifyDataSetChanged()
         }
-        if (state.updateWithPortion && state.items.isNotEmpty() && adapter.anchor != state.items[0].id - 1) {
-            val newMessages = state.items
-            adapter.updateWithNextPortion(newMessages, state.isFirstPortion)
-            store.accept(ChatEvent.Ui.CacheMessages(topicName = topicName, newMessages = newMessages, adapterMessages = adapter.messages))
+        if (state.updateWithPortion && state.items.isNotEmpty()
+            && adapter.anchor != state.items[0].id - 1) {
+                val newMessages = state.items
+                adapter.updateWithNextPortion(newMessages, state.isFirstPortion)
+                store.accept(ChatEvent.Ui.CacheMessages(
+                    topicName = topicName,
+                    newMessages = newMessages,
+                    adapterMessages = adapter.messages
+                ))
         }
         if (state.isMessageSent) {
             binding.enterMessage.text.clear()
             adapter.anchor = LAST_MESSAGE_ANCHOR
-            store.accept(ChatEvent.Ui.LoadMessages(topicName = topicName, adapterAnchor = adapter.anchor, isFirstPortion = true))
+            store.accept(ChatEvent.Ui.LoadMessages(
+                topicName = topicName,
+                adapterAnchor = adapter.anchor,
+                isFirstPortion = true
+            ))
         }
         if (state.isReactionAdded) {
             selectedEmojiView?.isSelected = true
@@ -195,7 +203,11 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
             intent.getStringExtra(STREAM_NAME_KEY)
         )
 
-        store.accept(ChatEvent.Ui.LoadMessages(topicName = topicName, adapterAnchor = adapter.anchor, isFirstPortion = true))
+        store.accept(ChatEvent.Ui.LoadMessages(
+            topicName = topicName,
+            adapterAnchor = adapter.anchor,
+            isFirstPortion = true
+        ))
 
         chatRecycler.adapter = adapter
 
@@ -206,7 +218,11 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
 
                 val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
                 if (lastVisibleItemPosition == SCROLL_POSITION_FOR_NEXT_PORTION_LOADING) {
-                    store.accept(ChatEvent.Ui.LoadMessages(topicName = topicName, adapterAnchor = adapter.anchor, isFirstPortion = false))
+                    store.accept(ChatEvent.Ui.LoadMessages(
+                        topicName = topicName,
+                        adapterAnchor = adapter.anchor,
+                        isFirstPortion = false
+                    ))
                 }
             }
         })
@@ -227,13 +243,21 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
 
         sendButton.setOnClickListener {
             if (enterMessage.text.isNotEmpty()) {
-                store.accept(ChatEvent.Ui.SendMessage(topicName = topicName, streamName = streamName, content = enterMessage.text.toString()))
+                store.accept(ChatEvent.Ui.SendMessage(
+                    topicName = topicName,
+                    streamName = streamName,
+                    content = enterMessage.text.toString()
+                ))
                 val imm: InputMethodManager =
                     getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(enterMessage.windowToken, 0)
             } else {
                 if (!hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                        1
+                    )
                 } else {
                     selectFileResultLauncher.launch("*/*")
                 }
