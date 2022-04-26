@@ -6,7 +6,7 @@ import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleComman
 import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleEvent
 import vivid.money.elmslie.core.ActorCompat
 
-internal class PeopleActor(
+internal class PeopleActor (
     private val peopleUseCases: PeopleUseCases
 ) : ActorCompat<PeopleCommand, PeopleEvent> {
 

@@ -6,8 +6,9 @@ import io.reactivex.Single
 import ru.tinkoff.android.coursework.data.PeopleRepository
 import ru.tinkoff.android.coursework.data.api.model.SELF_USER_ID
 import ru.tinkoff.android.coursework.data.api.model.UserDto
+import javax.inject.Inject
 
-internal class ProfileUseCases(
+internal class ProfileUseCases @Inject constructor(
     private val peopleRepository: PeopleRepository
 ) {
 

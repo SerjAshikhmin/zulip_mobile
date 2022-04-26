@@ -21,19 +21,19 @@ internal class GlobalDi private constructor(
     applicationContext: Context
 ) {
 
-    private val peopleRepository by lazy { PeopleRepositoryImpl(applicationContext) }
+    //private val peopleRepository by lazy { PeopleRepositoryImpl(applicationContext) }
 
-    private val peopleUseCases by lazy { PeopleUseCases(peopleRepository) }
+    //private val peopleUseCases by lazy { PeopleUseCases(peopleRepository) }
 
-    private val peopleActor by lazy { PeopleActor(peopleUseCases) }
+    //private val peopleActor by lazy { PeopleActor(peopleUseCases) }
 
-    val peopleElmStoreFactory by lazy { PeopleElmStoreFactory(peopleActor) }
+    //val peopleElmStoreFactory by lazy { PeopleElmStoreFactory(peopleActor) }
 
-    private val profileUseCases by lazy { ProfileUseCases(peopleRepository) }
+    //private val profileUseCases by lazy { ProfileUseCases(peopleRepository) }
 
-    private val profileActor by lazy { ProfileActor(profileUseCases) }
+    //private val profileActor by lazy { ProfileActor(profileUseCases) }
 
-    val profileElmStoreFactory by lazy { ProfileElmStoreFactory(profileActor) }
+    //val profileElmStoreFactory by lazy { ProfileElmStoreFactory(profileActor) }
 
     private val streamsRepository by lazy { StreamsRepositoryImpl(applicationContext) }
 

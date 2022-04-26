@@ -11,7 +11,7 @@ import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.FragmentProfileBinding
 import ru.tinkoff.android.coursework.data.api.model.UserDto
 import ru.tinkoff.android.coursework.data.db.AppDatabase
-import ru.tinkoff.android.coursework.di.GlobalDi
+import ru.tinkoff.android.coursework.di.DaggerApplicationComponent
 import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileEffect
 import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileEvent
 import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileState
@@ -49,7 +49,7 @@ internal class ProfileFragment : ElmFragment<ProfileEvent, ProfileEffect, Profil
     }
 
     override fun createStore(): Store<ProfileEvent, ProfileEffect, ProfileState> {
-        return GlobalDi.INSTANCE.profileElmStoreFactory.provide()
+        return DaggerApplicationComponent.builder().build().getProfileElmStoreFactory().provide()
     }
 
     override fun render(state: ProfileState) {

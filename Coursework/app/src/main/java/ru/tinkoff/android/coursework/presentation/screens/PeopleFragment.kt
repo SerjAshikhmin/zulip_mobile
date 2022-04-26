@@ -13,6 +13,8 @@ import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.FragmentPeopleBinding
 import ru.tinkoff.android.coursework.data.api.model.UserDto
 import ru.tinkoff.android.coursework.data.db.AppDatabase
+import ru.tinkoff.android.coursework.di.ApplicationModule
+import ru.tinkoff.android.coursework.di.DaggerApplicationComponent
 import ru.tinkoff.android.coursework.di.GlobalDi
 import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleEffect
 import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleEvent
@@ -48,7 +50,8 @@ internal class PeopleFragment
     }
 
     override fun createStore(): Store<PeopleEvent, PeopleEffect, PeopleState> {
-        return GlobalDi.INSTANCE.peopleElmStoreFactory.provide()
+        return DaggerApplicationComponent.builder()
+            .build().getPeopleElmStoreFactory().provide()
     }
 
     override fun render(state: PeopleState) {

@@ -2,8 +2,9 @@ package ru.tinkoff.android.coursework.presentation.elm.profile
 
 import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileState
 import vivid.money.elmslie.core.ElmStoreCompat
+import javax.inject.Inject
 
-internal class ProfileElmStoreFactory(
+internal class ProfileElmStoreFactory @Inject constructor(
     private val actor: ProfileActor
 ) {
 

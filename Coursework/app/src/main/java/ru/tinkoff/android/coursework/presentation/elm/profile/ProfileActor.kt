@@ -6,7 +6,7 @@ import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileComm
 import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileEvent
 import vivid.money.elmslie.core.ActorCompat
 
-internal class ProfileActor(
+internal class ProfileActor (
     private val profileUseCases: ProfileUseCases
 ) : ActorCompat<ProfileCommand, ProfileEvent> {
 

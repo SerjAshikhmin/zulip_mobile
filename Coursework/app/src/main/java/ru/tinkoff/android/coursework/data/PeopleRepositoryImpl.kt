@@ -16,10 +16,13 @@ import ru.tinkoff.android.coursework.data.db.model.User
 import ru.tinkoff.android.coursework.data.db.model.toUsersDtoList
 import ru.tinkoff.android.coursework.presentation.screens.PeopleFragment
 import ru.tinkoff.android.coursework.presentation.screens.ProfileFragment
+import javax.inject.Inject
 
-internal class PeopleRepositoryImpl(private val applicationContext: Context) : PeopleRepository {
+internal class PeopleRepositoryImpl @Inject constructor(val applicationContext: Context)
+    : PeopleRepository {
 
-    private var db: AppDatabase? = AppDatabase.getAppDatabase(applicationContext)
+    internal var db: AppDatabase? = null
+        @Inject set
 
     override fun loadUsersFromDb(): Observable<List<UserDto>> {
         return db?.userDao()?.getAll()
