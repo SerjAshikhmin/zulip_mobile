@@ -25,7 +25,7 @@ internal class PeopleRepositoryImpl(private val applicationContext: Context) : P
         return db?.userDao()?.getAll()
             ?.map { it.toUsersDtoList() }
             ?.doOnError {
-                Log.e(TAG, applicationContext.resources.getString(R.string.loading_users_from_db_error_text), it)
+                Log.e(TAG, "Loading users from db error", it)
             }
             ?.toObservable()
             ?: Observable.just(listOf())
@@ -37,7 +37,7 @@ internal class PeopleRepositoryImpl(private val applicationContext: Context) : P
             .flatMapObservable  { Observable.fromIterable(it)  }
             .flatMapSingle { getUserPresence(it) }
             .doOnError {
-                Log.e(TAG, applicationContext.resources.getString(R.string.loading_users_from_api_error_text), it)
+                Log.e(TAG, "Loading users from api error", it)
             }
             .toList()
             .toObservable()
@@ -47,7 +47,7 @@ internal class PeopleRepositoryImpl(private val applicationContext: Context) : P
         return db?.userDao()?.getById(userId)
             ?.map { it.toUserDto() }
             ?.doOnError {
-                Log.e(TAG, applicationContext.resources.getString(R.string.loading_users_from_db_error_text), it)
+                Log.e(TAG, "Loading users from db error", it)
             }
             ?.toObservable()
     }
@@ -92,7 +92,7 @@ internal class PeopleRepositoryImpl(private val applicationContext: Context) : P
             ?.subscribeOn(Schedulers.io())
             ?.observeOn(AndroidSchedulers.mainThread())
             ?.onErrorReturn {
-                Log.e(TAG, applicationContext.resources.getString(R.string.saving_user_to_db_error_text), it)
+                Log.e(TAG, "Saving user to db error", it)
                 DEFAULT_USER_ID
             }?.subscribe()
     }

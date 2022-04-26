@@ -23,7 +23,7 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                     copy(
                         isLoading = true,
                         error = null,
-                        updateAllMessages = event.isFirstPortion,
+                        updateAllMessages = event.updateAllMessages,
                         updateWithPortion = false,
                         isFirstPortion = event.isFirstPortion,
                         isMessageSent = false,
@@ -34,8 +34,9 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                 }
                 commands { +ChatCommand.LoadMessages(
                     topicName = event.topicName,
-                    adapterAnchor = event.adapterAnchor,
-                    isFirstPosition = event.isFirstPortion
+                    currentAnchor = event.currentAnchor,
+                    isFirstPosition = event.isFirstPortion,
+                    updateAllMessages = event.updateAllMessages
                 ) }
             }
             is ChatEvent.Ui.CacheMessages -> {
@@ -48,7 +49,7 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                 commands { +ChatCommand.CacheMessages(
                     topicName = event.topicName,
                     newMessages = event.newMessages,
-                    adapterMessages = event.adapterMessages
+                    actualMessages = event.actualMessages
                 ) }
             }
             is ChatEvent.Ui.SendMessage -> {
@@ -92,8 +93,9 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                         items = event.items,
                         isLoading = false,
                         error = null,
-                        updateAllMessages = false,
-                        updateWithPortion = if (event.isFirstPortion) isFirstPortion else true
+                        isFirstPortion = event.isFirstPortion,
+                        updateAllMessages = event.updateAllMessages,
+                        updateWithPortion = true
                     )
                 }
             }
@@ -104,6 +106,9 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                         isFileUploaded = false,
                         isReactionAdded = false,
                         isReactionRemoved = false,
+                        updateAllMessages = false,
+                        updateWithPortion = false,
+                        isFirstPortion = false,
                         error = null
                     )
                 }
@@ -115,6 +120,9 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                         isReactionRemoved = false,
                         isMessageSent = false,
                         isFileUploaded = false,
+                        updateAllMessages = false,
+                        updateWithPortion = false,
+                        isFirstPortion = false,
                         error = null
                     )
                 }
@@ -126,6 +134,9 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                         isReactionAdded = false,
                         isMessageSent = false,
                         isFileUploaded = false,
+                        updateAllMessages = false,
+                        updateWithPortion = false,
+                        isFirstPortion = false,
                         error = null
                     )
                 }
@@ -138,6 +149,9 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                         isReactionAdded = false,
                         isReactionRemoved = false,
                         isMessageSent = false,
+                        updateAllMessages = false,
+                        updateWithPortion = false,
+                        isFirstPortion = false,
                         error = null
                     )
                 }

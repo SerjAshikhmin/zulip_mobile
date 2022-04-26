@@ -12,15 +12,21 @@ internal sealed class StreamsEvent {
         object LoadSubscribedStreamsList : Ui()
 
         data class LoadChat(val bundle: Bundle) : Ui()
+
+        object SubscribeOnSearchStreamsEvents : Ui()
+
+        data class SearchStreamsByQuery(val query: String) : Ui()
+
     }
 
     sealed class Internal : StreamsEvent() {
 
-        data class StreamsListLoadedFromApi(val items: List<StreamDto>) : Internal()
+        data class StreamsListLoaded(val items: List<StreamDto>) : Internal()
 
-        data class StreamsListLoadedFromDb(val items: List<StreamDto>, val isSubscribedStreams: Boolean = false) : Internal()
+        data class StreamsWithSearchLoaded(val items: List<StreamDto>) : Internal()
 
         data class StreamsListLoadingError(val error: Throwable) : Internal()
+
     }
 
 }

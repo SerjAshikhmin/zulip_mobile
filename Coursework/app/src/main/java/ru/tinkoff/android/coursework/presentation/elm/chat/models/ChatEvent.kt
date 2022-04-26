@@ -11,14 +11,15 @@ internal sealed class ChatEvent {
 
         data class LoadMessages(
             val topicName: String,
-            val adapterAnchor: Long,
-            val isFirstPortion: Boolean = false
+            val currentAnchor: Long,
+            val isFirstPortion: Boolean = false,
+            val updateAllMessages: Boolean = false
         ) : ChatEvent.Ui()
 
         data class CacheMessages(
             val topicName: String,
             val newMessages: List<Message>,
-            val adapterMessages: List<Message>
+            val actualMessages: List<Message>
         ) : ChatEvent.Ui()
 
         data class SendMessage(
@@ -46,7 +47,8 @@ internal sealed class ChatEvent {
         data class MessagesLoaded(
             val items: List<Message>,
             val topicName: String,
-            val isFirstPortion: Boolean = false
+            val isFirstPortion: Boolean = false,
+            val updateAllMessages: Boolean = false
         ) : Internal()
 
         object MessageSent : Internal()

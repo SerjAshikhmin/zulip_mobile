@@ -26,16 +26,19 @@ internal class ChatRepositoryImpl(private val applicationContext: Context) : Cha
     override fun loadMessagesFromDb(topicName: String): Observable<List<Message>>? {
         return db?.messageDao()?.getAllByTopic(topicName)
             ?.onErrorReturn {
-                Log.e(TAG, applicationContext.resources.getString(R.string.loading_messages_from_db_error_text), it)
+                Log.e(TAG, "Loading messages from db error", it)
                 emptyList()
             }
             ?.toObservable()
     }
 
-    override fun loadMessagesFromApi(topicName: String, adapterAnchor: Long): Observable<List<Message>> {
+    override fun loadMessagesFromApi(
+        topicName: String,
+        currentAnchor: Long
+    ): Observable<List<Message>> {
         return NetworkService.getZulipJsonApi().getMessages(
             numBefore = ZulipJsonApi.NUMBER_OF_MESSAGES_BEFORE_ANCHOR,
-            anchor = adapterAnchor.toString(),
+            anchor = currentAnchor.toString(),
             narrow = arrayOf(
                 NarrowRequest(
                     operator = ChatActivity.TOPIC_NARROW_OPERATOR_KEY,
@@ -47,40 +50,33 @@ internal class ChatRepositoryImpl(private val applicationContext: Context) : Cha
             .toObservable()
     }
 
-    override fun cacheMessages(newMessages: List<Message>, adapterMessages: List<Message>, topicName: String) {
-        if (adapterMessages.size <= MAX_NUMBER_OF_MESSAGES_IN_CACHE) {
-            val remainingMessagesLimit = (MAX_NUMBER_OF_MESSAGES_IN_CACHE - adapterMessages.size).coerceAtMost(NUMBER_OF_MESSAGES_PER_PORTION)
-            saveMessagesToDb(newMessages.takeLast(remainingMessagesLimit))
-        } else {
-            saveMessagesToDb(adapterMessages.takeLast(MAX_NUMBER_OF_MESSAGES_IN_CACHE))
-            val actualMessageIds = adapterMessages.takeLast(MAX_NUMBER_OF_MESSAGES_IN_CACHE).map { it.id }
-            removeRedundantMessagesFromDb(topicName, actualMessageIds)
-        }
-    }
-
-    private fun removeRedundantMessagesFromDb(topicName: String, actualMessageIds: List<Long>) {
+    override fun removeRedundantMessagesFromDb(topicName: String, actualMessageIds: List<Long>) {
         db?.messageDao()?.removeRedundant(topicName, actualMessageIds)
             ?.subscribeOn(Schedulers.io())
             ?.observeOn(AndroidSchedulers.mainThread())
             ?.onErrorComplete {
-                Log.e(TAG, applicationContext.resources.getString(R.string.removing_messages_from_db_error_text), it)
+                Log.e(TAG, "Removing messages from db error", it)
                 true
             }
             ?.subscribe()
     }
 
-    private fun saveMessagesToDb(messages: List<Message>) {
+    override fun saveMessagesToDb(messages: List<Message>) {
         db?.messageDao()?.saveAll(messages)
             ?.subscribeOn(Schedulers.io())
             ?.observeOn(AndroidSchedulers.mainThread())
             ?.onErrorReturn {
-                Log.e(TAG, applicationContext.resources.getString(R.string.saving_messages_to_db_error_text), it)
+                Log.e(TAG, "Saving messages to db error", it)
                 listOf()
             }
             ?.subscribe()
     }
 
-    override fun sendMessage(topic: String, stream: String, content: String): Single<SendMessageResponse> {
+    override fun sendMessage(
+        topic: String,
+        stream: String,
+        content: String
+    ): Single<SendMessageResponse> {
         return NetworkService.getZulipJsonApi().sendMessage(
             to = stream,
             content = content,
@@ -112,8 +108,6 @@ internal class ChatRepositoryImpl(private val applicationContext: Context) : Cha
     companion object {
 
         private const val TAG = "ChatRepository"
-        private const val MAX_NUMBER_OF_MESSAGES_IN_CACHE = 50
-        private const val NUMBER_OF_MESSAGES_PER_PORTION = ZulipJsonApi.NUMBER_OF_MESSAGES_BEFORE_ANCHOR
     }
 
 }

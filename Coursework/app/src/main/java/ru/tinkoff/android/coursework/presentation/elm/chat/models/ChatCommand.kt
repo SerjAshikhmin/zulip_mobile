@@ -7,14 +7,15 @@ internal sealed class ChatCommand {
 
     data class LoadMessages(
         val topicName: String,
-        val adapterAnchor: Long,
-        val isFirstPosition: Boolean = false
+        val currentAnchor: Long,
+        val isFirstPosition: Boolean = false,
+        val updateAllMessages: Boolean = false
     ) : ChatCommand()
 
     data class CacheMessages(
         val topicName: String,
         val newMessages: List<Message>,
-        val adapterMessages: List<Message>
+        val actualMessages: List<Message>
     ) : ChatCommand()
 
     data class SendMessage(

@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.api.ZulipJsonApi.Companion.LAST_MESSAGE_ANCHOR
-import ru.tinkoff.android.coursework.data.api.ZulipJsonApi.Companion.NUMBER_OF_MESSAGES_BEFORE_ANCHOR
 import ru.tinkoff.android.coursework.data.api.model.SELF_USER_ID
 import ru.tinkoff.android.coursework.data.db.model.Message
 import ru.tinkoff.android.coursework.presentation.customviews.*

@@ -10,6 +10,7 @@ internal sealed class PeopleEvent {
         object LoadPeopleList : Ui()
 
         data class LoadProfile(val bundle: Bundle) : Ui()
+
     }
 
     sealed class Internal : PeopleEvent() {
@@ -17,6 +18,7 @@ internal sealed class PeopleEvent {
         data class PeopleListLoaded(val items: List<UserDto>) : Internal()
 
         data class PeopleListLoadingError(val error: Throwable) : Internal()
+
     }
 
 }

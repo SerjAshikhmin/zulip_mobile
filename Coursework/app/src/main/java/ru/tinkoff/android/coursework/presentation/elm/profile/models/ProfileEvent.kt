@@ -12,6 +12,7 @@ internal sealed class ProfileEvent {
         object LoadOwnProfile: Ui()
 
         data class LoadProfile(val bundle: Bundle) : Ui()
+
     }
 
     sealed class Internal : ProfileEvent() {

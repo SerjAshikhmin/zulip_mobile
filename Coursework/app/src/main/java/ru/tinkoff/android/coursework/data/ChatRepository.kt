@@ -11,8 +11,9 @@ import ru.tinkoff.android.coursework.data.db.model.Message
 internal interface ChatRepository {
 
     fun loadMessagesFromDb(topicName: String): Observable<List<Message>>?
-    fun loadMessagesFromApi(topicName: String, adapterAnchor: Long): Observable<List<Message>>
-    fun cacheMessages(newMessages: List<Message>, adapterMessages: List<Message>, topicName: String)
+    fun loadMessagesFromApi(topicName: String, currentAnchor: Long): Observable<List<Message>>
+    fun saveMessagesToDb(messages: List<Message>)
+    fun removeRedundantMessagesFromDb(topicName: String, actualMessageIds: List<Long>)
     fun sendMessage(topic: String, stream: String, content: String): Single<SendMessageResponse>
     fun addReaction(messageId: Long, emojiName: String): Single<ReactionResponse>
     fun removeReaction(messageId: Long, emojiName: String): Single<ReactionResponse>

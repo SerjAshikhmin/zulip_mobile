@@ -11,21 +11,20 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import com.google.android.material.tabs.TabLayoutMediator
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.rxkotlin.subscribeBy
-import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.PublishSubject
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.FragmentChannelsBinding
-import ru.tinkoff.android.coursework.data.api.NetworkService
+import ru.tinkoff.android.coursework.di.GlobalDi
+import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEffect
+import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEvent
+import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsState
 import ru.tinkoff.android.coursework.presentation.screens.adapters.StreamsListPagerAdapter
-import java.util.concurrent.TimeUnit
+import vivid.money.elmslie.android.base.ElmFragment
+import vivid.money.elmslie.core.store.Store
 
-internal class ChannelsFragment: CompositeDisposableFragment() {
+internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, StreamsState>() {
 
+    override var initEvent: StreamsEvent = StreamsEvent.Ui.SubscribeOnSearchStreamsEvents
     private lateinit var binding: FragmentChannelsBinding
-    private val queryEvents: PublishSubject<String> = PublishSubject.create()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,7 +45,7 @@ internal class ChannelsFragment: CompositeDisposableFragment() {
                 val allStreamsTab = binding.tabLayout.getTabAt(1)
                 allStreamsTab?.select()
                 val query = text?.toString().orEmpty()
-                queryEvents.onNext(query)
+                store.accept(StreamsEvent.Ui.SearchStreamsByQuery(query))
             }
         }, 100)
 
@@ -55,55 +54,38 @@ internal class ChannelsFragment: CompositeDisposableFragment() {
             val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(binding.searchEditText, InputMethodManager.SHOW_IMPLICIT)
         }
-
-        subscribeOnSearchStreamsEvents()
     }
 
-    private fun subscribeOnSearchStreamsEvents() {
-        queryEvents
-            .map { query -> query.trim() }
-            .distinctUntilChanged()
-            .debounce(DELAY_BETWEEN_ENTERING_CHARACTERS, TimeUnit.MILLISECONDS)
-            .subscribeOn(Schedulers.io())
-            .map { query ->
-                searchStreamsByQuery(query)
-            }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe()
-            .addTo(disposables)
+    override fun createStore(): Store<StreamsEvent, StreamsEffect, StreamsState> {
+        return GlobalDi.INSTANCE.streamsElmStoreFactory.provide()
     }
 
-    private fun searchStreamsByQuery(query: String) {
-        NetworkService.getZulipJsonApi().getAllStreams()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy(
-                onSuccess = {
-                    val streamsListPagerAdapter = (binding.pager.adapter as StreamsListPagerAdapter)
+    override fun render(state: StreamsState) {
+        val streamsListPagerAdapter = (binding.pager.adapter as StreamsListPagerAdapter)
 
-                    if (streamsListPagerAdapter.isAllStreamsListFragment()) {
-                        streamsListPagerAdapter.allStreamsListFragment.updateStreams(
-                            it.streams.filter { stream ->
-                                stream.name.lowercase().contains(query.lowercase())
-                            }
-                        )
-                    }
-                },
-                onError = {
-                    (binding.pager.adapter as StreamsListPagerAdapter)
-                        .allStreamsListFragment.updateStreams(listOf())
-
-                    subscribeOnSearchStreamsEvents()
-
-                    Toast.makeText(
-                        context,
-                        resources.getString(R.string.search_streams_error_text),
-                        Toast.LENGTH_LONG
-                    )
-                        .show()
-                }
+        if (streamsListPagerAdapter.isAllStreamsListFragment()) {
+            streamsListPagerAdapter.allStreamsListFragment.updateStreams(
+                state.items
             )
-            .addTo(disposables)
+        }
+    }
+
+    override fun handleEffect(effect: StreamsEffect) {
+        when(effect) {
+            is StreamsEffect.StreamsListLoadError -> {
+                (binding.pager.adapter as StreamsListPagerAdapter)
+                    .allStreamsListFragment.updateStreams(listOf())
+
+                store.accept(StreamsEvent.Ui.SubscribeOnSearchStreamsEvents)
+
+                Toast.makeText(
+                    context,
+                    resources.getString(R.string.search_streams_error_text),
+                    Toast.LENGTH_LONG
+                )
+                    .show()
+            }
+        }
     }
 
     private fun configureViewPager() {
@@ -124,7 +106,7 @@ internal class ChannelsFragment: CompositeDisposableFragment() {
 
     companion object {
 
-        private const val DELAY_BETWEEN_ENTERING_CHARACTERS = 500L
+        const val DELAY_BETWEEN_ENTERING_CHARACTERS = 500L
     }
 
 }

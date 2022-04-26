@@ -92,7 +92,7 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
                 store.accept(ChatEvent.Ui.CacheMessages(
                     topicName = topicName,
                     newMessages = newMessages,
-                    adapterMessages = adapter.messages
+                    actualMessages = adapter.messages
                 ))
         }
         if (state.isMessageSent) {
@@ -100,7 +100,7 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
             adapter.anchor = LAST_MESSAGE_ANCHOR
             store.accept(ChatEvent.Ui.LoadMessages(
                 topicName = topicName,
-                adapterAnchor = adapter.anchor,
+                currentAnchor = adapter.anchor,
                 isFirstPortion = true
             ))
         }
@@ -205,8 +205,9 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
 
         store.accept(ChatEvent.Ui.LoadMessages(
             topicName = topicName,
-            adapterAnchor = adapter.anchor,
-            isFirstPortion = true
+            currentAnchor = adapter.anchor,
+            isFirstPortion = true,
+            updateAllMessages = true
         ))
 
         chatRecycler.adapter = adapter
@@ -220,7 +221,7 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
                 if (lastVisibleItemPosition == SCROLL_POSITION_FOR_NEXT_PORTION_LOADING) {
                     store.accept(ChatEvent.Ui.LoadMessages(
                         topicName = topicName,
-                        adapterAnchor = adapter.anchor,
+                        currentAnchor = adapter.anchor,
                         isFirstPortion = false
                     ))
                 }

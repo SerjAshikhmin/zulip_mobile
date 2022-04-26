@@ -14,14 +14,15 @@ internal class ChatActor(
         is ChatCommand.LoadMessages ->
             chatUseCases.loadMessages(
                 command.topicName,
-                command.adapterAnchor,
-                command.isFirstPosition
+                command.currentAnchor,
+                command.updateAllMessages
             )
                 .mapEvents(
                     { messages -> ChatEvent.Internal.MessagesLoaded(
                         items = messages,
                         topicName = command.topicName,
-                        isFirstPortion = command.isFirstPosition
+                        isFirstPortion = command.isFirstPosition,
+                        updateAllMessages = command.updateAllMessages
                     ) },
                     { error -> ChatEvent.Internal.MessagesLoadingError(error) }
                 )
@@ -29,7 +30,7 @@ internal class ChatActor(
             chatUseCases.cacheMessages(
                 topicName = command.topicName,
                 newMessages = command.newMessages,
-                adapterMessages = command.adapterMessages
+                actualMessages = command.actualMessages
             )
             Observable.empty()
         }
