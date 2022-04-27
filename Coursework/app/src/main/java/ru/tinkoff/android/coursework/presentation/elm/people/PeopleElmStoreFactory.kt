@@ -2,9 +2,8 @@ package ru.tinkoff.android.coursework.presentation.elm.people
 
 import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleState
 import vivid.money.elmslie.core.ElmStoreCompat
-import javax.inject.Inject
 
-internal class PeopleElmStoreFactory @Inject constructor(
+internal class PeopleElmStoreFactory (
     private val actor: PeopleActor
 ) {
 

@@ -22,14 +22,16 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import ru.tinkoff.android.coursework.App
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.api.ZulipJsonApi.Companion.LAST_MESSAGE_ANCHOR
 import ru.tinkoff.android.coursework.data.api.model.EmojiWithCountDto
 import ru.tinkoff.android.coursework.data.EmojiCodes
 import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
-import ru.tinkoff.android.coursework.data.db.AppDatabase
-import ru.tinkoff.android.coursework.di.GlobalDi
+import ru.tinkoff.android.coursework.di.ActivityScope
+import ru.tinkoff.android.coursework.di.DaggerChatComponent
 import ru.tinkoff.android.coursework.presentation.customviews.*
+import ru.tinkoff.android.coursework.presentation.elm.chat.ChatElmStoreFactory
 import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatEffect
 import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatEvent
 import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatState
@@ -43,9 +45,14 @@ import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
 import vivid.money.elmslie.android.base.ElmActivity
 import vivid.money.elmslie.core.store.Store
 import java.io.*
+import javax.inject.Inject
 
+@ActivityScope
 internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
     OnEmojiClickListener, OnBottomSheetChooseEmojiListener {
+
+    @Inject
+    internal lateinit var chatElmStoreFactory: ChatElmStoreFactory
 
     override var initEvent: ChatEvent = ChatEvent.Ui.InitEvent
     private lateinit var binding: ActivityChatBinding
@@ -54,7 +61,6 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
     private lateinit var adapter: ChatMessagesAdapter
     private lateinit var streamName: String
     private lateinit var topicName: String
-    private var db: AppDatabase? = null
     private var selectFileResultLauncher = initializeSelectFileResultLauncher()
     private var selectedEmojiView: EmojiWithCountView? = null
     private var selectedEmojiName: String? = null
@@ -68,7 +74,6 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        db = AppDatabase.getAppDatabase(this)
         createAndConfigureBottomSheet()
         configureEnterMessageSection()
         configureChatRecycler()
@@ -76,7 +81,11 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
     }
 
     override fun createStore(): Store<ChatEvent, ChatEffect, ChatState> {
-        return GlobalDi.INSTANCE.chatElmStoreFactory.provide()
+        val chatComponent = DaggerChatComponent.factory().create(
+            (this.application as App).applicationComponent
+        )
+        chatComponent.inject(this)
+        return chatElmStoreFactory.provide()
     }
 
     override fun render(state: ChatState) {

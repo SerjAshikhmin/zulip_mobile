@@ -11,17 +11,23 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import com.google.android.material.tabs.TabLayoutMediator
+import ru.tinkoff.android.coursework.App
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.FragmentChannelsBinding
-import ru.tinkoff.android.coursework.di.GlobalDi
+import ru.tinkoff.android.coursework.di.DaggerStreamsComponent
+import ru.tinkoff.android.coursework.presentation.elm.channels.StreamsElmStoreFactory
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEffect
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEvent
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsState
 import ru.tinkoff.android.coursework.presentation.screens.adapters.StreamsListPagerAdapter
 import vivid.money.elmslie.android.base.ElmFragment
 import vivid.money.elmslie.core.store.Store
+import javax.inject.Inject
 
 internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, StreamsState>() {
+
+    @Inject
+    internal lateinit var streamsElmStoreFactory: StreamsElmStoreFactory
 
     override var initEvent: StreamsEvent = StreamsEvent.Ui.SubscribeOnSearchStreamsEvents
     private lateinit var binding: FragmentChannelsBinding
@@ -57,7 +63,11 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
     }
 
     override fun createStore(): Store<StreamsEvent, StreamsEffect, StreamsState> {
-        return GlobalDi.INSTANCE.streamsElmStoreFactory.provide()
+        val streamsComponent = DaggerStreamsComponent.factory().create(
+            (activity?.application as App).applicationComponent
+        )
+        streamsComponent.inject(this)
+        return streamsElmStoreFactory.provide()
     }
 
     override fun render(state: StreamsState) {

@@ -1,32 +1,34 @@
-package ru.tinkoff.android.coursework.di
+package ru.tinkoff.android.coursework.di.people
 
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import ru.tinkoff.android.coursework.data.PeopleRepository
 import ru.tinkoff.android.coursework.data.PeopleRepositoryImpl
+import ru.tinkoff.android.coursework.di.ActivityScope
 import ru.tinkoff.android.coursework.domain.people.PeopleUseCases
 import ru.tinkoff.android.coursework.presentation.elm.people.PeopleActor
-import javax.inject.Singleton
+import ru.tinkoff.android.coursework.presentation.elm.people.PeopleElmStoreFactory
 
 @Module(includes = [PeopleModule.BindingModule::class])
-internal object PeopleModule {
-
-    /*@Provides
-    fun providePeopleRepository(context: Context): PeopleRepository {
-        return PeopleRepositoryImpl(context)
-    }*/
+internal class PeopleModule {
 
     @Provides
-    @Singleton
+    @ActivityScope
     fun providePeopleUseCases(repository: PeopleRepository): PeopleUseCases {
         return PeopleUseCases(repository)
     }
 
     @Provides
-    @Singleton
+    @ActivityScope
     fun providePeopleActor(peopleUseCases: PeopleUseCases): PeopleActor {
         return PeopleActor(peopleUseCases)
+    }
+
+    @Provides
+    @ActivityScope
+    fun providePeopleElmStoreFactory(peopleActor: PeopleActor): PeopleElmStoreFactory {
+        return PeopleElmStoreFactory(peopleActor)
     }
 
     @Module

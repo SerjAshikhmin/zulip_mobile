@@ -8,7 +8,7 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.api.NetworkService
+import ru.tinkoff.android.coursework.data.api.ZulipJsonApi
 import ru.tinkoff.android.coursework.data.api.model.UserDto
 import ru.tinkoff.android.coursework.data.api.model.response.UserPresenceResponse
 import ru.tinkoff.android.coursework.data.db.AppDatabase
@@ -18,24 +18,23 @@ import ru.tinkoff.android.coursework.presentation.screens.PeopleFragment
 import ru.tinkoff.android.coursework.presentation.screens.ProfileFragment
 import javax.inject.Inject
 
-internal class PeopleRepositoryImpl @Inject constructor(val applicationContext: Context)
-    : PeopleRepository {
-
-    internal var db: AppDatabase? = null
-        @Inject set
+internal class PeopleRepositoryImpl @Inject constructor(
+    private val applicationContext: Context,
+    private val zulipJsonApi: ZulipJsonApi,
+    private val db: AppDatabase
+) : PeopleRepository {
 
     override fun loadUsersFromDb(): Observable<List<UserDto>> {
-        return db?.userDao()?.getAll()
-            ?.map { it.toUsersDtoList() }
-            ?.doOnError {
+        return db.userDao().getAll()
+            .map { it.toUsersDtoList() }
+            .doOnError {
                 Log.e(TAG, "Loading users from db error", it)
             }
-            ?.toObservable()
-            ?: Observable.just(listOf())
+            .toObservable()
     }
 
     override fun loadUsersFromApi(): Observable<List<UserDto>> {
-        return NetworkService.getZulipJsonApi().getAllUsers()
+        return zulipJsonApi.getAllUsers()
             .map { it.members }
             .flatMapObservable  { Observable.fromIterable(it)  }
             .flatMapSingle { getUserPresence(it) }
@@ -46,17 +45,17 @@ internal class PeopleRepositoryImpl @Inject constructor(val applicationContext: 
             .toObservable()
     }
 
-    override fun loadUserFromDb(userId: Long): Observable<UserDto>? {
-        return db?.userDao()?.getById(userId)
-            ?.map { it.toUserDto() }
-            ?.doOnError {
+    override fun loadUserFromDb(userId: Long): Observable<UserDto> {
+        return db.userDao().getById(userId)
+            .map { it.toUserDto() }
+            .doOnError {
                 Log.e(TAG, "Loading users from db error", it)
             }
-            ?.toObservable()
+            .toObservable()
     }
 
     override fun loadOwnUserFromApi(): Observable<UserDto> {
-        return NetworkService.getZulipJsonApi().getOwnUser()
+        return zulipJsonApi.getOwnUser()
             .flatMap { user -> getUserPresence(user) }
             .doOnError {
                 Log.e(TAG, applicationContext.resources.getString(R.string.user_not_found_error_text), it)
@@ -75,7 +74,7 @@ internal class PeopleRepositoryImpl @Inject constructor(val applicationContext: 
     }
 
     private fun getUserPresence(user: UserDto): Single<UserDto> {
-        return NetworkService.getZulipJsonApi().getUserPresence(userIdOrEmail = user.userId.toString())
+        return zulipJsonApi.getUserPresence(userIdOrEmail = user.userId.toString())
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSuccess {
@@ -91,13 +90,13 @@ internal class PeopleRepositoryImpl @Inject constructor(val applicationContext: 
     }
 
     private fun saveUserToDb(user: User) {
-        db?.userDao()?.save(user)
-            ?.subscribeOn(Schedulers.io())
-            ?.observeOn(AndroidSchedulers.mainThread())
-            ?.onErrorReturn {
+        db.userDao().save(user)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .onErrorReturn {
                 Log.e(TAG, "Saving user to db error", it)
                 DEFAULT_USER_ID
-            }?.subscribe()
+            }.subscribe()
     }
 
     companion object {

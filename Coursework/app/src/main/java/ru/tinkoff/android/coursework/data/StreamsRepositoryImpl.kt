@@ -1,35 +1,36 @@
 package ru.tinkoff.android.coursework.data
 
-import android.content.Context
 import android.util.Log
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import ru.tinkoff.android.coursework.data.api.NetworkService
+import ru.tinkoff.android.coursework.data.api.ZulipJsonApi
 import ru.tinkoff.android.coursework.data.api.model.StreamDto
 import ru.tinkoff.android.coursework.data.api.model.response.TopicsListResponse
 import ru.tinkoff.android.coursework.data.db.AppDatabase
 import ru.tinkoff.android.coursework.data.db.model.Stream
 import ru.tinkoff.android.coursework.data.db.model.toStreamsDtoList
+import javax.inject.Inject
 
-internal class StreamsRepositoryImpl(private val applicationContext: Context) : StreamsRepository {
+internal class StreamsRepositoryImpl @Inject constructor(
+    private val zulipJsonApi: ZulipJsonApi,
+    private val db: AppDatabase
+) : StreamsRepository {
 
-    private var db: AppDatabase? = AppDatabase.getAppDatabase(applicationContext)
-
-    override fun loadStreamsFromDb(): Observable<List<StreamDto>>? {
-        return db?.streamDao()?.getAll()
-            ?.map { it.toStreamsDtoList() }
-            ?.onErrorReturn {
+    override fun loadStreamsFromDb(): Observable<List<StreamDto>> {
+        return db.streamDao().getAll()
+            .map { it.toStreamsDtoList() }
+            .onErrorReturn {
                 Log.e(TAG, "Loading streams from db error", it)
                 emptyList()
             }
-            ?.toObservable()
+            .toObservable()
     }
 
     override fun loadStreamsFromApi(isSubscribedStreams: Boolean): Observable<List<StreamDto>> {
         if (isSubscribedStreams) {
-            return NetworkService.getZulipJsonApi().getSubscribedStreams()
+            return zulipJsonApi.getSubscribedStreams()
                 .map { it.subscriptions }
                 .flatMapObservable  { Observable.fromIterable(it)  }
                 .flatMapSingle { getTopicsInStream(it) }
@@ -39,7 +40,7 @@ internal class StreamsRepositoryImpl(private val applicationContext: Context) : 
                 .toList()
                 .toObservable()
         } else {
-            return NetworkService.getZulipJsonApi().getAllStreams()
+            return zulipJsonApi.getAllStreams()
                 .map { it.streams }
                 .flatMapObservable  { Observable.fromIterable(it)  }
                 .flatMapSingle { getTopicsInStream(it) }
@@ -52,7 +53,7 @@ internal class StreamsRepositoryImpl(private val applicationContext: Context) : 
     }
 
     private fun getTopicsInStream(stream: StreamDto): Single<StreamDto> {
-        return NetworkService.getZulipJsonApi().getTopicsInStream(streamId = stream.streamId)
+        return zulipJsonApi.getTopicsInStream(streamId = stream.streamId)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSuccess {
@@ -67,14 +68,14 @@ internal class StreamsRepositoryImpl(private val applicationContext: Context) : 
     }
 
     private fun saveStreamsToDb(stream: Stream) {
-        db?.streamDao()?.save(stream)
-            ?.subscribeOn(Schedulers.io())
-            ?.observeOn(AndroidSchedulers.mainThread())
-            ?.onErrorReturn {
+        db.streamDao().save(stream)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .onErrorReturn {
                 Log.e(TAG, "Saving streams to db error", it)
                 DEFAULT_STREAM_ID
             }
-            ?.subscribe()
+            .subscribe()
     }
 
     companion object {
