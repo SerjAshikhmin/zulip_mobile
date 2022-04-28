@@ -14,6 +14,7 @@ import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.FragmentPeopleBinding
 import ru.tinkoff.android.coursework.data.api.model.UserDto
 import ru.tinkoff.android.coursework.di.*
+import ru.tinkoff.android.coursework.di.people.DaggerPeopleComponent
 import ru.tinkoff.android.coursework.presentation.elm.people.PeopleElmStoreFactory
 import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleEffect
 import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleEvent

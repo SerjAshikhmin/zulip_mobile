@@ -12,7 +12,7 @@ import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.FragmentProfileBinding
 import ru.tinkoff.android.coursework.data.api.model.UserDto
 import ru.tinkoff.android.coursework.di.ActivityScope
-import ru.tinkoff.android.coursework.di.DaggerProfileComponent
+import ru.tinkoff.android.coursework.di.profile.DaggerProfileComponent
 import ru.tinkoff.android.coursework.presentation.elm.profile.ProfileElmStoreFactory
 import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileEffect
 import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileEvent

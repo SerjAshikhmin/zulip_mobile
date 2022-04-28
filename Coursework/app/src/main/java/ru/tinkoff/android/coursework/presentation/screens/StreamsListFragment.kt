@@ -12,7 +12,7 @@ import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.api.model.TopicDto
 import ru.tinkoff.android.coursework.databinding.FragmentStreamsListBinding
 import ru.tinkoff.android.coursework.di.ActivityScope
-import ru.tinkoff.android.coursework.di.DaggerStreamsComponent
+import ru.tinkoff.android.coursework.di.streams.DaggerStreamsComponent
 import ru.tinkoff.android.coursework.presentation.elm.channels.StreamsElmStoreFactory
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEffect
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEvent

@@ -29,7 +29,7 @@ import ru.tinkoff.android.coursework.data.api.model.EmojiWithCountDto
 import ru.tinkoff.android.coursework.data.EmojiCodes
 import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
 import ru.tinkoff.android.coursework.di.ActivityScope
-import ru.tinkoff.android.coursework.di.DaggerChatComponent
+import ru.tinkoff.android.coursework.di.chat.DaggerChatComponent
 import ru.tinkoff.android.coursework.presentation.customviews.*
 import ru.tinkoff.android.coursework.presentation.elm.chat.ChatElmStoreFactory
 import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatEffect
@@ -98,11 +98,11 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
             && adapter.anchor != state.items[0].id - 1) {
                 val newMessages = state.items
                 adapter.updateWithNextPortion(newMessages, state.isFirstPortion)
-                store.accept(ChatEvent.Ui.CacheMessages(
+                /*store.accept(ChatEvent.Ui.CacheMessages(
                     topicName = topicName,
                     newMessages = newMessages,
                     actualMessages = adapter.messages
-                ))
+                ))*/
         }
         if (state.isMessageSent) {
             binding.enterMessage.text.clear()

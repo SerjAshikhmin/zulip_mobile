@@ -14,7 +14,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 import ru.tinkoff.android.coursework.App
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.FragmentChannelsBinding
-import ru.tinkoff.android.coursework.di.DaggerStreamsComponent
+import ru.tinkoff.android.coursework.di.streams.DaggerStreamsComponent
 import ru.tinkoff.android.coursework.presentation.elm.channels.StreamsElmStoreFactory
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEffect
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEvent
