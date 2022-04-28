@@ -98,11 +98,6 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
             && adapter.anchor != state.items[0].id - 1) {
                 val newMessages = state.items
                 adapter.updateWithNextPortion(newMessages, state.isFirstPortion)
-                /*store.accept(ChatEvent.Ui.CacheMessages(
-                    topicName = topicName,
-                    newMessages = newMessages,
-                    actualMessages = adapter.messages
-                ))*/
         }
         if (state.isMessageSent) {
             binding.enterMessage.text.clear()

@@ -11,7 +11,7 @@ import ru.tinkoff.android.coursework.data.db.model.Message
 @Dao
 internal interface MessageDao {
 
-    @Query("SELECT * FROM message WHERE topic_name == :topic ORDER BY timestamp ASC")
+    @Query("SELECT * FROM message WHERE topic_name == :topic ORDER BY id ASC")
     fun getAllByTopic(topic: String): Single<List<Message>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

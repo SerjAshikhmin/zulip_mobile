@@ -14,6 +14,9 @@ internal class ChatUseCases(
     private val chatRepository: ChatRepository
 ) {
 
+    private var currentCache: List<Message> = listOf()
+    private var currentTopicName: String = ""
+
     fun loadMessages(
         topicName: String,
         currentAnchor: Long,
@@ -28,19 +31,54 @@ internal class ChatUseCases(
     }
 
     fun cacheMessages(
-        newMessages: List<Message>,
-        actualMessages: List<Message>,
+        messages: List<Message>,
         topicName: String
     ) {
-        if (actualMessages.size <= MAX_NUMBER_OF_MESSAGES_IN_CACHE) {
-            val remainingMessagesLimit = (MAX_NUMBER_OF_MESSAGES_IN_CACHE - actualMessages.size)
-                .coerceAtMost(NUMBER_OF_MESSAGES_PER_PORTION)
-            chatRepository.saveMessagesToDb(newMessages.takeLast(remainingMessagesLimit))
+        if (messages.isEmpty()) return
+        if (currentTopicName != topicName) {
+            // произошла смена топика - сбрасываем локальный кэш
+            currentCache = listOf()
+            currentTopicName = topicName
+        }
+
+        if (messages.size > NUMBER_OF_MESSAGES_PER_PORTION) {
+            // пришел кэш - просто сохраняем локально
+            currentCache = messages
         } else {
-            chatRepository.saveMessagesToDb(actualMessages.takeLast(MAX_NUMBER_OF_MESSAGES_IN_CACHE))
-            val actualMessageIds = actualMessages
-                .takeLast(MAX_NUMBER_OF_MESSAGES_IN_CACHE).map { it.id }
-            chatRepository.removeRedundantMessagesFromDb(topicName, actualMessageIds)
+            // пришли данные из апи или кэш меньше мин. порции данных - обновляем кэш
+            if (currentCache.isEmpty()) {
+                // кэш, полученный при предыдущей загрузке, пустой - сохраняем все в БД и локально
+                chatRepository.saveMessagesToDb(messages)
+                currentCache = messages
+            } else {
+                if (currentCache[0].id > messages.last().id) {
+                    // новая порция за диапазоном кэша
+                    if (currentCache.size < MAX_NUMBER_OF_MESSAGES_IN_CACHE) {
+                        // в кэше еще есть место - сохраняем, сколько сможем
+                        val remainingCacheLimit = (MAX_NUMBER_OF_MESSAGES_IN_CACHE - currentCache.size)
+                            .coerceAtMost(NUMBER_OF_MESSAGES_PER_PORTION)
+                        val messagesToSave = messages.takeLast(remainingCacheLimit)
+                        chatRepository.saveMessagesToDb(messagesToSave)
+                        currentCache = currentCache.plus(messagesToSave)
+                    }
+                } else {
+                    // новая порция сообщений из апи входит в диапазон кэша
+                    if (currentCache[0].id <= messages[0].id) {
+                        // новая порция целиком входит в кэш - обновляем эту часть кэша в БД
+                        chatRepository.saveMessagesToDb(messages)
+                    } else {
+                        // новая порция частично входит в кэш - находим последнее сообщение
+                        // в новой порции, входящее в кэш, и сохраняем в БД
+                        var lastMessageToCashIndex = messages.lastIndex
+                        while (messages[lastMessageToCashIndex].id > currentCache[0].id) {
+                            lastMessageToCashIndex--
+                        }
+                        val messagesToSave = messages.takeLast(messages.lastIndex - lastMessageToCashIndex)
+                        chatRepository.saveMessagesToDb(messagesToSave)
+                        currentCache = currentCache.plus(messagesToSave)
+                    }
+                }
+            }
         }
     }
 

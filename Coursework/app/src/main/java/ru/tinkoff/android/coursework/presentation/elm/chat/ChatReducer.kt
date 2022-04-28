@@ -39,19 +39,6 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                     updateAllMessages = event.updateAllMessages
                 ) }
             }
-            is ChatEvent.Ui.CacheMessages -> {
-                state {
-                    copy(
-                        isLoading = false,
-                        error = null
-                    )
-                }
-                commands { +ChatCommand.CacheMessages(
-                    topicName = event.topicName,
-                    newMessages = event.newMessages,
-                    actualMessages = event.actualMessages
-                ) }
-            }
             is ChatEvent.Ui.SendMessage -> {
                 commands { +ChatCommand.SendMessage(
                     topicName = event.topicName,
@@ -98,6 +85,10 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                         updateWithPortion = true
                     )
                 }
+                commands { +ChatCommand.CacheMessages(
+                    topicName = event.topicName,
+                    messages = event.items
+                ) }
             }
             is ChatEvent.Internal.MessageSent -> {
                 state {

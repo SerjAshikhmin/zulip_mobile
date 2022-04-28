@@ -16,12 +16,6 @@ internal sealed class ChatEvent {
             val updateAllMessages: Boolean = false
         ) : ChatEvent.Ui()
 
-        data class CacheMessages(
-            val topicName: String,
-            val newMessages: List<Message>,
-            val actualMessages: List<Message>
-        ) : ChatEvent.Ui()
-
         data class SendMessage(
             val topicName: String,
             val streamName: String,

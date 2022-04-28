@@ -14,8 +14,7 @@ internal sealed class ChatCommand {
 
     data class CacheMessages(
         val topicName: String,
-        val newMessages: List<Message>,
-        val actualMessages: List<Message>
+        val messages: List<Message>
     ) : ChatCommand()
 
     data class SendMessage(

@@ -29,8 +29,7 @@ internal class ChatActor(
         is ChatCommand.CacheMessages -> {
             chatUseCases.cacheMessages(
                 topicName = command.topicName,
-                newMessages = command.newMessages,
-                actualMessages = command.actualMessages
+                messages = command.messages
             )
             Observable.empty()
         }
