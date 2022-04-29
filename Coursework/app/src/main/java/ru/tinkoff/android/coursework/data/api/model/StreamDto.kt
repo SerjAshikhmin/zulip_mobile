@@ -25,3 +25,5 @@ internal data class StreamDto (
     }
 
 }
+
+internal fun List<StreamDto>.toStreamsDbList(): List<Stream> = map { stream -> stream.toStreamDb()}

@@ -12,11 +12,6 @@ internal sealed class ChatCommand {
         val updateAllMessages: Boolean = false
     ) : ChatCommand()
 
-    data class CacheMessages(
-        val topicName: String,
-        val messages: List<Message>
-    ) : ChatCommand()
-
     data class SendMessage(
         val topicName: String,
         val streamName: String,

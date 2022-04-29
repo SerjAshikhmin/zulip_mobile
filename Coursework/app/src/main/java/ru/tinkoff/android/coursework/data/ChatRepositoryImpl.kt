@@ -66,7 +66,7 @@ internal class ChatRepositoryImpl @Inject constructor(
             .observeOn(AndroidSchedulers.mainThread())
             .onErrorReturn {
                 Log.e(TAG, "Saving messages to db error", it)
-                listOf()
+                emptyList()
             }
             .subscribe()
     }

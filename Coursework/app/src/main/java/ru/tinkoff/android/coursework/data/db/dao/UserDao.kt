@@ -17,6 +17,6 @@ internal interface UserDao {
     fun getAll(): Single<List<User>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun save(user: User): Single<Long>
+    fun saveAll(users: List<User>): Single<List<Long>>
 
 }

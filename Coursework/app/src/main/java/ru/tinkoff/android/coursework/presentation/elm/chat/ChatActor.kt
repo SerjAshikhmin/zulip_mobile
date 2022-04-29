@@ -26,13 +26,6 @@ internal class ChatActor(
                     ) },
                     { error -> ChatEvent.Internal.MessagesLoadingError(error) }
                 )
-        is ChatCommand.CacheMessages -> {
-            chatUseCases.cacheMessages(
-                topicName = command.topicName,
-                messages = command.messages
-            )
-            Observable.empty()
-        }
         is ChatCommand.SendMessage -> {
             chatUseCases.sendMessage(
                 topic = command.topicName,

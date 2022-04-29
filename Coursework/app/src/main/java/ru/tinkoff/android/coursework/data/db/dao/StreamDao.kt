@@ -11,6 +11,6 @@ internal interface StreamDao {
     fun getAll(): Single<List<Stream>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun save(stream: Stream): Single<Long>
+    fun saveAll(streams: List<Stream>): Single<List<Long>>
 
 }

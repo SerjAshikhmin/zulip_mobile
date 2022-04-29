@@ -100,10 +100,6 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                         updateWithPortion = true
                     )
                 }
-                commands { +ChatCommand.CacheMessages(
-                    topicName = event.topicName,
-                    messages = event.items
-                ) }
             }
             is ChatEvent.Internal.MessageSent -> {
                 state {

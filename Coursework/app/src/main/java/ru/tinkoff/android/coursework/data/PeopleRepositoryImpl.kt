@@ -68,13 +68,23 @@ internal class PeopleRepositoryImpl @Inject constructor(
         ))
     }
 
+    override fun saveUsersToDb(users: List<User>) {
+        db.userDao().saveAll(users)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .onErrorReturn {
+                Log.e(TAG, "Saving users to db error", it)
+                emptyList()
+            }.subscribe()
+    }
+
     private fun getUserPresence(user: UserDto): Single<UserDto> {
         return zulipJsonApi.getUserPresence(userIdOrEmail = user.userId.toString())
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSuccess {
                 user.presence = it.presence.aggregated?.status ?: PeopleFragment.NOT_FOUND_PRESENCE_KEY
-                saveUserToDb(user.toUserDb())
+                //saveUserToDb(user.toUserDb())
             }
             .onErrorReturn {
                 Log.e(TAG, applicationContext.resources.getString(R.string.user_not_found_error_text), it)
@@ -84,20 +94,9 @@ internal class PeopleRepositoryImpl @Inject constructor(
             .map { user }
     }
 
-    private fun saveUserToDb(user: User) {
-        db.userDao().save(user)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .onErrorReturn {
-                Log.e(TAG, "Saving user to db error", it)
-                DEFAULT_USER_ID
-            }.subscribe()
-    }
-
     companion object {
 
         private const val TAG = "PeopleRepository"
-        private const val DEFAULT_USER_ID = 0L
     }
 
 }

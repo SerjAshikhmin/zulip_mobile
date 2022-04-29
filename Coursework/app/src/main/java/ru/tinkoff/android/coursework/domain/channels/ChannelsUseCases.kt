@@ -6,7 +6,7 @@ import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import ru.tinkoff.android.coursework.data.StreamsRepository
 import ru.tinkoff.android.coursework.data.api.model.StreamDto
-import ru.tinkoff.android.coursework.presentation.screens.ChannelsFragment
+import ru.tinkoff.android.coursework.data.api.model.toStreamsDbList
 import java.util.concurrent.TimeUnit
 
 internal class ChannelsUseCases(
@@ -18,7 +18,11 @@ internal class ChannelsUseCases(
     fun loadStreams(isSubscribedStreams: Boolean): Observable<List<StreamDto>> {
         return Observable.merge(
             streamsRepository.loadStreamsFromDb().toObservable(),
-            streamsRepository.loadStreamsFromApi(isSubscribedStreams).toObservable()
+            streamsRepository.loadStreamsFromApi(isSubscribedStreams)
+                .doOnSuccess {
+                    streamsRepository.saveStreamsToDb(it.toStreamsDbList())
+                }
+                .toObservable()
         )
     }
 

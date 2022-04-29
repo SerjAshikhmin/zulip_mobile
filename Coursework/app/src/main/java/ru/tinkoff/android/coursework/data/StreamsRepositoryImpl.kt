@@ -42,13 +42,23 @@ internal class StreamsRepositoryImpl @Inject constructor(
             .toList()
     }
 
+    override fun saveStreamsToDb(streams: List<Stream>) {
+        db.streamDao().saveAll(streams)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .onErrorReturn {
+                Log.e(TAG, "Saving streams to db error", it)
+                emptyList()
+            }
+            .subscribe()
+    }
+
     private fun getTopicsInStream(stream: StreamDto): Single<StreamDto> {
         return zulipJsonApi.getTopicsInStream(streamId = stream.streamId)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSuccess {
                 stream.topics = it.topics
-                saveStreamsToDb(stream.toStreamDb())
             }
             .onErrorReturn {
                 Log.e(TAG, "Topics not found", it)
@@ -57,21 +67,9 @@ internal class StreamsRepositoryImpl @Inject constructor(
             .map { stream }
     }
 
-    private fun saveStreamsToDb(stream: Stream) {
-        db.streamDao().save(stream)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .onErrorReturn {
-                Log.e(TAG, "Saving streams to db error", it)
-                DEFAULT_STREAM_ID
-            }
-            .subscribe()
-    }
-
     companion object {
 
         private const val TAG = "StreamsRepository"
-        private const val DEFAULT_STREAM_ID = 0L
     }
 
 }

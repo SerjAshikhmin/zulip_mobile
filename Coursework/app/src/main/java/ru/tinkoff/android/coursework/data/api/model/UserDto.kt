@@ -35,3 +35,5 @@ internal data class UserDto (
     }
 
 }
+
+internal fun List<UserDto>.toUsersDbList(): List<User> = map { user -> user.toUserDb()}
