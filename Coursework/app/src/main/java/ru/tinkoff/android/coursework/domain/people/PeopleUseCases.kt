@@ -1,6 +1,7 @@
 package ru.tinkoff.android.coursework.domain.people
 
 import io.reactivex.Observable
+import io.reactivex.Single
 import ru.tinkoff.android.coursework.data.PeopleRepository
 import ru.tinkoff.android.coursework.data.api.model.UserDto
 
@@ -10,8 +11,8 @@ internal class PeopleUseCases (
 
     fun loadUsers(): Observable<List<UserDto>> {
         return Observable.merge(
-            peopleRepository.loadUsersFromDb(),
-            peopleRepository.loadUsersFromApi()
+            peopleRepository.loadUsersFromDb().toObservable(),
+            peopleRepository.loadUsersFromApi().toObservable()
         )
     }
 

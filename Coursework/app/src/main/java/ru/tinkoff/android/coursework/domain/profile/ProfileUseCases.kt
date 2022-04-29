@@ -13,8 +13,8 @@ internal class ProfileUseCases (
 
     fun loadOwnUser(): Observable<UserDto> {
         return Observable.merge(
-            peopleRepository.loadUserFromDb(SELF_USER_ID),
-            peopleRepository.loadOwnUserFromApi()
+            peopleRepository.loadUserFromDb(SELF_USER_ID).toObservable(),
+            peopleRepository.loadOwnUserFromApi().toObservable()
         )
     }
 

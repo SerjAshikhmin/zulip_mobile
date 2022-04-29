@@ -24,43 +24,38 @@ internal class PeopleRepositoryImpl @Inject constructor(
     private val db: AppDatabase
 ) : PeopleRepository {
 
-    override fun loadUsersFromDb(): Observable<List<UserDto>> {
+    override fun loadUsersFromDb(): Single<List<UserDto>> {
         return db.userDao().getAll()
             .map { it.toUsersDtoList() }
             .doOnError {
                 Log.e(TAG, "Loading users from db error", it)
             }
-            .toObservable()
     }
 
-    override fun loadUsersFromApi(): Observable<List<UserDto>> {
+    override fun loadUsersFromApi(): Single<List<UserDto>> {
         return zulipJsonApi.getAllUsers()
-            .map { it.members }
-            .flatMapObservable  { Observable.fromIterable(it)  }
+            .flattenAsObservable { it.members }
             .flatMapSingle { getUserPresence(it) }
             .doOnError {
                 Log.e(TAG, "Loading users from api error", it)
             }
             .toList()
-            .toObservable()
     }
 
-    override fun loadUserFromDb(userId: Long): Observable<UserDto> {
+    override fun loadUserFromDb(userId: Long): Single<UserDto> {
         return db.userDao().getById(userId)
             .map { it.toUserDto() }
             .doOnError {
                 Log.e(TAG, "Loading users from db error", it)
             }
-            .toObservable()
     }
 
-    override fun loadOwnUserFromApi(): Observable<UserDto> {
+    override fun loadOwnUserFromApi(): Single<UserDto> {
         return zulipJsonApi.getOwnUser()
             .flatMap { user -> getUserPresence(user) }
             .doOnError {
                 Log.e(TAG, applicationContext.resources.getString(R.string.user_not_found_error_text), it)
             }
-            .toObservable()
     }
 
     override fun createUserFromBundle(bundle: Bundle): Single<UserDto> {

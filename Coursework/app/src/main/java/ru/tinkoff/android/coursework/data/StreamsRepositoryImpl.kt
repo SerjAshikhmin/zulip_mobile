@@ -1,7 +1,6 @@
 package ru.tinkoff.android.coursework.data
 
 import android.util.Log
-import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -18,38 +17,29 @@ internal class StreamsRepositoryImpl @Inject constructor(
     private val db: AppDatabase
 ) : StreamsRepository {
 
-    override fun loadStreamsFromDb(): Observable<List<StreamDto>> {
+    override fun loadStreamsFromDb(): Single<List<StreamDto>> {
         return db.streamDao().getAll()
             .map { it.toStreamsDtoList() }
             .onErrorReturn {
                 Log.e(TAG, "Loading streams from db error", it)
                 emptyList()
             }
-            .toObservable()
     }
 
-    override fun loadStreamsFromApi(isSubscribedStreams: Boolean): Observable<List<StreamDto>> {
-        if (isSubscribedStreams) {
-            return zulipJsonApi.getSubscribedStreams()
-                .map { it.subscriptions }
-                .flatMapObservable  { Observable.fromIterable(it)  }
-                .flatMapSingle { getTopicsInStream(it) }
-                .doOnError {
-                    Log.e(TAG, "Loading streams from api error", it)
-                }
-                .toList()
-                .toObservable()
+    override fun loadStreamsFromApi(isSubscribedStreams: Boolean): Single<List<StreamDto>> {
+        val baseStream = if (isSubscribedStreams) {
+            zulipJsonApi.getSubscribedStreams()
+                .flattenAsObservable { it.subscriptions }
         } else {
-            return zulipJsonApi.getAllStreams()
-                .map { it.streams }
-                .flatMapObservable  { Observable.fromIterable(it)  }
-                .flatMapSingle { getTopicsInStream(it) }
-                .doOnError {
-                    Log.e(TAG, "Loading streams from api error", it)
-                }
-                .toList()
-                .toObservable()
+            zulipJsonApi.getAllStreams()
+                .flattenAsObservable { it.streams }
         }
+        return baseStream
+            .flatMapSingle { getTopicsInStream(it) }
+            .doOnError {
+                Log.e(TAG, "Loading streams from api error", it)
+            }
+            .toList()
     }
 
     private fun getTopicsInStream(stream: StreamDto): Single<StreamDto> {

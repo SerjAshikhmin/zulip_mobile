@@ -21,7 +21,6 @@ internal interface PeopleComponent {
 
     fun getPeopleActor(): PeopleActor
 
-    //fun getPeopleElmStoreFactory(): PeopleElmStoreFactory
     fun inject(peopleFragment: PeopleFragment)
 
     @Component.Factory

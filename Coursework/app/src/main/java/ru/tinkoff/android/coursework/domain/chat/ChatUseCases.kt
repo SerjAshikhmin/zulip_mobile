@@ -24,9 +24,9 @@ internal class ChatUseCases(
     ): Observable<List<Message>> {
         return Observable.merge(
             if (updateAllMessages) {
-                chatRepository.loadMessagesFromDb(topicName)
+                chatRepository.loadMessagesFromDb(topicName).toObservable()
             } else Observable.empty(),
-            chatRepository.loadMessagesFromApi(topicName, currentAnchor)
+            chatRepository.loadMessagesFromApi(topicName, currentAnchor).toObservable()
         )
     }
 

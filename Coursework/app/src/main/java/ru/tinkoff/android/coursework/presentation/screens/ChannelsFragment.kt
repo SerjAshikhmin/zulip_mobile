@@ -114,9 +114,4 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
         }.attach()
     }
 
-    companion object {
-
-        const val DELAY_BETWEEN_ENTERING_CHARACTERS = 500L
-    }
-
 }

@@ -2,7 +2,6 @@ package ru.tinkoff.android.coursework.data
 
 import android.content.Context
 import android.util.Log
-import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -25,19 +24,18 @@ internal class ChatRepositoryImpl @Inject constructor(
     private val db: AppDatabase
 ) : ChatRepository {
 
-    override fun loadMessagesFromDb(topicName: String): Observable<List<Message>> {
+    override fun loadMessagesFromDb(topicName: String): Single<List<Message>> {
         return db.messageDao().getAllByTopic(topicName)
             .onErrorReturn {
                 Log.e(TAG, "Loading messages from db error", it)
                 emptyList()
             }
-            .toObservable()
     }
 
     override fun loadMessagesFromApi(
         topicName: String,
         currentAnchor: Long
-    ): Observable<List<Message>> {
+    ): Single<List<Message>> {
         return zulipJsonApi.getMessages(
             numBefore = ZulipJsonApi.NUMBER_OF_MESSAGES_BEFORE_ANCHOR,
             anchor = currentAnchor.toString(),
@@ -49,7 +47,6 @@ internal class ChatRepositoryImpl @Inject constructor(
             ).contentToString()
         )
             .map { it.messages.toMessageDbList() }
-            .toObservable()
     }
 
     override fun removeRedundantMessagesFromDb(topicName: String, actualMessageIds: List<Long>) {

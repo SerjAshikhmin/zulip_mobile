@@ -10,6 +10,17 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
 
     override fun Result.reduce(event: ChatEvent): Any {
         return when (event) {
+            is ChatEvent.Ui -> {
+                processUiEvents(event)
+            }
+            is ChatEvent.Internal -> {
+                processInternalEvents(event)
+            }
+        }
+    }
+
+    private fun Result.processUiEvents(event: ChatEvent.Ui): Any {
+        return when (event) {
             is ChatEvent.Ui.InitEvent -> {
                 state {
                     copy(
@@ -73,7 +84,11 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
             is ChatEvent.Ui.UploadFile -> {
                 commands { +ChatCommand.UploadFile(event.fileBody) }
             }
+        }
+    }
 
+    private fun Result.processInternalEvents(event: ChatEvent.Internal): Any {
+        return when (event) {
             is ChatEvent.Internal.MessagesLoaded -> {
                 state {
                     copy(

@@ -17,8 +17,8 @@ internal class ChannelsUseCases(
 
     fun loadStreams(isSubscribedStreams: Boolean): Observable<List<StreamDto>> {
         return Observable.merge(
-            streamsRepository.loadStreamsFromDb(),
-            streamsRepository.loadStreamsFromApi(isSubscribedStreams)
+            streamsRepository.loadStreamsFromDb().toObservable(),
+            streamsRepository.loadStreamsFromApi(isSubscribedStreams).toObservable()
         )
     }
 
@@ -28,8 +28,9 @@ internal class ChannelsUseCases(
         return queryEvents
             .map { query -> query.trim() }
             .distinctUntilChanged()
-            .debounce(ChannelsFragment.DELAY_BETWEEN_ENTERING_CHARACTERS, TimeUnit.MILLISECONDS)
+            .debounce(DELAY_BETWEEN_ENTERING_CHARACTERS, TimeUnit.MILLISECONDS)
             .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
             .flatMap { query ->
                 searchStreamsByQuery(query)
             }
@@ -44,6 +45,11 @@ internal class ChannelsUseCases(
                     stream.name.lowercase().contains(query.lowercase())
                 }
             }
+    }
+
+    companion object {
+
+        const val DELAY_BETWEEN_ENTERING_CHARACTERS = 500L
     }
 
 }
