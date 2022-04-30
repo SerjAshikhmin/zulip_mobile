@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'kotlinx-serialization'
     id 'kotlin-kapt'
+    id 'kotlin-android-extensions'
 }
 
 android {
@@ -66,5 +67,9 @@ dependencies {
             "$kotlinxSerializationConverterVersion"
 
     implementation "com.github.bumptech.glide:glide:$glideVersion"
+
+    implementation "com.github.vivid-money.elmslie:elmslie-core:$elmslieVersion"
+    implementation "com.github.vivid-money.elmslie:elmslie-android:$elmslieVersion"
+    implementation "com.github.vivid-money.elmslie:elmslie-rxjava-2:$elmslieVersion"
 
 }

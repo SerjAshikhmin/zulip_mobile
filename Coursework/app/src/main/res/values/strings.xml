@@ -15,7 +15,6 @@
     <string name="subscribed_tab_name">Subscribed</string>
     <string name="all_streams_tab_name">All streams</string>
     <string name="streams_not_found_error_text">Streams not found</string>
-    <string name="topics_not_found_error_text">Topics not found</string>
     <string name="people_not_found_error_text">People not found</string>
     <string name="user_not_found_error_text">User not found</string>
     <string name="messages_not_found_error_text">Messages not found</string>
@@ -24,13 +23,6 @@
     <string name="removing_emoji_error_text">Removing emoji error</string>
     <string name="sending_message_error_text">Sending message error</string>
     <string name="uploading_file_error_text">Uploading file error</string>
-    <string name="loading_streams_from_db_error_text">Loading streams from db error</string>
-    <string name="saving_streams_to_db_error_text">Saving streams to db error</string>
-    <string name="loading_users_from_db_error_text">Loading users from db error</string>
-    <string name="saving_user_to_db_error_text">Saving user to db error</string>
-    <string name="loading_messages_from_db_error_text">Loading messages from db error</string>
-    <string name="saving_messages_to_db_error_text">Saving messages to db error</string>
-    <string name="removing_messages_from_db_error_text">Removing messages from db error</string>
     <string name="retry_action_snack_bar_text">Retry</string>
     <string name="profile_toolbar_title">Profile</string>
 </resources>

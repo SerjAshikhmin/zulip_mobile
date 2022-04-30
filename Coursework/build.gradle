@@ -33,4 +33,5 @@ ext {
     loggingInterceptorVersion = '4.9.3'
     glideVersion = '4.12.0'
     roomVersion = '2.4.2'
+    elmslieVersion = '1.2.0'
 }
