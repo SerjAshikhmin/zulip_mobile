@@ -4,7 +4,7 @@ import dagger.Component
 import ru.tinkoff.android.coursework.data.ChatRepository
 import ru.tinkoff.android.coursework.di.ActivityScope
 import ru.tinkoff.android.coursework.di.ApplicationComponent
-import ru.tinkoff.android.coursework.domain.chat.ChatUseCases
+import ru.tinkoff.android.coursework.domain.chat.ChatInteractor
 import ru.tinkoff.android.coursework.presentation.elm.chat.ChatActor
 import ru.tinkoff.android.coursework.presentation.screens.ChatActivity
 
@@ -17,7 +17,7 @@ internal interface ChatComponent {
 
     fun getChatRepository(): ChatRepository
 
-    fun getChatUseCases(): ChatUseCases
+    fun getChatUseCases(): ChatInteractor
 
     fun getChatActor(): ChatActor
 

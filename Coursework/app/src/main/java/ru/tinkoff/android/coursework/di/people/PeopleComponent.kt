@@ -4,7 +4,7 @@ import dagger.Component
 import ru.tinkoff.android.coursework.data.PeopleRepository
 import ru.tinkoff.android.coursework.di.ActivityScope
 import ru.tinkoff.android.coursework.di.ApplicationComponent
-import ru.tinkoff.android.coursework.domain.people.PeopleUseCases
+import ru.tinkoff.android.coursework.domain.people.PeopleInteractor
 import ru.tinkoff.android.coursework.presentation.elm.people.PeopleActor
 import ru.tinkoff.android.coursework.presentation.screens.PeopleFragment
 
@@ -17,7 +17,7 @@ internal interface PeopleComponent {
 
     fun getPeopleRepository(): PeopleRepository
 
-    fun getPeopleUseCases(): PeopleUseCases
+    fun getPeopleUseCases(): PeopleInteractor
 
     fun getPeopleActor(): PeopleActor
 

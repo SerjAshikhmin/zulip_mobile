@@ -8,15 +8,15 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.disposables.CompositeDisposable
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.api.model.StreamDto
 import ru.tinkoff.android.coursework.databinding.ItemStreamInListBinding
+import ru.tinkoff.android.coursework.domain.model.Stream
 
 internal class StreamsListAdapter(private val topicItemClickListener: OnTopicItemClickListener)
     : RecyclerView.Adapter<StreamsListAdapter.StreamListViewHolder>() {
 
     var showShimmer = true
 
-    var streams: List<StreamDto>
+    var streams: List<Stream>
         set(value) = differ.submitList(value)
         get() = differ.currentList
 
@@ -24,13 +24,13 @@ internal class StreamsListAdapter(private val topicItemClickListener: OnTopicIte
 
     private val differ = AsyncListDiffer(this, DiffCallback())
 
-    class DiffCallback: DiffUtil.ItemCallback<StreamDto>() {
+    class DiffCallback: DiffUtil.ItemCallback<Stream>() {
 
-        override fun areItemsTheSame(oldItem: StreamDto, newItem: StreamDto): Boolean {
+        override fun areItemsTheSame(oldItem: Stream, newItem: Stream): Boolean {
             return oldItem.name == newItem.name
         }
 
-        override fun areContentsTheSame(oldItem: StreamDto, newItem: StreamDto): Boolean {
+        override fun areContentsTheSame(oldItem: Stream, newItem: Stream): Boolean {
             return oldItem == newItem
         }
     }
@@ -75,18 +75,18 @@ internal class StreamsListAdapter(private val topicItemClickListener: OnTopicIte
         private val arrowIcon = binding.arrowIcon
         private var isOpened = false
 
-        fun bind(stream: StreamDto) {
+        fun bind(stream: Stream) {
             streamName.text =
                 binding.root.resources.getString(R.string.stream_name_text, stream.name)
         }
 
-        fun initStreamListener(stream: StreamDto) {
+        fun initStreamListener(stream: Stream) {
             binding.root.setOnClickListener {
                 configureTopicItemAdapter(stream)
             }
         }
 
-        private fun configureTopicItemAdapter(stream: StreamDto) {
+        private fun configureTopicItemAdapter(stream: Stream) {
             val topItemAdapter = TopicItemAdapter(this@StreamsListAdapter.topicItemClickListener)
 
             if (!isOpened) {

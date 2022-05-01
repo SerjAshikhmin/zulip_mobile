@@ -9,10 +9,10 @@ import androidx.fragment.app.findFragment
 import androidx.navigation.fragment.NavHostFragment
 import ru.tinkoff.android.coursework.App
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.api.model.TopicDto
 import ru.tinkoff.android.coursework.databinding.FragmentStreamsListBinding
 import ru.tinkoff.android.coursework.di.ActivityScope
 import ru.tinkoff.android.coursework.di.streams.DaggerStreamsComponent
+import ru.tinkoff.android.coursework.domain.model.Topic
 import ru.tinkoff.android.coursework.presentation.elm.channels.StreamsElmStoreFactory
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEffect
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEvent
@@ -74,7 +74,7 @@ internal abstract class StreamsListFragment
         }
     }
 
-    override fun onTopicItemClick(topic: TopicDto, streamName: String) {
+    override fun onTopicItemClick(topic: Topic, streamName: String) {
         val bundle = bundleOf(
             ChatActivity.STREAM_NAME_KEY to streamName,
             ChatActivity.TOPIC_NAME_KEY to topic.name

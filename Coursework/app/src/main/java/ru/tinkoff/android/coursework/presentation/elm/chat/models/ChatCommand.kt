@@ -1,7 +1,6 @@
 package ru.tinkoff.android.coursework.presentation.elm.chat.models
 
 import okhttp3.MultipartBody
-import ru.tinkoff.android.coursework.data.db.model.Message
 
 internal sealed class ChatCommand {
 

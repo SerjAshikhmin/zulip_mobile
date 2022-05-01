@@ -3,11 +3,10 @@ package ru.tinkoff.android.coursework.data.db.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import ru.tinkoff.android.coursework.data.api.model.StreamDto
 import ru.tinkoff.android.coursework.data.api.model.TopicDto
 
 @Entity(tableName = "stream")
-internal class Stream (
+internal class StreamDb (
 
     @PrimaryKey
     val streamId: Long = 0,
@@ -17,16 +16,4 @@ internal class Stream (
 
     @ColumnInfo(name = "topics")
     var topics: List<TopicDto>
-) {
-
-    fun toStreamDto(): StreamDto {
-        return StreamDto(
-            streamId = streamId,
-            name = name,
-            topics = topics
-        )
-    }
-
-}
-
-internal fun List<Stream>.toStreamsDtoList(): List<StreamDto> = map { stream -> stream.toStreamDto()}
+)

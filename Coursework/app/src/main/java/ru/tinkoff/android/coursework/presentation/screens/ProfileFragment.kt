@@ -10,9 +10,9 @@ import com.google.android.material.snackbar.Snackbar
 import ru.tinkoff.android.coursework.App
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.FragmentProfileBinding
-import ru.tinkoff.android.coursework.data.api.model.UserDto
 import ru.tinkoff.android.coursework.di.ActivityScope
 import ru.tinkoff.android.coursework.di.profile.DaggerProfileComponent
+import ru.tinkoff.android.coursework.domain.model.User
 import ru.tinkoff.android.coursework.presentation.elm.profile.ProfileElmStoreFactory
 import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileEffect
 import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileEvent
@@ -77,7 +77,7 @@ internal class ProfileFragment : ElmFragment<ProfileEvent, ProfileEffect, Profil
         }
     }
 
-    private fun fillViewsWithUserData(user: UserDto) {
+    private fun fillViewsWithUserData(user: User) {
         binding.username.text = user.fullName
         binding.userPresence.text = user.presence
         when (user.presence) {

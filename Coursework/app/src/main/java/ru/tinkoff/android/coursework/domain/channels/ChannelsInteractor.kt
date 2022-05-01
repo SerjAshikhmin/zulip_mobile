@@ -1,34 +1,34 @@
 package ru.tinkoff.android.coursework.domain.channels
 
 import io.reactivex.Observable
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import ru.tinkoff.android.coursework.data.StreamsRepository
-import ru.tinkoff.android.coursework.data.api.model.StreamDto
-import ru.tinkoff.android.coursework.data.api.model.toStreamsDbList
+import ru.tinkoff.android.coursework.domain.model.Stream
 import java.util.concurrent.TimeUnit
 
-internal class ChannelsUseCases(
+internal class ChannelsInteractor(
     private val streamsRepository: StreamsRepository
 ) {
 
     private val queryEvents: PublishSubject<String> = PublishSubject.create()
 
-    fun loadStreams(isSubscribedStreams: Boolean): Observable<List<StreamDto>> {
-        return Observable.merge(
-            streamsRepository.loadStreamsFromDb().toObservable(),
+    fun loadStreams(isSubscribedStreams: Boolean): Observable<List<Stream>> {
+        return Single.merge(
+            streamsRepository.loadStreamsFromDb(),
             streamsRepository.loadStreamsFromApi(isSubscribedStreams)
                 .doOnSuccess {
-                    streamsRepository.saveStreamsToDb(it.toStreamsDbList())
+                    streamsRepository.saveStreamsToDb(it)
                 }
-                .toObservable()
-        )
+        ).toObservable()
+            .subscribeOn(Schedulers.io())
     }
 
     fun processSearchQuery(query: String) = queryEvents.onNext(query)
 
-    fun subscribeOnSearchStreamsEvents(): Observable<List<StreamDto>> {
+    fun subscribeOnSearchStreamsEvents(): Observable<List<Stream>> {
         return queryEvents
             .map { query -> query.trim() }
             .distinctUntilChanged()
@@ -40,7 +40,7 @@ internal class ChannelsUseCases(
             }
     }
 
-    private fun searchStreamsByQuery(query: String): Observable<List<StreamDto>> {
+    private fun searchStreamsByQuery(query: String): Observable<List<Stream>> {
         return loadStreams(false)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

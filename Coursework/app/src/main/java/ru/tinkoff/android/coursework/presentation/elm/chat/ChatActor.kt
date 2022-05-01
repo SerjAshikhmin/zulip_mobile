@@ -1,18 +1,18 @@
 package ru.tinkoff.android.coursework.presentation.elm.chat
 
 import io.reactivex.Observable
-import ru.tinkoff.android.coursework.domain.chat.ChatUseCases
+import ru.tinkoff.android.coursework.domain.chat.ChatInteractor
 import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatCommand
 import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatEvent
 import vivid.money.elmslie.core.ActorCompat
 
 internal class ChatActor(
-    private val chatUseCases: ChatUseCases
+    private val chatInteractor: ChatInteractor
 ) : ActorCompat<ChatCommand, ChatEvent> {
 
     override fun execute(command: ChatCommand): Observable<ChatEvent> = when (command) {
         is ChatCommand.LoadMessages ->
-            chatUseCases.loadMessages(
+            chatInteractor.loadMessages(
                 command.topicName,
                 command.currentAnchor,
                 command.updateAllMessages
@@ -27,7 +27,7 @@ internal class ChatActor(
                     { error -> ChatEvent.Internal.MessagesLoadingError(error) }
                 )
         is ChatCommand.SendMessage -> {
-            chatUseCases.sendMessage(
+            chatInteractor.sendMessage(
                 topic = command.topicName,
                 stream = command.streamName,
                 content = command.content
@@ -37,23 +37,21 @@ internal class ChatActor(
                     { error -> ChatEvent.Internal.MessageSendingError(error) }
                 )
         }
-        is ChatCommand.AddReaction -> chatUseCases.addReaction(
+        is ChatCommand.AddReaction -> chatInteractor.addReaction(
             messageId = command.messageId,
             emojiName = command.emojiName
         )
-            .mapEvents(
-                { ChatEvent.Internal.ReactionAdded },
-                { error -> ChatEvent.Internal.ReactionAddingError(error) }
-            )
-        is ChatCommand.RemoveReaction -> chatUseCases.removeReaction(
+            .mapSuccessEvent {
+                ChatEvent.Internal.ReactionAdded
+            }
+        is ChatCommand.RemoveReaction -> chatInteractor.removeReaction(
             messageId = command.messageId,
             emojiName = command.emojiName
         )
-            .mapEvents(
-                { ChatEvent.Internal.ReactionRemoved },
-                { error -> ChatEvent.Internal.ReactionRemovingError(error) }
-            )
-        is ChatCommand.UploadFile -> chatUseCases.uploadFile(fileBody = command.fileBody)
+            .mapSuccessEvent{
+                ChatEvent.Internal.ReactionRemoved
+            }
+        is ChatCommand.UploadFile -> chatInteractor.uploadFile(fileBody = command.fileBody)
             .mapEvents(
                 { response -> ChatEvent.Internal.FileUploaded(response.uri) },
                 { error -> ChatEvent.Internal.FileUploadingError(error) }

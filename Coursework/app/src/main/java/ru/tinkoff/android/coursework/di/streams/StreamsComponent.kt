@@ -4,7 +4,7 @@ import dagger.Component
 import ru.tinkoff.android.coursework.data.StreamsRepository
 import ru.tinkoff.android.coursework.di.ActivityScope
 import ru.tinkoff.android.coursework.di.ApplicationComponent
-import ru.tinkoff.android.coursework.domain.channels.ChannelsUseCases
+import ru.tinkoff.android.coursework.domain.channels.ChannelsInteractor
 import ru.tinkoff.android.coursework.presentation.elm.channels.StreamsActor
 import ru.tinkoff.android.coursework.presentation.screens.ChannelsFragment
 import ru.tinkoff.android.coursework.presentation.screens.StreamsListFragment
@@ -18,7 +18,7 @@ internal interface StreamsComponent {
 
     fun getStreamsRepository(): StreamsRepository
 
-    fun getChannelsUseCases(): ChannelsUseCases
+    fun getChannelsUseCases(): ChannelsInteractor
 
     fun getStreamsActor(): StreamsActor
 

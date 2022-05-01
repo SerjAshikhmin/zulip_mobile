@@ -1,7 +1,7 @@
 package ru.tinkoff.android.coursework.presentation.elm.channels.models
 
 import android.os.Bundle
-import ru.tinkoff.android.coursework.data.api.model.StreamDto
+import ru.tinkoff.android.coursework.domain.model.Stream
 
 internal sealed class StreamsEvent {
 
@@ -21,9 +21,9 @@ internal sealed class StreamsEvent {
 
     sealed class Internal : StreamsEvent() {
 
-        data class StreamsListLoaded(val items: List<StreamDto>) : Internal()
+        data class StreamsListLoaded(val items: List<Stream>) : Internal()
 
-        data class StreamsWithSearchLoaded(val items: List<StreamDto>) : Internal()
+        data class StreamsWithSearchLoaded(val items: List<Stream>) : Internal()
 
         data class StreamsListLoadingError(val error: Throwable) : Internal()
 

@@ -12,9 +12,9 @@ import com.google.android.material.snackbar.Snackbar
 import ru.tinkoff.android.coursework.App
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.FragmentPeopleBinding
-import ru.tinkoff.android.coursework.data.api.model.UserDto
 import ru.tinkoff.android.coursework.di.*
 import ru.tinkoff.android.coursework.di.people.DaggerPeopleComponent
+import ru.tinkoff.android.coursework.domain.model.User
 import ru.tinkoff.android.coursework.presentation.elm.people.PeopleElmStoreFactory
 import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleEffect
 import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleEvent
@@ -84,7 +84,7 @@ internal class PeopleFragment
         }
     }
 
-    override fun onUserItemClick(user: UserDto) {
+    override fun onUserItemClick(user: User) {
         val bundle = bundleOf(
             ProfileFragment.USER_ID_KEY to user.userId,
             ProfileFragment.USERNAME_KEY to user.fullName,

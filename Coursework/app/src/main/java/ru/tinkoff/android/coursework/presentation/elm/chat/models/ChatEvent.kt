@@ -1,7 +1,7 @@
 package ru.tinkoff.android.coursework.presentation.elm.chat.models
 
 import okhttp3.MultipartBody
-import ru.tinkoff.android.coursework.data.db.model.Message
+import ru.tinkoff.android.coursework.domain.model.Message
 
 internal sealed class ChatEvent {
 
@@ -56,10 +56,6 @@ internal sealed class ChatEvent {
         data class MessagesLoadingError(val error: Throwable) : Internal()
 
         data class MessageSendingError(val error: Throwable) : Internal()
-
-        data class ReactionAddingError(val error: Throwable) : Internal()
-
-        data class ReactionRemovingError(val error: Throwable) : Internal()
 
         data class FileUploadingError(val error: Throwable) :Internal()
 

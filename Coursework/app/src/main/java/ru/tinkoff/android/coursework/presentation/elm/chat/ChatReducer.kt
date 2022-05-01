@@ -10,153 +10,39 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
 
     override fun Result.reduce(event: ChatEvent): Any {
         return when (event) {
-            is ChatEvent.Ui -> {
-                processUiEvents(event)
-            }
-            is ChatEvent.Internal -> {
-                processInternalEvents(event)
-            }
-        }
-    }
-
-    private fun Result.processUiEvents(event: ChatEvent.Ui): Any {
-        return when (event) {
             is ChatEvent.Ui.InitEvent -> {
-                state {
-                    copy(
-                        isLoading = true,
-                        error = null
-                    )
-                }
+                processInitEvent()
             }
             is ChatEvent.Ui.LoadMessages -> {
-                state {
-                    copy(
-                        isLoading = true,
-                        error = null,
-                        updateAllMessages = event.updateAllMessages,
-                        updateWithPortion = false,
-                        isFirstPortion = event.isFirstPortion,
-                        isMessageSent = false,
-                        isReactionAdded = false,
-                        isReactionRemoved = false,
-                        isFileUploaded = false
-                    )
-                }
-                commands { +ChatCommand.LoadMessages(
-                    topicName = event.topicName,
-                    currentAnchor = event.currentAnchor,
-                    isFirstPosition = event.isFirstPortion,
-                    updateAllMessages = event.updateAllMessages
-                ) }
+                processLoadMessagesEvent(event)
             }
             is ChatEvent.Ui.SendMessage -> {
-                commands { +ChatCommand.SendMessage(
-                    topicName = event.topicName,
-                    streamName = event.streamName,
-                    content = event.content
-                ) }
+                processSendMessageEvent(event)
             }
             is ChatEvent.Ui.AddReaction -> {
-                state {
-                    copy(
-                        isReactionAdded = false,
-                        error = null
-                    )
-                }
-                commands { +ChatCommand.AddReaction(
-                    messageId = event.messageId,
-                    emojiName = event.emojiName
-                ) }
+                processAddReactionEvent(event)
             }
             is ChatEvent.Ui.RemoveReaction -> {
-                state {
-                    copy(
-                        isReactionRemoved = false,
-                        error = null
-                    )
-                }
-                commands { +ChatCommand.RemoveReaction(
-                    messageId = event.messageId,
-                    emojiName = event.emojiName
-                ) }
+                processRemoveReactionEvent(event)
             }
             is ChatEvent.Ui.UploadFile -> {
                 commands { +ChatCommand.UploadFile(event.fileBody) }
             }
-        }
-    }
 
-    private fun Result.processInternalEvents(event: ChatEvent.Internal): Any {
-        return when (event) {
             is ChatEvent.Internal.MessagesLoaded -> {
-                state {
-                    copy(
-                        items = event.items,
-                        isLoading = false,
-                        error = null,
-                        isFirstPortion = event.isFirstPortion,
-                        updateAllMessages = event.updateAllMessages,
-                        updateWithPortion = true
-                    )
-                }
+                processMessagesLoadedEvent(event)
             }
             is ChatEvent.Internal.MessageSent -> {
-                state {
-                    copy(
-                        isMessageSent = true,
-                        isFileUploaded = false,
-                        isReactionAdded = false,
-                        isReactionRemoved = false,
-                        updateAllMessages = false,
-                        updateWithPortion = false,
-                        isFirstPortion = false,
-                        error = null
-                    )
-                }
+                processMessageSentEvent()
             }
             is ChatEvent.Internal.ReactionAdded -> {
-                state {
-                    copy(
-                        isReactionAdded = true,
-                        isReactionRemoved = false,
-                        isMessageSent = false,
-                        isFileUploaded = false,
-                        updateAllMessages = false,
-                        updateWithPortion = false,
-                        isFirstPortion = false,
-                        error = null
-                    )
-                }
+                processReactionAddedEvent()
             }
             is ChatEvent.Internal.ReactionRemoved -> {
-                state {
-                    copy(
-                        isReactionRemoved = true,
-                        isReactionAdded = false,
-                        isMessageSent = false,
-                        isFileUploaded = false,
-                        updateAllMessages = false,
-                        updateWithPortion = false,
-                        isFirstPortion = false,
-                        error = null
-                    )
-                }
+                processReactionRemovedEvent()
             }
             is ChatEvent.Internal.FileUploaded -> {
-                state {
-                    copy(
-                        isFileUploaded = true,
-                        fileUri = event.uri,
-                        isReactionAdded = false,
-                        isReactionRemoved = false,
-                        isMessageSent = false,
-                        updateAllMessages = false,
-                        updateWithPortion = false,
-                        isFirstPortion = false,
-                        error = null
-                    )
-                }
+                processFileUploadedEvent(event)
             }
 
             is ChatEvent.Internal.MessagesLoadingError -> {
@@ -167,18 +53,159 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                 state { copy(error = event.error) }
                 effects { +ChatEffect.MessageSendingError(event.error) }
             }
-            is ChatEvent.Internal.ReactionAddingError -> {
-                state { copy(error = event.error) }
-                effects { +ChatEffect.ReactionAddingError(event.error) }
-            }
-            is ChatEvent.Internal.ReactionRemovingError -> {
-                state { copy(error = event.error) }
-                effects { +ChatEffect.ReactionRemovingError(event.error) }
-            }
             is ChatEvent.Internal.FileUploadingError -> {
                 state { copy(error = event.error) }
                 effects { +ChatEffect.FileUploadingError(event.error) }
             }
+        }
+    }
+
+    private fun Result.processInitEvent() {
+        state {
+            copy(
+                isLoading = true,
+                error = null
+            )
+        }
+    }
+
+    private fun Result.processLoadMessagesEvent(event: ChatEvent.Ui.LoadMessages) {
+        state {
+            copy(
+                isLoading = true,
+                error = null,
+                updateAllMessages = event.updateAllMessages,
+                updateWithPortion = false,
+                isFirstPortion = event.isFirstPortion,
+                isMessageSent = false,
+                isReactionAdded = false,
+                isReactionRemoved = false,
+                isFileUploaded = false
+            )
+        }
+        commands {
+            +ChatCommand.LoadMessages(
+                topicName = event.topicName,
+                currentAnchor = event.currentAnchor,
+                isFirstPosition = event.isFirstPortion,
+                updateAllMessages = event.updateAllMessages
+            )
+        }
+    }
+
+    private fun Result.processSendMessageEvent(event: ChatEvent.Ui.SendMessage) {
+        commands {
+            +ChatCommand.SendMessage(
+                topicName = event.topicName,
+                streamName = event.streamName,
+                content = event.content
+            )
+        }
+    }
+
+    private fun Result.processAddReactionEvent(event: ChatEvent.Ui.AddReaction) {
+        state {
+            copy(
+                isReactionAdded = false,
+                error = null
+            )
+        }
+        commands {
+            +ChatCommand.AddReaction(
+                messageId = event.messageId,
+                emojiName = event.emojiName
+            )
+        }
+    }
+
+    private fun Result.processRemoveReactionEvent(event: ChatEvent.Ui.RemoveReaction) {
+        state {
+            copy(
+                isReactionRemoved = false,
+                error = null
+            )
+        }
+        commands {
+            +ChatCommand.RemoveReaction(
+                messageId = event.messageId,
+                emojiName = event.emojiName
+            )
+        }
+    }
+
+    private fun Result.processMessagesLoadedEvent(event: ChatEvent.Internal.MessagesLoaded) {
+        state {
+            copy(
+                items = event.items,
+                isLoading = false,
+                error = null,
+                isFirstPortion = event.isFirstPortion,
+                updateAllMessages = event.updateAllMessages,
+                updateWithPortion = true
+            )
+        }
+    }
+
+    private fun Result.processMessageSentEvent() {
+        state {
+            copy(
+                isMessageSent = true,
+                isFileUploaded = false,
+                isReactionAdded = false,
+                isReactionRemoved = false,
+                updateAllMessages = false,
+                updateWithPortion = false,
+                isFirstPortion = false,
+                error = null
+            )
+        }
+    }
+
+    private fun Result.processReactionAddedEvent() {
+        state {
+            copy(
+                isReactionAdded = true,
+                isReactionRemoved = false,
+                isMessageSent = false,
+                isFileUploaded = false,
+                updateAllMessages = false,
+                updateWithPortion = false,
+                isFirstPortion = false,
+                error = null
+            )
+        }
+    }
+
+    private fun Result.processReactionRemovedEvent() {
+        state {
+            copy(
+                isReactionRemoved = true,
+                isReactionAdded = false,
+                isMessageSent = false,
+                isFileUploaded = false,
+                updateAllMessages = false,
+                updateWithPortion = false,
+                isFirstPortion = false,
+                error = null
+            )
+        }
+    }
+
+    private fun Result.processFileUploadedEvent(
+        event: ChatEvent.Internal.FileUploaded
+    ) {
+        state {
+            copy(
+                isFileUploaded = true,
+                fileUri = event.uri,
+                isReactionAdded = false,
+                isReactionRemoved = false,
+                isMessageSent = false,
+                updateAllMessages = false,
+                updateWithPortion = false,
+                isFirstPortion = false,
+                error = null
+            )
         }
     }
 

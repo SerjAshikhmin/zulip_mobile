@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.ItemUserInPeopleListBinding
-import ru.tinkoff.android.coursework.data.api.model.UserDto
+import ru.tinkoff.android.coursework.domain.model.User
 import ru.tinkoff.android.coursework.presentation.screens.ProfileFragment.Companion.ACTIVE_PRESENCE_COLOR
 import ru.tinkoff.android.coursework.presentation.screens.ProfileFragment.Companion.ACTIVE_PRESENCE_KEY
 import ru.tinkoff.android.coursework.presentation.screens.ProfileFragment.Companion.IDLE_PRESENCE_COLOR
@@ -21,19 +21,19 @@ internal class PeopleListAdapter(private val userItemClickListener: OnUserItemCl
 
     var showShimmer = true
 
-    var users: List<UserDto>
+    var users: List<User>
         set(value) = differ.submitList(value)
         get() = differ.currentList
 
     private val differ = AsyncListDiffer(this, DiffCallback())
 
-    class DiffCallback: DiffUtil.ItemCallback<UserDto>() {
+    class DiffCallback: DiffUtil.ItemCallback<User>() {
 
-        override fun areItemsTheSame(oldItem: UserDto, newItem: UserDto): Boolean {
+        override fun areItemsTheSame(oldItem: User, newItem: User): Boolean {
             return oldItem.userId == newItem.userId
         }
 
-        override fun areContentsTheSame(oldItem: UserDto, newItem: UserDto): Boolean {
+        override fun areContentsTheSame(oldItem: User, newItem: User): Boolean {
             return oldItem == newItem
         }
     }
@@ -73,7 +73,7 @@ internal class PeopleListAdapter(private val userItemClickListener: OnUserItemCl
         internal val onlineStatusCard = binding.onlineStatusCard
         internal val shimmerFrameLayout = binding.shimmerLayout
 
-        fun bind(user: UserDto) {
+        fun bind(user: User) {
             username.text = user.fullName
             email.text = user.email
 

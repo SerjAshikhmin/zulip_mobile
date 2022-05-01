@@ -2,7 +2,7 @@ package ru.tinkoff.android.coursework.presentation.screens
 
 import com.google.android.material.snackbar.Snackbar
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.api.model.StreamDto
+import ru.tinkoff.android.coursework.domain.model.Stream
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEffect
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEvent
 import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
@@ -23,7 +23,7 @@ internal class AllStreamsListFragment: StreamsListFragment() {
         }
     }
 
-    fun updateStreams(newStreams: List<StreamDto>) {
+    fun updateStreams(newStreams: List<Stream>) {
         adapter.apply {
             showShimmer = false
             streams = newStreams

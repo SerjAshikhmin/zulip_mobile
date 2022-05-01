@@ -19,8 +19,6 @@
     <string name="user_not_found_error_text">User not found</string>
     <string name="messages_not_found_error_text">Messages not found</string>
     <string name="search_streams_error_text">Search streams error</string>
-    <string name="adding_emoji_error_text">Adding emoji error</string>
-    <string name="removing_emoji_error_text">Removing emoji error</string>
     <string name="sending_message_error_text">Sending message error</string>
     <string name="uploading_file_error_text">Uploading file error</string>
     <string name="retry_action_snack_bar_text">Retry</string>

@@ -12,9 +12,9 @@ import ru.tinkoff.android.coursework.data.api.model.request.NarrowRequest
 import ru.tinkoff.android.coursework.data.api.model.response.ReactionResponse
 import ru.tinkoff.android.coursework.data.api.model.response.SendMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.UploadFileResponse
-import ru.tinkoff.android.coursework.data.api.model.toMessageDbList
 import ru.tinkoff.android.coursework.data.db.AppDatabase
-import ru.tinkoff.android.coursework.data.db.model.Message
+import ru.tinkoff.android.coursework.data.mappers.MessageMapper
+import ru.tinkoff.android.coursework.domain.model.Message
 import ru.tinkoff.android.coursework.presentation.screens.ChatActivity
 import javax.inject.Inject
 
@@ -30,6 +30,7 @@ internal class ChatRepositoryImpl @Inject constructor(
                 Log.e(TAG, "Loading messages from db error", it)
                 emptyList()
             }
+            .map { MessageMapper.messagesDbToMessagesList(it) }
     }
 
     override fun loadMessagesFromApi(
@@ -46,7 +47,7 @@ internal class ChatRepositoryImpl @Inject constructor(
                 )
             ).contentToString()
         )
-            .map { it.messages.toMessageDbList() }
+            .map { MessageMapper.messagesDtoToMessagesList(it.messages) }
     }
 
     override fun removeRedundantMessagesFromDb(topicName: String, actualMessageIds: List<Long>) {
@@ -61,7 +62,7 @@ internal class ChatRepositoryImpl @Inject constructor(
     }
 
     override fun saveMessagesToDb(messages: List<Message>) {
-        db.messageDao().saveAll(messages)
+        db.messageDao().saveAll(MessageMapper.toDbMessagesList(messages))
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .onErrorReturn {

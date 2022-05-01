@@ -6,7 +6,7 @@ import dagger.Provides
 import ru.tinkoff.android.coursework.data.StreamsRepository
 import ru.tinkoff.android.coursework.data.StreamsRepositoryImpl
 import ru.tinkoff.android.coursework.di.ActivityScope
-import ru.tinkoff.android.coursework.domain.channels.ChannelsUseCases
+import ru.tinkoff.android.coursework.domain.channels.ChannelsInteractor
 import ru.tinkoff.android.coursework.presentation.elm.channels.StreamsActor
 import ru.tinkoff.android.coursework.presentation.elm.channels.StreamsElmStoreFactory
 
@@ -15,14 +15,14 @@ internal class StreamsModule {
 
     @Provides
     @ActivityScope
-    fun provideChannelsUseCases(repository: StreamsRepository): ChannelsUseCases {
-        return ChannelsUseCases(repository)
+    fun provideChannelsUseCases(repository: StreamsRepository): ChannelsInteractor {
+        return ChannelsInteractor(repository)
     }
 
     @Provides
     @ActivityScope
-    fun provideStreamsActor(channelsUseCases: ChannelsUseCases): StreamsActor {
-        return StreamsActor(channelsUseCases)
+    fun provideStreamsActor(channelsInteractor: ChannelsInteractor): StreamsActor {
+        return StreamsActor(channelsInteractor)
     }
 
     @Provides

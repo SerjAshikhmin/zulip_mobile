@@ -3,7 +3,7 @@ package ru.tinkoff.android.coursework.presentation.elm.chat.models
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.RawValue
-import ru.tinkoff.android.coursework.data.db.model.Message
+import ru.tinkoff.android.coursework.domain.model.Message
 
 @Parcelize
 internal data class ChatState(

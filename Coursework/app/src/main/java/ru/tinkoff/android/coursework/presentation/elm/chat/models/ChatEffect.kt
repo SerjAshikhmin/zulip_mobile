@@ -6,10 +6,6 @@ internal sealed class ChatEffect {
 
     data class MessageSendingError(val error: Throwable) : ChatEffect()
 
-    data class ReactionAddingError(val error: Throwable) : ChatEffect()
-
-    data class ReactionRemovingError(val error: Throwable) : ChatEffect()
-
     data class FileUploadingError(val error: Throwable) : ChatEffect()
 
 }

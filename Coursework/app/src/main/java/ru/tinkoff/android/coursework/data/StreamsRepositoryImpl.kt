@@ -8,8 +8,8 @@ import ru.tinkoff.android.coursework.data.api.ZulipJsonApi
 import ru.tinkoff.android.coursework.data.api.model.StreamDto
 import ru.tinkoff.android.coursework.data.api.model.response.TopicsListResponse
 import ru.tinkoff.android.coursework.data.db.AppDatabase
-import ru.tinkoff.android.coursework.data.db.model.Stream
-import ru.tinkoff.android.coursework.data.db.model.toStreamsDtoList
+import ru.tinkoff.android.coursework.data.mappers.StreamMapper
+import ru.tinkoff.android.coursework.domain.model.Stream
 import javax.inject.Inject
 
 internal class StreamsRepositoryImpl @Inject constructor(
@@ -17,16 +17,16 @@ internal class StreamsRepositoryImpl @Inject constructor(
     private val db: AppDatabase
 ) : StreamsRepository {
 
-    override fun loadStreamsFromDb(): Single<List<StreamDto>> {
+    override fun loadStreamsFromDb(): Single<List<Stream>> {
         return db.streamDao().getAll()
-            .map { it.toStreamsDtoList() }
+            .map { StreamMapper.streamsDbToStreamsList(it) }
             .onErrorReturn {
                 Log.e(TAG, "Loading streams from db error", it)
                 emptyList()
             }
     }
 
-    override fun loadStreamsFromApi(isSubscribedStreams: Boolean): Single<List<StreamDto>> {
+    override fun loadStreamsFromApi(isSubscribedStreams: Boolean): Single<List<Stream>> {
         val baseStream = if (isSubscribedStreams) {
             zulipJsonApi.getSubscribedStreams()
                 .flattenAsObservable { it.subscriptions }
@@ -43,7 +43,7 @@ internal class StreamsRepositoryImpl @Inject constructor(
     }
 
     override fun saveStreamsToDb(streams: List<Stream>) {
-        db.streamDao().saveAll(streams)
+        db.streamDao().saveAll(StreamMapper.streamsToStreamsDbList(streams))
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .onErrorReturn {
@@ -53,7 +53,7 @@ internal class StreamsRepositoryImpl @Inject constructor(
             .subscribe()
     }
 
-    private fun getTopicsInStream(stream: StreamDto): Single<StreamDto> {
+    private fun getTopicsInStream(stream: StreamDto): Single<Stream> {
         return zulipJsonApi.getTopicsInStream(streamId = stream.streamId)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -64,7 +64,7 @@ internal class StreamsRepositoryImpl @Inject constructor(
                 Log.e(TAG, "Topics not found", it)
                 TopicsListResponse(emptyList())
             }
-            .map { stream }
+            .map { StreamMapper.streamDtoToStream(stream) }
     }
 
     companion object {

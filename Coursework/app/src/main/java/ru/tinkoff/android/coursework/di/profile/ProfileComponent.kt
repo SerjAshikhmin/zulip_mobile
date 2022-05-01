@@ -3,7 +3,7 @@ package ru.tinkoff.android.coursework.di.profile
 import dagger.Component
 import ru.tinkoff.android.coursework.di.ActivityScope
 import ru.tinkoff.android.coursework.di.ApplicationComponent
-import ru.tinkoff.android.coursework.domain.profile.ProfileUseCases
+import ru.tinkoff.android.coursework.domain.profile.ProfileInteractor
 import ru.tinkoff.android.coursework.presentation.elm.profile.ProfileActor
 import ru.tinkoff.android.coursework.presentation.screens.ProfileFragment
 
@@ -14,7 +14,7 @@ import ru.tinkoff.android.coursework.presentation.screens.ProfileFragment
 )
 internal interface ProfileComponent {
 
-    fun getProfileUseCases(): ProfileUseCases
+    fun getProfileUseCases(): ProfileInteractor
 
     fun getProfileActor(): ProfileActor
 

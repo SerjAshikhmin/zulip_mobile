@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.ItemTopicInListBinding
-import ru.tinkoff.android.coursework.data.api.model.TopicDto
+import ru.tinkoff.android.coursework.domain.model.Topic
 
 internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemClickListener)
     : RecyclerView.Adapter<TopicItemAdapter.TopicItemViewHolder>() {
@@ -16,19 +16,19 @@ internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemC
     var showShimmer = true
     var streamName = ""
 
-    var topics: List<TopicDto>
+    var topics: List<Topic>
         set(value) = differ.submitList(value)
         get() = differ.currentList
 
     private val differ = AsyncListDiffer(this, DiffCallback())
 
-    class DiffCallback : DiffUtil.ItemCallback<TopicDto>() {
+    class DiffCallback : DiffUtil.ItemCallback<Topic>() {
 
-        override fun areItemsTheSame(oldItem: TopicDto, newItem: TopicDto): Boolean {
+        override fun areItemsTheSame(oldItem: Topic, newItem: Topic): Boolean {
             return oldItem.name == newItem.name
         }
 
-        override fun areContentsTheSame(oldItem: TopicDto, newItem: TopicDto): Boolean {
+        override fun areContentsTheSame(oldItem: Topic, newItem: Topic): Boolean {
             return oldItem == newItem
         }
     }
@@ -62,7 +62,7 @@ internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemC
         internal val shimmerFrameLayout = binding.shimmerLayout
         internal val topicItem = binding.topicItem
 
-        fun bind(topic: TopicDto) {
+        fun bind(topic: Topic) {
             binding.topicName.text = topic.name
             binding.root.setBackgroundColor(
                 ContextCompat.getColor(

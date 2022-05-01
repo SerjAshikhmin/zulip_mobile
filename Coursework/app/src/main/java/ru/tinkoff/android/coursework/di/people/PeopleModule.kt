@@ -6,7 +6,7 @@ import dagger.Provides
 import ru.tinkoff.android.coursework.data.PeopleRepository
 import ru.tinkoff.android.coursework.data.PeopleRepositoryImpl
 import ru.tinkoff.android.coursework.di.ActivityScope
-import ru.tinkoff.android.coursework.domain.people.PeopleUseCases
+import ru.tinkoff.android.coursework.domain.people.PeopleInteractor
 import ru.tinkoff.android.coursework.presentation.elm.people.PeopleActor
 import ru.tinkoff.android.coursework.presentation.elm.people.PeopleElmStoreFactory
 
@@ -15,14 +15,14 @@ internal class PeopleModule {
 
     @Provides
     @ActivityScope
-    fun providePeopleUseCases(repository: PeopleRepository): PeopleUseCases {
-        return PeopleUseCases(repository)
+    fun providePeopleUseCases(repository: PeopleRepository): PeopleInteractor {
+        return PeopleInteractor(repository)
     }
 
     @Provides
     @ActivityScope
-    fun providePeopleActor(peopleUseCases: PeopleUseCases): PeopleActor {
-        return PeopleActor(peopleUseCases)
+    fun providePeopleActor(peopleInteractor: PeopleInteractor): PeopleActor {
+        return PeopleActor(peopleInteractor)
     }
 
     @Provides

@@ -1,7 +1,7 @@
 package ru.tinkoff.android.coursework.presentation.elm.profile.models
 
 import android.os.Bundle
-import ru.tinkoff.android.coursework.data.api.model.UserDto
+import ru.tinkoff.android.coursework.domain.model.User
 
 internal sealed class ProfileEvent {
 
@@ -17,9 +17,9 @@ internal sealed class ProfileEvent {
 
     sealed class Internal : ProfileEvent() {
 
-        data class ProfileLoaded(val items: List<UserDto>) : Internal()
+        data class ProfileLoaded(val items: List<User>) : Internal()
 
-        data class UserCreatedFromBundle(val items: List<UserDto>) : Internal()
+        data class UserCreatedFromBundle(val items: List<User>) : Internal()
 
         data class ProfileLoadingError(val error: Throwable) : Internal()
 

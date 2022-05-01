@@ -3,10 +3,9 @@ package ru.tinkoff.android.coursework.data.db.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import ru.tinkoff.android.coursework.data.api.model.UserDto
 
 @Entity(tableName = "user")
-internal class User (
+internal class UserDb (
 
     @PrimaryKey
     val userId: Long = 0,
@@ -22,18 +21,4 @@ internal class User (
 
     @ColumnInfo(name = "presence")
     var presence: String? = "undefined"
-) {
-
-    fun toUserDto(): UserDto {
-        return UserDto(
-            userId = userId,
-            fullName = fullName,
-            email = email,
-            avatarUrl = avatarUrl,
-            presence = presence
-        )
-    }
-
-}
-
-internal fun List<User>.toUsersDtoList(): List<UserDto> = map { user -> user.toUserDto()}
+)

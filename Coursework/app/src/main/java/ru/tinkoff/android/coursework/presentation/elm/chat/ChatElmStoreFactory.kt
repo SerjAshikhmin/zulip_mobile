@@ -6,6 +6,7 @@ import vivid.money.elmslie.core.ElmStoreCompat
 internal class ChatElmStoreFactory(
     private val actor: ChatActor
 ) {
+
     private val store by lazy {
         ElmStoreCompat(
             initialState = ChatState(),

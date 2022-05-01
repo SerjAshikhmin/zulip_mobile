@@ -5,7 +5,7 @@ import okhttp3.MultipartBody
 import ru.tinkoff.android.coursework.data.api.model.response.ReactionResponse
 import ru.tinkoff.android.coursework.data.api.model.response.SendMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.UploadFileResponse
-import ru.tinkoff.android.coursework.data.db.model.Message
+import ru.tinkoff.android.coursework.domain.model.Message
 
 internal interface ChatRepository {
 
