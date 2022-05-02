@@ -17,7 +17,7 @@ internal interface MessageDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun saveAll(messages: List<MessageDb>): Single<List<Long>>
 
-    @Query("DELETE FROM message WHERE topic_name == :topic AND id NOT IN (:actualMessageIds)")
-    fun removeRedundant(topic: String, actualMessageIds: List<Long>): Completable
+    @Query("DELETE FROM message WHERE topic_name == :topic")
+    fun removeAllFromTopic(topic: String): Completable
 
 }

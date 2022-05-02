@@ -4,11 +4,16 @@ import okhttp3.MultipartBody
 
 internal sealed class ChatCommand {
 
-    data class LoadMessages(
+    data class LoadLastMessages(
         val topicName: String,
         val currentAnchor: Long,
-        val isFirstPosition: Boolean = false,
-        val updateAllMessages: Boolean = false
+        val isFirstPosition: Boolean = false
+    ) : ChatCommand()
+
+    data class LoadPortionOfMessages(
+        val topicName: String,
+        val currentAnchor: Long,
+        val isFirstPosition: Boolean = false
     ) : ChatCommand()
 
     data class SendMessage(

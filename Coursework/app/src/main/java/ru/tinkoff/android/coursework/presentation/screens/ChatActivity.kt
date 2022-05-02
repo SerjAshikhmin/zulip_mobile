@@ -91,18 +91,20 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
         binding.progress.visibility = if (state.isLoading) View.VISIBLE else View.GONE
         when {
             state.updateAllMessages -> {
-                adapter.messages = state.items
-                adapter.notifyDataSetChanged()
+                with (adapter) {
+                    anchor = LAST_MESSAGE_ANCHOR
+                    messages = state.items
+                    notifyDataSetChanged()
+                }
             }
             state.updateWithPortion && state.items.isNotEmpty()
                     && adapter.anchor != state.items[0].id - 1 -> {
-                val newMessages = state.items
-                adapter.updateWithNextPortion(newMessages, state.isFirstPortion)
+                adapter.updateWithNextPortion(state.items, state.isFirstPortion)
             }
             state.isMessageSent -> {
                 binding.enterMessage.text.clear()
                 adapter.anchor = LAST_MESSAGE_ANCHOR
-                store.accept(ChatEvent.Ui.LoadMessages(
+                store.accept(ChatEvent.Ui.LoadLastMessages(
                     topicName = topicName,
                     currentAnchor = adapter.anchor,
                     isFirstPortion = true
@@ -202,7 +204,7 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
             intent.getStringExtra(STREAM_NAME_KEY)
         )
 
-        store.accept(ChatEvent.Ui.LoadMessages(
+        store.accept(ChatEvent.Ui.LoadLastMessages(
             topicName = topicName,
             currentAnchor = adapter.anchor,
             isFirstPortion = true,
@@ -218,7 +220,7 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
 
                 val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
                 if (lastVisibleItemPosition == SCROLL_POSITION_FOR_NEXT_PORTION_LOADING) {
-                    store.accept(ChatEvent.Ui.LoadMessages(
+                    store.accept(ChatEvent.Ui.LoadPortionOfMessages(
                         topicName = topicName,
                         currentAnchor = adapter.anchor,
                         isFirstPortion = false

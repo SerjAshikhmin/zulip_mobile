@@ -7,7 +7,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import okhttp3.MultipartBody
 import ru.tinkoff.android.coursework.data.ChatRepository
-import ru.tinkoff.android.coursework.data.api.ZulipJsonApi
 import ru.tinkoff.android.coursework.data.api.model.response.ReactionResponse
 import ru.tinkoff.android.coursework.data.api.model.response.SendMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.UploadFileResponse
@@ -20,92 +19,43 @@ internal class ChatInteractor(
     private var currentCache: List<Message> = listOf()
     private var currentTopicName: String = ""
 
-    fun loadMessages(
+    fun loadLastMessages(
         topicName: String,
-        currentAnchor: Long,
-        updateAllMessages: Boolean
+        currentAnchor: Long
     ): Observable<List<Message>> {
         return Observable.merge(
-            if (updateAllMessages) {
-                chatRepository.loadMessagesFromDb(topicName)
-                    .doOnSuccess {
-                        currentCache = it
-                        currentTopicName = topicName
+            chatRepository.loadMessagesFromDb(topicName)
+                .doOnSuccess {
+                    currentCache = it
+                    currentTopicName = topicName
+                }
+                .toObservable(),
+            chatRepository.loadMessagesFromApi(
+                topicName,
+                currentAnchor,
+                NUMBER_OF_MESSAGES_IN_LAST_PORTION
+            )
+                .doOnSuccess {
+                    if (it.isNotEmpty()) {
+                        cacheMessages(it, topicName)
                     }
-                    .toObservable()
-            } else {
-                Observable.empty()
-            },
-            chatRepository.loadMessagesFromApi(topicName, currentAnchor)
-                .doOnSuccess { cacheMessages(it, topicName) }
+                }
                 .toObservable()
         )
             .subscribeOn(Schedulers.io())
     }
 
-    private fun cacheMessages(
-        messages: List<Message>,
-        topicName: String
-    ) {
-        if (messages.isEmpty()) return
-        if (currentCache.isEmpty()) {
-            // кэш текущего топика пустой - сохраняем все в БД и локально
-            chatRepository.saveMessagesToDb(messages)
-            currentCache = messages
-        } else {
-            if (currentCache[0].id > messages.last().id) {
-                // новая порция сообщений выходит за диапазон кэша
-                if (currentCache.size < MAX_NUMBER_OF_MESSAGES_IN_CACHE) {
-                    // в кэше еще есть место - сохраняем, сколько сможем
-                    val remainingCacheLimit = (MAX_NUMBER_OF_MESSAGES_IN_CACHE - currentCache.size)
-                        .coerceAtMost(NUMBER_OF_MESSAGES_PER_PORTION)
-                    val messagesToSave = messages.takeLast(remainingCacheLimit)
-                    chatRepository.saveMessagesToDb(messagesToSave)
-                    currentCache = currentCache.plus(messagesToSave).sortedBy { it.id }
-                }
-            } else {
-                // новая порция сообщений входит в диапазон кэша
-                if (currentCache[0].id <= messages[0].id
-                    && currentCache.last().id >= messages.last().id) {
-                    // новая порция целиком входит в кэш - обновляем эту часть кэша в БД
-                    chatRepository.saveMessagesToDb(messages)
-                } else {
-                    // новая порция частично входит в кэш - находим последнее сообщение
-                    // в новой порции, входящее в кэш, и сохраняем в БД
-                    if (currentCache.last().id == messages.last().id) {
-                        // новая порция частично входит в кэш сверху - находим последнее сообщение
-                        // в новой порции, входящее в кэш, и сохраняем в БД
-                        var lastMessageToCashIndex = messages.lastIndex
-                        while (messages[lastMessageToCashIndex].id > currentCache[0].id) {
-                            lastMessageToCashIndex--
-                        }
-                        val messagesToSave = messages
-                            .takeLast(messages.lastIndex - lastMessageToCashIndex)
-                        savePortionOfMessagesAndRemoveRedundant(messagesToSave, topicName)
-                    } else {
-                        // новая порция частично входит в кэш снизу
-                        // (были добавлены новые сообщения в топик)
-                        val firstNewMessage = messages.find { it.id > currentCache.last().id }
-                        val firsNewMessageIndex = messages.lastIndexOf(firstNewMessage)
-                        val messagesToSave = messages
-                            .takeLast(messages.lastIndex - firsNewMessageIndex + 1)
-                        savePortionOfMessagesAndRemoveRedundant(messagesToSave, topicName)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun savePortionOfMessagesAndRemoveRedundant(
-        messagesToSave: List<Message>,
-        topicName: String
-    ) {
-        chatRepository.saveMessagesToDb(messagesToSave)
-        currentCache = currentCache.plus(messagesToSave).sortedBy { it.id }
-        val actualMessageIds = currentCache
-            .takeLast(MAX_NUMBER_OF_MESSAGES_IN_CACHE).map { it.id }
-        chatRepository.removeRedundantMessagesFromDb(topicName, actualMessageIds)
-        currentCache = currentCache.dropLast(currentCache.size - MAX_NUMBER_OF_MESSAGES_IN_CACHE)
+    fun loadPortionOfMessages(
+        topicName: String,
+        currentAnchor: Long
+    ): Observable<List<Message>> {
+        return chatRepository.loadMessagesFromApi(
+            topicName,
+            currentAnchor,
+            NUMBER_OF_MESSAGES_PER_PORTION
+        )
+            .toObservable()
+            .subscribeOn(Schedulers.io())
     }
 
     fun sendMessage(topic: String, stream: String, content: String): Single<SendMessageResponse> {
@@ -138,11 +88,20 @@ internal class ChatInteractor(
             .observeOn(AndroidSchedulers.mainThread())
     }
 
+    private fun cacheMessages(
+        messages: List<Message>,
+        topicName: String
+    ) {
+        chatRepository.removeAllMessagesInTopicFromDb(topicName)
+        chatRepository.saveMessagesToDb(messages.takeLast(MAX_NUMBER_OF_MESSAGES_IN_CACHE))
+    }
+
     companion object {
 
         private const val TAG = "ChatUseCases"
         private const val MAX_NUMBER_OF_MESSAGES_IN_CACHE = 50
-        const val NUMBER_OF_MESSAGES_PER_PORTION = ZulipJsonApi.NUMBER_OF_MESSAGES_BEFORE_ANCHOR
+        private const val NUMBER_OF_MESSAGES_PER_PORTION = 20
+        private const val NUMBER_OF_MESSAGES_IN_LAST_PORTION = MAX_NUMBER_OF_MESSAGES_IN_CACHE
     }
 
 }

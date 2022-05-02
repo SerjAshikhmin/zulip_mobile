@@ -35,10 +35,11 @@ internal class ChatRepositoryImpl @Inject constructor(
 
     override fun loadMessagesFromApi(
         topicName: String,
-        currentAnchor: Long
+        currentAnchor: Long,
+        numOfMessagesInPortion: Int
     ): Single<List<Message>> {
         return zulipJsonApi.getMessages(
-            numBefore = ZulipJsonApi.NUMBER_OF_MESSAGES_BEFORE_ANCHOR,
+            numBefore = numOfMessagesInPortion,
             anchor = currentAnchor.toString(),
             narrow = arrayOf(
                 NarrowRequest(
@@ -50,8 +51,8 @@ internal class ChatRepositoryImpl @Inject constructor(
             .map { MessageMapper.messagesDtoToMessagesList(it.messages) }
     }
 
-    override fun removeRedundantMessagesFromDb(topicName: String, actualMessageIds: List<Long>) {
-        db.messageDao().removeRedundant(topicName, actualMessageIds)
+    override fun removeAllMessagesInTopicFromDb(topicName: String) {
+        db.messageDao().removeAllFromTopic(topicName)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .onErrorComplete {

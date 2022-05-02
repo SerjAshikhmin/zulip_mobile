@@ -9,7 +9,14 @@ internal sealed class ChatEvent {
 
         object InitEvent : ChatEvent.Ui()
 
-        data class LoadMessages(
+        data class LoadLastMessages(
+            val topicName: String,
+            val currentAnchor: Long,
+            val isFirstPortion: Boolean = false,
+            val updateAllMessages: Boolean = false
+        ) : ChatEvent.Ui()
+
+        data class LoadPortionOfMessages(
             val topicName: String,
             val currentAnchor: Long,
             val isFirstPortion: Boolean = false,
@@ -38,11 +45,16 @@ internal sealed class ChatEvent {
 
     sealed class Internal : ChatEvent() {
 
-        data class MessagesLoaded(
+        data class LastMessagesLoaded(
             val items: List<Message>,
             val topicName: String,
-            val isFirstPortion: Boolean = false,
-            val updateAllMessages: Boolean = false
+            val isFirstPortion: Boolean = false
+        ) : Internal()
+
+        data class PortionOfMessagesLoaded(
+            val items: List<Message>,
+            val topicName: String,
+            val isFirstPortion: Boolean = false
         ) : Internal()
 
         object MessageSent : Internal()

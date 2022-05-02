@@ -40,7 +40,7 @@ internal interface ZulipJsonApi {
 
     @GET("api/v1/messages")
     fun getMessages(
-        @Query("num_before") numBefore: Int = NUMBER_OF_MESSAGES_BEFORE_ANCHOR,
+        @Query("num_before") numBefore: Int,
         @Query("num_after") numAfter: Int = NUMBER_OF_MESSAGES_AFTER_ANCHOR,
         @Query("anchor") anchor: String = "first_unread",
         @Query(value = "narrow", encoded = true) narrow: String
@@ -74,7 +74,6 @@ internal interface ZulipJsonApi {
 
     companion object {
 
-        internal const val NUMBER_OF_MESSAGES_BEFORE_ANCHOR = 20
         internal const val NUMBER_OF_MESSAGES_AFTER_ANCHOR = 0
         internal const val LAST_MESSAGE_ANCHOR = 10000000000000000L
     }

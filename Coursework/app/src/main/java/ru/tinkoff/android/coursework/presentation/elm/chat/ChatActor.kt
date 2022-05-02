@@ -11,18 +11,29 @@ internal class ChatActor(
 ) : ActorCompat<ChatCommand, ChatEvent> {
 
     override fun execute(command: ChatCommand): Observable<ChatEvent> = when (command) {
-        is ChatCommand.LoadMessages ->
-            chatInteractor.loadMessages(
+        is ChatCommand.LoadLastMessages ->
+            chatInteractor.loadLastMessages(
                 command.topicName,
-                command.currentAnchor,
-                command.updateAllMessages
+                command.currentAnchor
             )
                 .mapEvents(
-                    { messages -> ChatEvent.Internal.MessagesLoaded(
+                    { messages -> ChatEvent.Internal.LastMessagesLoaded(
                         items = messages,
                         topicName = command.topicName,
-                        isFirstPortion = command.isFirstPosition,
-                        updateAllMessages = command.updateAllMessages
+                        isFirstPortion = command.isFirstPosition
+                    ) },
+                    { error -> ChatEvent.Internal.MessagesLoadingError(error) }
+                )
+        is ChatCommand.LoadPortionOfMessages ->
+            chatInteractor.loadPortionOfMessages(
+                command.topicName,
+                command.currentAnchor
+            )
+                .mapEvents(
+                    { messages -> ChatEvent.Internal.PortionOfMessagesLoaded(
+                        items = messages,
+                        topicName = command.topicName,
+                        isFirstPortion = command.isFirstPosition
                     ) },
                     { error -> ChatEvent.Internal.MessagesLoadingError(error) }
                 )

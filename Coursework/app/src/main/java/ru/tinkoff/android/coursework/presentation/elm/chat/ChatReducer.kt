@@ -13,8 +13,11 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
             is ChatEvent.Ui.InitEvent -> {
                 processInitEvent()
             }
-            is ChatEvent.Ui.LoadMessages -> {
-                processLoadMessagesEvent(event)
+            is ChatEvent.Ui.LoadLastMessages -> {
+                processLoadLastMessagesEvent(event)
+            }
+            is ChatEvent.Ui.LoadPortionOfMessages -> {
+                processLoadLastMessagesEvent(event)
             }
             is ChatEvent.Ui.SendMessage -> {
                 processSendMessageEvent(event)
@@ -29,8 +32,11 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                 commands { +ChatCommand.UploadFile(event.fileBody) }
             }
 
-            is ChatEvent.Internal.MessagesLoaded -> {
-                processMessagesLoadedEvent(event)
+            is ChatEvent.Internal.LastMessagesLoaded -> {
+                processLastMessagesLoadedEvent(event)
+            }
+            is ChatEvent.Internal.PortionOfMessagesLoaded -> {
+                processPortionOfMessagesLoadedEvent(event)
             }
             is ChatEvent.Internal.MessageSent -> {
                 processMessageSentEvent()
@@ -69,7 +75,7 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
         }
     }
 
-    private fun Result.processLoadMessagesEvent(event: ChatEvent.Ui.LoadMessages) {
+    private fun Result.processLoadLastMessagesEvent(event: ChatEvent.Ui.LoadLastMessages) {
         state {
             copy(
                 isLoading = true,
@@ -84,11 +90,33 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
             )
         }
         commands {
-            +ChatCommand.LoadMessages(
+            +ChatCommand.LoadLastMessages(
                 topicName = event.topicName,
                 currentAnchor = event.currentAnchor,
-                isFirstPosition = event.isFirstPortion,
-                updateAllMessages = event.updateAllMessages
+                isFirstPosition = event.isFirstPortion
+            )
+        }
+    }
+
+    private fun Result.processLoadLastMessagesEvent(event: ChatEvent.Ui.LoadPortionOfMessages) {
+        state {
+            copy(
+                isLoading = true,
+                error = null,
+                updateAllMessages = event.updateAllMessages,
+                updateWithPortion = false,
+                isFirstPortion = event.isFirstPortion,
+                isMessageSent = false,
+                isReactionAdded = false,
+                isReactionRemoved = false,
+                isFileUploaded = false
+            )
+        }
+        commands {
+            +ChatCommand.LoadPortionOfMessages(
+                topicName = event.topicName,
+                currentAnchor = event.currentAnchor,
+                isFirstPosition = event.isFirstPortion
             )
         }
     }
@@ -133,14 +161,31 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
         }
     }
 
-    private fun Result.processMessagesLoadedEvent(event: ChatEvent.Internal.MessagesLoaded) {
+    private fun Result.processLastMessagesLoadedEvent(
+        event: ChatEvent.Internal.LastMessagesLoaded
+    ) {
         state {
             copy(
                 items = event.items,
                 isLoading = false,
                 error = null,
-                isFirstPortion = event.isFirstPortion,
-                updateAllMessages = event.updateAllMessages,
+                isFirstPortion = true,
+                updateAllMessages = true,
+                updateWithPortion = true
+            )
+        }
+    }
+
+    private fun Result.processPortionOfMessagesLoadedEvent(
+        event: ChatEvent.Internal.PortionOfMessagesLoaded
+    ) {
+        state {
+            copy(
+                items = event.items,
+                isLoading = false,
+                error = null,
+                isFirstPortion = false,
+                updateAllMessages = false,
                 updateWithPortion = true
             )
         }

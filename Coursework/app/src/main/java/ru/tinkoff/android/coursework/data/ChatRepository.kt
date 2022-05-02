@@ -10,12 +10,33 @@ import ru.tinkoff.android.coursework.domain.model.Message
 internal interface ChatRepository {
 
     fun loadMessagesFromDb(topicName: String): Single<List<Message>>
-    fun loadMessagesFromApi(topicName: String, currentAnchor: Long): Single<List<Message>>
+
+    fun loadMessagesFromApi(
+        topicName: String,
+        currentAnchor: Long,
+        numOfMessagesInPortion: Int
+    ): Single<List<Message>>
+
     fun saveMessagesToDb(messages: List<Message>)
-    fun removeRedundantMessagesFromDb(topicName: String, actualMessageIds: List<Long>)
-    fun sendMessage(topic: String, stream: String, content: String): Single<SendMessageResponse>
-    fun addReaction(messageId: Long, emojiName: String): Single<ReactionResponse>
-    fun removeReaction(messageId: Long, emojiName: String): Single<ReactionResponse>
+
+    fun removeAllMessagesInTopicFromDb(topicName: String)
+
+    fun sendMessage(
+        topic: String,
+        stream: String,
+        content: String
+    ): Single<SendMessageResponse>
+
+    fun addReaction(
+        messageId: Long,
+        emojiName: String
+    ): Single<ReactionResponse>
+
+    fun removeReaction(
+        messageId: Long,
+        emojiName: String
+    ): Single<ReactionResponse>
+
     fun uploadFile(fileBody: MultipartBody.Part): Single<UploadFileResponse>
 
 }

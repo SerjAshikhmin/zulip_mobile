@@ -33,7 +33,7 @@ internal class ChatMessagesAdapter(
 
     var anchor = LAST_MESSAGE_ANCHOR
 
-    var messagesWithDateSeparators: List<Any>
+    private var messagesWithDateSeparators: List<Any>
         set(value) {
             // переходим на последнее сообщение в чате, если было добавлено новое сообщение
             if (messages.isNotEmpty() && value.isNotEmpty() && messagesWithDateSeparators.isNotEmpty()
@@ -51,6 +51,9 @@ internal class ChatMessagesAdapter(
         set(value) {
             field = value
             messagesWithDateSeparators = insertDateSeparators(value)
+            if (value.isNotEmpty()) {
+                anchor = value[0].id - 1
+            }
         }
 
     private val differ = AsyncListDiffer(this, DiffCallback())
@@ -139,7 +142,6 @@ internal class ChatMessagesAdapter(
 
     fun updateWithNextPortion(newMessages: List<Message>, isFirstPortion: Boolean) {
         if (isFirstPortion) messages = mutableListOf()
-        anchor = newMessages[0].id - 1
         val oldMessages = messagesWithDateSeparators
         messages = newMessages.plus(messages)
 
