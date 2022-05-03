@@ -18,7 +18,7 @@ internal object MessageMapper {
     fun messagesDtoToMessagesList(messagesDto: List<MessageDto>): List<Message> =
         messagesDto.map { messageDto -> messageDtoToMessage(messageDto) }
 
-    private fun messageToMessageDb(message: Message): MessageDb {
+    fun messageToMessageDb(message: Message): MessageDb {
         return MessageDb(
             id = message.id,
             userId = message.userId,
@@ -31,7 +31,7 @@ internal object MessageMapper {
         )
     }
 
-    private fun messageDbToMessage(messageDb: MessageDb): Message {
+    fun messageDbToMessage(messageDb: MessageDb): Message {
         return Message(
             id = messageDb.id,
             userId = messageDb.userId,
@@ -44,7 +44,7 @@ internal object MessageMapper {
         )
     }
 
-    private fun messageDtoToMessage(messageDto: MessageDto): Message {
+    fun messageDtoToMessage(messageDto: MessageDto): Message {
         return Message(
             id = messageDto.id,
             userId = messageDto.userId,
