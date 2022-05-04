@@ -14,8 +14,8 @@ internal data class ChatState(
     val updateAllMessages: Boolean = false,
     val updateWithPortion: Boolean = false,
     val isFirstPortion: Boolean = false,
-    val isMessageSent: Boolean = false,
     val isReactionAdded: Boolean = false,
     val isReactionRemoved: Boolean = false,
-    val isFileUploaded: Boolean = false
+    val isFileUploaded: Boolean = false,
+    val topicName: String = ""
 ) : Parcelable

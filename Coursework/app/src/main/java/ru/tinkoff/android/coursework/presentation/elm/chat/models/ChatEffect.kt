@@ -2,6 +2,8 @@ package ru.tinkoff.android.coursework.presentation.elm.chat.models
 
 internal sealed class ChatEffect {
 
+    object MessageSentEffect : ChatEffect()
+
     data class MessagesLoadingError(val error: Throwable) : ChatEffect()
 
     data class MessageSendingError(val error: Throwable) : ChatEffect()

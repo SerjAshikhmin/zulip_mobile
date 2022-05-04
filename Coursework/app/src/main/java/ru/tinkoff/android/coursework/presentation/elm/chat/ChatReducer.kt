@@ -1,5 +1,6 @@
 package ru.tinkoff.android.coursework.presentation.elm.chat
 
+import ru.tinkoff.android.coursework.data.api.ZulipJsonApi.Companion.LAST_MESSAGE_ANCHOR
 import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatCommand
 import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatEffect
 import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatEvent
@@ -83,10 +84,10 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                 updateAllMessages = event.updateAllMessages,
                 updateWithPortion = false,
                 isFirstPortion = event.isFirstPortion,
-                isMessageSent = false,
                 isReactionAdded = false,
                 isReactionRemoved = false,
-                isFileUploaded = false
+                isFileUploaded = false,
+                topicName = event.topicName
             )
         }
         commands {
@@ -106,7 +107,6 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                 updateAllMessages = event.updateAllMessages,
                 updateWithPortion = false,
                 isFirstPortion = event.isFirstPortion,
-                isMessageSent = false,
                 isReactionAdded = false,
                 isReactionRemoved = false,
                 isFileUploaded = false
@@ -194,7 +194,6 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
     private fun Result.processMessageSentEvent() {
         state {
             copy(
-                isMessageSent = true,
                 isFileUploaded = false,
                 isReactionAdded = false,
                 isReactionRemoved = false,
@@ -204,6 +203,12 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                 error = null
             )
         }
+        commands { +ChatCommand.LoadLastMessages(
+            topicName = state.topicName,
+            currentAnchor = LAST_MESSAGE_ANCHOR,
+            isFirstPosition = true
+        ) }
+        effects { +ChatEffect.MessageSentEffect }
     }
 
     private fun Result.processReactionAddedEvent() {
@@ -211,7 +216,6 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
             copy(
                 isReactionAdded = true,
                 isReactionRemoved = false,
-                isMessageSent = false,
                 isFileUploaded = false,
                 updateAllMessages = false,
                 updateWithPortion = false,
@@ -226,7 +230,6 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
             copy(
                 isReactionRemoved = true,
                 isReactionAdded = false,
-                isMessageSent = false,
                 isFileUploaded = false,
                 updateAllMessages = false,
                 updateWithPortion = false,
@@ -245,7 +248,6 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                 fileUri = event.uri,
                 isReactionAdded = false,
                 isReactionRemoved = false,
-                isMessageSent = false,
                 updateAllMessages = false,
                 updateWithPortion = false,
                 isFirstPortion = false,

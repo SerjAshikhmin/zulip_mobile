@@ -101,15 +101,6 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
                     && adapter.anchor != state.items[0].id - 1 -> {
                 adapter.updateWithNextPortion(state.items, state.isFirstPortion)
             }
-            state.isMessageSent -> {
-                binding.enterMessage.text.clear()
-                adapter.anchor = LAST_MESSAGE_ANCHOR
-                store.accept(ChatEvent.Ui.LoadLastMessages(
-                    topicName = topicName,
-                    currentAnchor = adapter.anchor,
-                    isFirstPortion = true
-                ))
-            }
             state.isReactionAdded -> {
                 selectedEmojiView?.isSelected = true
                 selectedEmojiView?.emojiCount = selectedEmojiView?.emojiCount?.plus(1)!!
@@ -137,6 +128,9 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
 
     override fun handleEffect(effect: ChatEffect) {
         when(effect) {
+            is ChatEffect.MessageSentEffect -> {
+                binding.enterMessage.text.clear()
+            }
             is ChatEffect.MessagesLoadingError -> {
                 binding.root.showSnackBarWithRetryAction(
                     resources.getString(R.string.messages_not_found_error_text),
