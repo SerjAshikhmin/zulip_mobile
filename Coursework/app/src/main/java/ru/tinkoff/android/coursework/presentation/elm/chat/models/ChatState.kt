@@ -9,13 +9,11 @@ import ru.tinkoff.android.coursework.domain.model.Message
 internal data class ChatState(
     val items: @RawValue List<Message> = emptyList(),
     val error: Throwable? = null,
-    val fileUri: String? = null,
+    val topicName: String = "",
     val isLoading: Boolean = false,
     val updateAllMessages: Boolean = false,
     val updateWithPortion: Boolean = false,
     val isFirstPortion: Boolean = false,
     val isReactionAdded: Boolean = false,
-    val isReactionRemoved: Boolean = false,
-    val isFileUploaded: Boolean = false,
-    val topicName: String = ""
+    val isReactionRemoved: Boolean = false
 ) : Parcelable

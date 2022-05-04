@@ -39,7 +39,10 @@ internal sealed class ChatEvent {
             val emojiName: String
         ) : ChatEvent.Ui()
 
-        data class UploadFile(val fileBody: MultipartBody.Part) : ChatEvent.Ui()
+        data class UploadFile(
+            val fileName: String,
+            val fileBody: MultipartBody.Part
+        ) : ChatEvent.Ui()
 
     }
 
@@ -63,13 +66,20 @@ internal sealed class ChatEvent {
 
         object ReactionRemoved : Internal()
 
-        data class FileUploaded(val uri: String) : Internal()
+        data class FileUploaded(
+            val fileName: String,
+            val fileUri: String
+        ) : Internal()
 
         data class MessagesLoadingError(val error: Throwable) : Internal()
 
         data class MessageSendingError(val error: Throwable) : Internal()
 
-        data class FileUploadingError(val error: Throwable) :Internal()
+        data class FileUploadingError(
+            val error: Throwable,
+            val fileName: String,
+            val fileBody: MultipartBody.Part
+        ) :Internal()
 
     }
 

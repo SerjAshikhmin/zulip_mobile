@@ -65,8 +65,6 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
     private var selectedEmojiName: String? = null
     private var isNewSelectedEmojiView: Boolean = false
     private var emojiBox: FlexBoxLayout? = null
-    private var uploadingFileName: String? = null
-    private var uploadingFileBody: MultipartBody.Part? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -119,10 +117,6 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
                     }
                 }
             }
-            state.isFileUploaded -> {
-                binding.enterMessage.text.append("[$uploadingFileName](${state.fileUri})\n\n")
-                binding.sendButton.showActionIcon(R.drawable.ic_send, R.color.teal_500)
-            }
         }
     }
 
@@ -130,6 +124,10 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
         when(effect) {
             is ChatEffect.MessageSentEffect -> {
                 binding.enterMessage.text.clear()
+            }
+            is ChatEffect.FileUploadedEffect -> {
+                binding.enterMessage.text.append("[${effect.fileName}](${effect.fileUri})\n\n")
+                binding.sendButton.showActionIcon(R.drawable.ic_send, R.color.teal_500)
             }
             is ChatEffect.MessagesLoadingError -> {
                 binding.root.showSnackBarWithRetryAction(
@@ -147,7 +145,7 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
                 binding.root.showSnackBarWithRetryAction(
                     resources.getString(R.string.uploading_file_error_text),
                     Snackbar.LENGTH_LONG
-                ) { uploadingFileBody?.let { ChatEvent.Ui.UploadFile(it) }?.let { store.accept(it) } }
+                ) { store.accept(ChatEvent.Ui.UploadFile(effect.fileName, effect.fileBody)) }
             }
         }
     }
@@ -367,9 +365,7 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
                 .asRequestBody(contentResolver.getType(contentUri)?.toMediaTypeOrNull())
             val body: MultipartBody.Part =
                 MultipartBody.Part.createFormData("file", file.name, requestFile)
-            uploadingFileName = fileName
-            uploadingFileBody = body
-            store.accept(ChatEvent.Ui.UploadFile(body))
+            store.accept(ChatEvent.Ui.UploadFile(fileName, body))
         }
 
     companion object {

@@ -64,8 +64,15 @@ internal class ChatActor(
             }
         is ChatCommand.UploadFile -> chatInteractor.uploadFile(fileBody = command.fileBody)
             .mapEvents(
-                { response -> ChatEvent.Internal.FileUploaded(response.uri) },
-                { error -> ChatEvent.Internal.FileUploadingError(error) }
+                { response -> ChatEvent.Internal.FileUploaded(
+                    command.fileName,
+                    response.uri)
+                },
+                { error -> ChatEvent.Internal.FileUploadingError(
+                    error,
+                    command.fileName,
+                    command.fileBody
+                ) }
             )
     }
 

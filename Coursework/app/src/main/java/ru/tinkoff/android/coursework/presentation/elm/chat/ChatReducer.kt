@@ -30,7 +30,7 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                 processRemoveReactionEvent(event)
             }
             is ChatEvent.Ui.UploadFile -> {
-                commands { +ChatCommand.UploadFile(event.fileBody) }
+                processFileUploadEvent(event)
             }
 
             is ChatEvent.Internal.LastMessagesLoaded -> {
@@ -53,16 +53,13 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
             }
 
             is ChatEvent.Internal.MessagesLoadingError -> {
-                state { copy(error = event.error) }
-                effects { +ChatEffect.MessagesLoadingError(event.error) }
+                processMessagesLoadingError(event)
             }
             is ChatEvent.Internal.MessageSendingError -> {
-                state { copy(error = event.error) }
-                effects { +ChatEffect.MessageSendingError(event.error) }
+                processMessageSendingError(event)
             }
             is ChatEvent.Internal.FileUploadingError -> {
-                state { copy(error = event.error) }
-                effects { +ChatEffect.FileUploadingError(event.error) }
+                processFileUploadingError(event)
             }
         }
     }
@@ -86,7 +83,6 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                 isFirstPortion = event.isFirstPortion,
                 isReactionAdded = false,
                 isReactionRemoved = false,
-                isFileUploaded = false,
                 topicName = event.topicName
             )
         }
@@ -108,8 +104,7 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                 updateWithPortion = false,
                 isFirstPortion = event.isFirstPortion,
                 isReactionAdded = false,
-                isReactionRemoved = false,
-                isFileUploaded = false
+                isReactionRemoved = false
             )
         }
         commands {
@@ -194,7 +189,6 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
     private fun Result.processMessageSentEvent() {
         state {
             copy(
-                isFileUploaded = false,
                 isReactionAdded = false,
                 isReactionRemoved = false,
                 updateAllMessages = false,
@@ -211,12 +205,22 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
         effects { +ChatEffect.MessageSentEffect }
     }
 
+    private fun Result.processFileUploadEvent(
+        event: ChatEvent.Ui.UploadFile
+    ) {
+        commands {
+            +ChatCommand.UploadFile(
+                event.fileName,
+                event.fileBody
+            )
+        }
+    }
+
     private fun Result.processReactionAddedEvent() {
         state {
             copy(
                 isReactionAdded = true,
                 isReactionRemoved = false,
-                isFileUploaded = false,
                 updateAllMessages = false,
                 updateWithPortion = false,
                 isFirstPortion = false,
@@ -230,7 +234,6 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
             copy(
                 isReactionRemoved = true,
                 isReactionAdded = false,
-                isFileUploaded = false,
                 updateAllMessages = false,
                 updateWithPortion = false,
                 isFirstPortion = false,
@@ -244,14 +247,40 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
     ) {
         state {
             copy(
-                isFileUploaded = true,
-                fileUri = event.uri,
                 isReactionAdded = false,
                 isReactionRemoved = false,
                 updateAllMessages = false,
                 updateWithPortion = false,
                 isFirstPortion = false,
                 error = null
+            )
+        }
+        effects { +ChatEffect.FileUploadedEffect(event.fileName, event.fileUri) }
+    }
+
+    private fun Result.processMessagesLoadingError(
+        event: ChatEvent.Internal.MessagesLoadingError
+    ) {
+        state { copy(error = event.error) }
+        effects { +ChatEffect.MessagesLoadingError(event.error) }
+    }
+
+    private fun Result.processMessageSendingError(
+        event: ChatEvent.Internal.MessageSendingError
+    ) {
+        state { copy(error = event.error) }
+        effects { +ChatEffect.MessageSendingError(event.error) }
+    }
+
+    private fun Result.processFileUploadingError(
+        event: ChatEvent.Internal.FileUploadingError
+    ) {
+        state { copy(error = event.error) }
+        effects {
+            +ChatEffect.FileUploadingError(
+                error = event.error,
+                fileName = event.fileName,
+                fileBody = event.fileBody
             )
         }
     }

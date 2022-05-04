@@ -32,6 +32,9 @@ internal sealed class ChatCommand {
         val emojiName: String
     ) : ChatCommand()
 
-    data class UploadFile(val fileBody: MultipartBody.Part) : ChatCommand()
+    data class UploadFile(
+        val fileName: String,
+        val fileBody: MultipartBody.Part
+    ) : ChatCommand()
 
 }
