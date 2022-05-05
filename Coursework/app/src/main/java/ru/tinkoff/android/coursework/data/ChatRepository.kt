@@ -13,7 +13,7 @@ internal interface ChatRepository {
 
     fun loadMessagesFromApi(
         topicName: String,
-        currentAnchor: Long,
+        anchor: Long,
         numOfMessagesInPortion: Int
     ): Single<List<Message>>
 
@@ -38,5 +38,7 @@ internal interface ChatRepository {
     ): Single<ReactionResponse>
 
     fun uploadFile(fileBody: MultipartBody.Part): Single<UploadFileResponse>
+
+    fun loadSingleMessageFromApi(messageId: Long): Single<Message>
 
 }

@@ -35,12 +35,12 @@ internal class ChatRepositoryImpl @Inject constructor(
 
     override fun loadMessagesFromApi(
         topicName: String,
-        currentAnchor: Long,
+        anchor: Long,
         numOfMessagesInPortion: Int
     ): Single<List<Message>> {
         return zulipJsonApi.getMessages(
             numBefore = numOfMessagesInPortion,
-            anchor = currentAnchor.toString(),
+            anchor = anchor.toString(),
             narrow = arrayOf(
                 NarrowRequest(
                     operator = ChatActivity.TOPIC_NARROW_OPERATOR_KEY,
@@ -104,6 +104,11 @@ internal class ChatRepositoryImpl @Inject constructor(
             .doOnError {
                 Log.e(TAG, applicationContext.resources.getString(R.string.uploading_file_error_text), it)
             }
+    }
+
+    override fun loadSingleMessageFromApi(messageId: Long): Single<Message> {
+        return zulipJsonApi.loadSingleMessage(messageId)
+            .map { MessageMapper.messageDtoToMessage(it.message) }
     }
 
     companion object {

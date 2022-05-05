@@ -51,9 +51,6 @@ internal class ChatMessagesAdapter(
         set(value) {
             field = value
             messagesWithDateSeparators = insertDateSeparators(value)
-            if (value.isNotEmpty()) {
-                anchor = value[0].id - 1
-            }
         }
 
     private val differ = AsyncListDiffer(this, DiffCallback())
@@ -138,16 +135,6 @@ internal class ChatMessagesAdapter(
             is SelfMessageViewHolder -> holder.bind(messagesWithDateSeparators[position] as Message)
             is SendDateViewHolder -> holder.bind(messagesWithDateSeparators[position] as LocalDate)
         }
-    }
-
-    fun updateWithNextPortion(newMessages: List<Message>, isFirstPortion: Boolean) {
-        if (isFirstPortion) messages = mutableListOf()
-        val oldMessages = messagesWithDateSeparators
-        messages = newMessages.plus(messages)
-
-        val isLastChanged = !oldMessages.isNullOrEmpty()
-                && messagesWithDateSeparators.last() != oldMessages.last()
-        if (isLastChanged) notifyItemChanged(messagesWithDateSeparators.size - 1)
     }
 
     override fun getItemCount(): Int = messagesWithDateSeparators.size

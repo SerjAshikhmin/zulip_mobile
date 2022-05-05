@@ -7,6 +7,6 @@ internal data class Message(
     val topicName: String,
     val avatarUrl: String?,
     val content: String,
-    val emojis: List<EmojiWithCount>,
+    val emojis: MutableList<EmojiWithCount>,
     val timestamp: Long
 )

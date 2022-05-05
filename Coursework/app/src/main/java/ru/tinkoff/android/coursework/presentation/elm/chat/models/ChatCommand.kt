@@ -6,14 +6,17 @@ internal sealed class ChatCommand {
 
     data class LoadLastMessages(
         val topicName: String,
-        val currentAnchor: Long,
+        val anchor: Long,
         val isFirstPosition: Boolean = false
     ) : ChatCommand()
 
     data class LoadPortionOfMessages(
         val topicName: String,
-        val currentAnchor: Long,
-        val isFirstPosition: Boolean = false
+        val anchor: Long
+    ) : ChatCommand()
+
+    data class LoadMessage(
+        val messageId: Long
     ) : ChatCommand()
 
     data class SendMessage(
@@ -32,6 +35,9 @@ internal sealed class ChatCommand {
         val emojiName: String
     ) : ChatCommand()
 
-    data class UploadFile(val fileBody: MultipartBody.Part) : ChatCommand()
+    data class UploadFile(
+        val fileName: String,
+        val fileBody: MultipartBody.Part
+    ) : ChatCommand()
 
 }

@@ -39,7 +39,7 @@ internal object MessageMapper {
             topicName = messageDb.topicName,
             avatarUrl = messageDb.avatarUrl,
             content = messageDb.content,
-            emojis = EmojiMapper.emojisDbToEmojisList(messageDb.emojis),
+            emojis = EmojiMapper.emojisDbToEmojisList(messageDb.emojis) as MutableList<EmojiWithCount>,
             timestamp = messageDb.timestamp
         )
     }
@@ -52,7 +52,7 @@ internal object MessageMapper {
             topicName = messageDto.topicName,
             avatarUrl = messageDto.avatarUrl,
             content = messageDto.content,
-            emojis = getEmojisWithCountList(messageDto.reactions),
+            emojis = getEmojisWithCountList(messageDto.reactions) as MutableList<EmojiWithCount>,
             timestamp = messageDto.timestamp
         )
     }
