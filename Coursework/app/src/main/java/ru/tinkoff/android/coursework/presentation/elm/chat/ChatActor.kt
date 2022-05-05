@@ -14,27 +14,31 @@ internal class ChatActor(
         is ChatCommand.LoadLastMessages ->
             chatInteractor.loadLastMessages(
                 command.topicName,
-                command.currentAnchor
+                command.anchor
             )
                 .mapEvents(
                     { messages -> ChatEvent.Internal.LastMessagesLoaded(
                         items = messages,
-                        topicName = command.topicName,
-                        isFirstPortion = command.isFirstPosition
+                        topicName = command.topicName
                     ) },
                     { error -> ChatEvent.Internal.MessagesLoadingError(error) }
                 )
         is ChatCommand.LoadPortionOfMessages ->
             chatInteractor.loadPortionOfMessages(
                 command.topicName,
-                command.currentAnchor
+                command.anchor
             )
                 .mapEvents(
                     { messages -> ChatEvent.Internal.PortionOfMessagesLoaded(
                         items = messages,
-                        topicName = command.topicName,
-                        isFirstPortion = command.isFirstPosition
+                        topicName = command.topicName
                     ) },
+                    { error -> ChatEvent.Internal.MessagesLoadingError(error) }
+                )
+        is ChatCommand.LoadMessage ->
+            chatInteractor.loadMessage(command.messageId)
+                .mapEvents(
+                    { message -> ChatEvent.Internal.MessageLoaded(message) },
                     { error -> ChatEvent.Internal.MessagesLoadingError(error) }
                 )
         is ChatCommand.SendMessage -> {
@@ -53,14 +57,14 @@ internal class ChatActor(
             emojiName = command.emojiName
         )
             .mapSuccessEvent {
-                ChatEvent.Internal.ReactionAdded
+                ChatEvent.Internal.ReactionAdded(command.messageId)
             }
         is ChatCommand.RemoveReaction -> chatInteractor.removeReaction(
             messageId = command.messageId,
             emojiName = command.emojiName
         )
             .mapSuccessEvent{
-                ChatEvent.Internal.ReactionRemoved
+                ChatEvent.Internal.ReactionRemoved(command.messageId)
             }
         is ChatCommand.UploadFile -> chatInteractor.uploadFile(fileBody = command.fileBody)
             .mapEvents(

@@ -16,23 +16,16 @@ internal class ChatInteractor(
     private val chatRepository: ChatRepository
 ) {
 
-    private var currentCache: List<Message> = listOf()
-    private var currentTopicName: String = ""
-
     fun loadLastMessages(
         topicName: String,
-        currentAnchor: Long
+        anchor: Long
     ): Observable<List<Message>> {
         return Observable.merge(
             chatRepository.loadMessagesFromDb(topicName)
-                .doOnSuccess {
-                    currentCache = it
-                    currentTopicName = topicName
-                }
                 .toObservable(),
             chatRepository.loadMessagesFromApi(
                 topicName,
-                currentAnchor,
+                anchor,
                 NUMBER_OF_MESSAGES_IN_LAST_PORTION
             )
                 .doOnSuccess {
@@ -47,24 +40,37 @@ internal class ChatInteractor(
 
     fun loadPortionOfMessages(
         topicName: String,
-        currentAnchor: Long
+        anchor: Long
     ): Observable<List<Message>> {
         return chatRepository.loadMessagesFromApi(
             topicName,
-            currentAnchor,
+            anchor,
             NUMBER_OF_MESSAGES_PER_PORTION
         )
             .toObservable()
             .subscribeOn(Schedulers.io())
     }
 
-    fun sendMessage(topic: String, stream: String, content: String): Single<SendMessageResponse> {
+    fun loadMessage(messageId: Long): Observable<Message> {
+        return chatRepository.loadSingleMessageFromApi(messageId)
+            .toObservable()
+            .subscribeOn(Schedulers.io())
+    }
+
+    fun sendMessage(
+        topic: String,
+        stream: String,
+        content: String
+    ): Single<SendMessageResponse> {
         return chatRepository.sendMessage(topic, stream, content)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
     }
 
-    fun addReaction(messageId: Long, emojiName: String): Single<ReactionResponse> {
+    fun addReaction(
+        messageId: Long,
+        emojiName: String
+    ): Single<ReactionResponse> {
         return chatRepository.addReaction(messageId, emojiName)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -73,7 +79,10 @@ internal class ChatInteractor(
             }
     }
 
-    fun removeReaction(messageId: Long, emojiName: String): Single<ReactionResponse> {
+    fun removeReaction(
+        messageId: Long,
+        emojiName: String
+    ): Single<ReactionResponse> {
         return chatRepository.removeReaction(messageId, emojiName)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
