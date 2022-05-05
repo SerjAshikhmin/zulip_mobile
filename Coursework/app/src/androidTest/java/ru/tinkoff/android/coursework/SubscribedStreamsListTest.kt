@@ -15,22 +15,24 @@ internal class SubscribedStreamsListTest : TestCase() {
 
         step("Список топиков скрыт") {
             SubscribedStreamsScreen.streamsList.children<StreamItem> {
-                this.topicsList {
+                topicsList {
                     isNotDisplayed()
                 }
             }
         }
         step("Открыть список топиков") {
             SubscribedStreamsScreen.streamsList.childAt<StreamItem>(0) {
-                this.arrowIcon.click()
+                arrowIcon.click()
             }
         }
         step("Список топиков открыт") {
             SubscribedStreamsScreen.streamsList.childAt<StreamItem>(0) {
-                this.topicsList {
+                topicsList {
                     isDisplayed()
                     var childCount = 0
                     children<SubscribedStreamsScreen.TopicItem> { childCount++ }
+                    // тут может падать, т.к. кол-во топиков может меняться
+                    // нужно поменять значение или мокать апи
                     Assert.assertEquals(12, childCount)
                 }
             }

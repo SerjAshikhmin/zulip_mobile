@@ -149,7 +149,7 @@ internal class MessageMapperTest {
             topicName = topicName,
             avatarUrl = avatarUrl,
             content = content,
-            emojis = emojis,
+            emojis = emojis.toMutableList(),
             timestamp = timestamp
         )
     }
