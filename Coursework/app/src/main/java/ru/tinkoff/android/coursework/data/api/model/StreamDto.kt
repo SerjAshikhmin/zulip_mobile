@@ -2,7 +2,6 @@ package ru.tinkoff.android.coursework.data.api.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import ru.tinkoff.android.coursework.data.db.model.Stream
 
 @Serializable
 internal data class StreamDto (
@@ -14,14 +13,4 @@ internal data class StreamDto (
     val name: String,
 
     var topics: List<TopicDto> = listOf()
-) {
-
-    fun toStreamDb(): Stream {
-        return Stream(
-            streamId = streamId,
-            name = name,
-            topics = topics
-        )
-    }
-
-}
+)

@@ -9,11 +9,13 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.findFragment
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.snackbar.Snackbar
+import ru.tinkoff.android.coursework.App
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.FragmentPeopleBinding
-import ru.tinkoff.android.coursework.data.api.model.UserDto
-import ru.tinkoff.android.coursework.data.db.AppDatabase
-import ru.tinkoff.android.coursework.di.GlobalDi
+import ru.tinkoff.android.coursework.di.*
+import ru.tinkoff.android.coursework.di.people.DaggerPeopleComponent
+import ru.tinkoff.android.coursework.domain.model.User
+import ru.tinkoff.android.coursework.presentation.elm.people.PeopleElmStoreFactory
 import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleEffect
 import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleEvent
 import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleState
@@ -22,14 +24,18 @@ import ru.tinkoff.android.coursework.presentation.screens.adapters.PeopleListAda
 import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
 import vivid.money.elmslie.android.base.ElmFragment
 import vivid.money.elmslie.core.store.Store
+import javax.inject.Inject
 
+@ActivityScope
 internal class PeopleFragment
     : ElmFragment<PeopleEvent, PeopleEffect, PeopleState>(), OnUserItemClickListener {
+
+    @Inject
+    internal lateinit var peopleElmStoreFactory: PeopleElmStoreFactory
 
     override val initEvent: PeopleEvent = PeopleEvent.Ui.LoadPeopleList
     private lateinit var adapter: PeopleListAdapter
     private lateinit var binding: FragmentPeopleBinding
-    private var db: AppDatabase? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,13 +48,16 @@ internal class PeopleFragment
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        db = AppDatabase.getAppDatabase(requireContext())
         adapter = PeopleListAdapter(this)
         binding.peopleList.adapter = adapter
     }
 
     override fun createStore(): Store<PeopleEvent, PeopleEffect, PeopleState> {
-        return GlobalDi.INSTANCE.peopleElmStoreFactory.provide()
+        val peopleComponent = DaggerPeopleComponent.factory().create(
+            (activity?.application as App).applicationComponent
+        )
+        peopleComponent.inject(this)
+        return peopleElmStoreFactory.provide()
     }
 
     override fun render(state: PeopleState) {
@@ -75,7 +84,7 @@ internal class PeopleFragment
         }
     }
 
-    override fun onUserItemClick(user: UserDto) {
+    override fun onUserItemClick(user: User) {
         val bundle = bundleOf(
             ProfileFragment.USER_ID_KEY to user.userId,
             ProfileFragment.USERNAME_KEY to user.fullName,

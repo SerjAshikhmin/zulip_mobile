@@ -1,41 +1,48 @@
 package ru.tinkoff.android.coursework.presentation.elm.chat
 
 import io.reactivex.Observable
-import ru.tinkoff.android.coursework.domain.chat.ChatUseCases
+import ru.tinkoff.android.coursework.domain.chat.ChatInteractor
 import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatCommand
 import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatEvent
 import vivid.money.elmslie.core.ActorCompat
 
 internal class ChatActor(
-    private val chatUseCases: ChatUseCases
+    private val chatInteractor: ChatInteractor
 ) : ActorCompat<ChatCommand, ChatEvent> {
 
     override fun execute(command: ChatCommand): Observable<ChatEvent> = when (command) {
-        is ChatCommand.LoadMessages ->
-            chatUseCases.loadMessages(
+        is ChatCommand.LoadLastMessages ->
+            chatInteractor.loadLastMessages(
                 command.topicName,
-                command.currentAnchor,
-                command.updateAllMessages
+                command.anchor
             )
                 .mapEvents(
-                    { messages -> ChatEvent.Internal.MessagesLoaded(
+                    { messages -> ChatEvent.Internal.LastMessagesLoaded(
                         items = messages,
-                        topicName = command.topicName,
-                        isFirstPortion = command.isFirstPosition,
-                        updateAllMessages = command.updateAllMessages
+                        topicName = command.topicName
                     ) },
                     { error -> ChatEvent.Internal.MessagesLoadingError(error) }
                 )
-        is ChatCommand.CacheMessages -> {
-            chatUseCases.cacheMessages(
-                topicName = command.topicName,
-                newMessages = command.newMessages,
-                actualMessages = command.actualMessages
+        is ChatCommand.LoadPortionOfMessages ->
+            chatInteractor.loadPortionOfMessages(
+                command.topicName,
+                command.anchor
             )
-            Observable.empty()
-        }
+                .mapEvents(
+                    { messages -> ChatEvent.Internal.PortionOfMessagesLoaded(
+                        items = messages,
+                        topicName = command.topicName
+                    ) },
+                    { error -> ChatEvent.Internal.MessagesLoadingError(error) }
+                )
+        is ChatCommand.LoadMessage ->
+            chatInteractor.loadMessage(command.messageId)
+                .mapEvents(
+                    { message -> ChatEvent.Internal.MessageLoaded(message) },
+                    { error -> ChatEvent.Internal.MessagesLoadingError(error) }
+                )
         is ChatCommand.SendMessage -> {
-            chatUseCases.sendMessage(
+            chatInteractor.sendMessage(
                 topic = command.topicName,
                 stream = command.streamName,
                 content = command.content
@@ -45,26 +52,31 @@ internal class ChatActor(
                     { error -> ChatEvent.Internal.MessageSendingError(error) }
                 )
         }
-        is ChatCommand.AddReaction -> chatUseCases.addReaction(
+        is ChatCommand.AddReaction -> chatInteractor.addReaction(
             messageId = command.messageId,
             emojiName = command.emojiName
         )
-            .mapEvents(
-                { ChatEvent.Internal.ReactionAdded },
-                { error -> ChatEvent.Internal.ReactionAddingError(error) }
-            )
-        is ChatCommand.RemoveReaction -> chatUseCases.removeReaction(
+            .mapSuccessEvent {
+                ChatEvent.Internal.ReactionAdded(command.messageId)
+            }
+        is ChatCommand.RemoveReaction -> chatInteractor.removeReaction(
             messageId = command.messageId,
             emojiName = command.emojiName
         )
+            .mapSuccessEvent{
+                ChatEvent.Internal.ReactionRemoved(command.messageId)
+            }
+        is ChatCommand.UploadFile -> chatInteractor.uploadFile(fileBody = command.fileBody)
             .mapEvents(
-                { ChatEvent.Internal.ReactionRemoved },
-                { error -> ChatEvent.Internal.ReactionRemovingError(error) }
-            )
-        is ChatCommand.UploadFile -> chatUseCases.uploadFile(fileBody = command.fileBody)
-            .mapEvents(
-                { response -> ChatEvent.Internal.FileUploaded(response.uri) },
-                { error -> ChatEvent.Internal.FileUploadingError(error) }
+                { response -> ChatEvent.Internal.FileUploaded(
+                    command.fileName,
+                    response.uri)
+                },
+                { error -> ChatEvent.Internal.FileUploadingError(
+                    error,
+                    command.fileName,
+                    command.fileBody
+                ) }
             )
     }
 

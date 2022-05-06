@@ -1,7 +1,7 @@
 package ru.tinkoff.android.coursework.presentation.elm.chat.models
 
 import okhttp3.MultipartBody
-import ru.tinkoff.android.coursework.data.db.model.Message
+import ru.tinkoff.android.coursework.domain.model.Message
 
 internal sealed class ChatEvent {
 
@@ -9,17 +9,14 @@ internal sealed class ChatEvent {
 
         object InitEvent : ChatEvent.Ui()
 
-        data class LoadMessages(
+        data class LoadLastMessages(
             val topicName: String,
-            val currentAnchor: Long,
-            val isFirstPortion: Boolean = false,
-            val updateAllMessages: Boolean = false
+            val anchor: Long
         ) : ChatEvent.Ui()
 
-        data class CacheMessages(
+        data class LoadPortionOfMessages(
             val topicName: String,
-            val newMessages: List<Message>,
-            val actualMessages: List<Message>
+            val anchor: Long
         ) : ChatEvent.Ui()
 
         data class SendMessage(
@@ -30,44 +27,63 @@ internal sealed class ChatEvent {
 
         data class AddReaction(
             val messageId: Long,
-            val emojiName: String
+            val emojiName: String,
+            val emojiCode: String
         ) : ChatEvent.Ui()
 
         data class RemoveReaction(
             val messageId: Long,
-            val emojiName: String
+            val emojiName: String,
+            val emojiCode: String
         ) : ChatEvent.Ui()
 
-        data class UploadFile(val fileBody: MultipartBody.Part) : ChatEvent.Ui()
+        data class UploadFile(
+            val fileName: String,
+            val fileBody: MultipartBody.Part
+        ) : ChatEvent.Ui()
 
     }
 
     sealed class Internal : ChatEvent() {
 
-        data class MessagesLoaded(
+        data class LastMessagesLoaded(
             val items: List<Message>,
-            val topicName: String,
-            val isFirstPortion: Boolean = false,
-            val updateAllMessages: Boolean = false
+            val topicName: String
+        ) : Internal()
+
+        data class PortionOfMessagesLoaded(
+            val items: List<Message>,
+            val topicName: String
+        ) : Internal()
+
+        data class MessageLoaded(
+            val item: Message
         ) : Internal()
 
         object MessageSent : Internal()
 
-        object ReactionAdded : Internal()
+        data class ReactionAdded(
+            val messageId: Long
+        ) : Internal()
 
-        object ReactionRemoved : Internal()
+        data class ReactionRemoved(
+            val messageId: Long
+        ) : Internal()
 
-        data class FileUploaded(val uri: String) : Internal()
+        data class FileUploaded(
+            val fileName: String,
+            val fileUri: String
+        ) : Internal()
 
         data class MessagesLoadingError(val error: Throwable) : Internal()
 
         data class MessageSendingError(val error: Throwable) : Internal()
 
-        data class ReactionAddingError(val error: Throwable) : Internal()
-
-        data class ReactionRemovingError(val error: Throwable) : Internal()
-
-        data class FileUploadingError(val error: Throwable) :Internal()
+        data class FileUploadingError(
+            val error: Throwable,
+            val fileName: String,
+            val fileBody: MultipartBody.Part
+        ) :Internal()
 
     }
 

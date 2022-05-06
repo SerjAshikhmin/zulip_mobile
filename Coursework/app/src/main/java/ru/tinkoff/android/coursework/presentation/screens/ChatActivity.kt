@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
@@ -22,14 +21,15 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import ru.tinkoff.android.coursework.App
 import ru.tinkoff.android.coursework.R
-import ru.tinkoff.android.coursework.data.api.ZulipJsonApi.Companion.LAST_MESSAGE_ANCHOR
-import ru.tinkoff.android.coursework.data.api.model.EmojiWithCountDto
 import ru.tinkoff.android.coursework.data.EmojiCodes
 import ru.tinkoff.android.coursework.databinding.ActivityChatBinding
-import ru.tinkoff.android.coursework.data.db.AppDatabase
-import ru.tinkoff.android.coursework.di.GlobalDi
+import ru.tinkoff.android.coursework.di.ActivityScope
+import ru.tinkoff.android.coursework.di.chat.DaggerChatComponent
+import ru.tinkoff.android.coursework.domain.model.EmojiWithCount
 import ru.tinkoff.android.coursework.presentation.customviews.*
+import ru.tinkoff.android.coursework.presentation.elm.chat.ChatElmStoreFactory
 import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatEffect
 import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatEvent
 import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatState
@@ -43,9 +43,14 @@ import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
 import vivid.money.elmslie.android.base.ElmActivity
 import vivid.money.elmslie.core.store.Store
 import java.io.*
+import javax.inject.Inject
 
+@ActivityScope
 internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
     OnEmojiClickListener, OnBottomSheetChooseEmojiListener {
+
+    @Inject
+    internal lateinit var chatElmStoreFactory: ChatElmStoreFactory
 
     override var initEvent: ChatEvent = ChatEvent.Ui.InitEvent
     private lateinit var binding: ActivityChatBinding
@@ -54,21 +59,13 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
     private lateinit var adapter: ChatMessagesAdapter
     private lateinit var streamName: String
     private lateinit var topicName: String
-    private var db: AppDatabase? = null
     private var selectFileResultLauncher = initializeSelectFileResultLauncher()
-    private var selectedEmojiView: EmojiWithCountView? = null
-    private var selectedEmojiName: String? = null
-    private var isNewSelectedEmojiView: Boolean = false
-    private var emojiBox: FlexBoxLayout? = null
-    private var uploadingFileName: String? = null
-    private var uploadingFileBody: MultipartBody.Part? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        db = AppDatabase.getAppDatabase(this)
         createAndConfigureBottomSheet()
         configureEnterMessageSection()
         configureChatRecycler()
@@ -76,60 +73,31 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
     }
 
     override fun createStore(): Store<ChatEvent, ChatEffect, ChatState> {
-        return GlobalDi.INSTANCE.chatElmStoreFactory.provide()
+        val chatComponent = DaggerChatComponent.factory().create(
+            (this.application as App).applicationComponent
+        )
+        chatComponent.inject(this)
+        return chatElmStoreFactory.provide()
     }
 
     override fun render(state: ChatState) {
         binding.progress.visibility = if (state.isLoading) View.VISIBLE else View.GONE
-        if (state.updateAllMessages) {
-            adapter.messages = state.items
-            adapter.notifyDataSetChanged()
-        }
-        if (state.updateWithPortion && state.items.isNotEmpty()
-            && adapter.anchor != state.items[0].id - 1) {
-                val newMessages = state.items
-                adapter.updateWithNextPortion(newMessages, state.isFirstPortion)
-                store.accept(ChatEvent.Ui.CacheMessages(
-                    topicName = topicName,
-                    newMessages = newMessages,
-                    actualMessages = adapter.messages
-                ))
-        }
-        if (state.isMessageSent) {
-            binding.enterMessage.text.clear()
-            adapter.anchor = LAST_MESSAGE_ANCHOR
-            store.accept(ChatEvent.Ui.LoadMessages(
-                topicName = topicName,
-                currentAnchor = adapter.anchor,
-                isFirstPortion = true
-            ))
-        }
-        if (state.isReactionAdded) {
-            selectedEmojiView?.isSelected = true
-            selectedEmojiView?.emojiCount = selectedEmojiView?.emojiCount?.plus(1)!!
-            if (isNewSelectedEmojiView) {
-                selectedEmojiView?.let { addNewEmojiToEmojiBox(emojiBox, it) }
-            }
-        }
-        if (state.isReactionRemoved) {
-            selectedEmojiView?.isSelected = false
-            selectedEmojiView?.emojiCount = selectedEmojiView?.emojiCount?.minus(1)!!
-            if (selectedEmojiView?.emojiCount == 0) {
-                val emojiBox = (selectedEmojiView?.parent as FlexBoxLayout)
-                emojiBox.removeView(selectedEmojiView)
-                if (emojiBox.childCount == 1) {
-                    emojiBox.getChildAt(0).visibility = View.GONE
-                }
-            }
-        }
-        if (state.isFileUploaded) {
-            binding.enterMessage.text.append("[$uploadingFileName](${state.fileUri})\n\n")
-            binding.sendButton.showActionIcon(R.drawable.ic_send, R.color.teal_500)
+        with (adapter) {
+            messages = state.items
+            anchor = state.anchor
+            println("state updated")
         }
     }
 
     override fun handleEffect(effect: ChatEffect) {
         when(effect) {
+            is ChatEffect.MessageSentEffect -> {
+                binding.enterMessage.text.clear()
+            }
+            is ChatEffect.FileUploadedEffect -> {
+                binding.enterMessage.text.append("[${effect.fileName}](${effect.fileUri})\n\n")
+                binding.sendButton.showActionIcon(R.drawable.ic_send, R.color.teal_500)
+            }
             is ChatEffect.MessagesLoadingError -> {
                 binding.root.showSnackBarWithRetryAction(
                     resources.getString(R.string.messages_not_found_error_text),
@@ -142,17 +110,11 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
                     Snackbar.LENGTH_LONG
                 ) { }
             }
-            is ChatEffect.ReactionAddingError -> {
-                Log.e(TAG, applicationContext.resources.getString(R.string.adding_emoji_error_text), effect.error)
-            }
-            is ChatEffect.ReactionRemovingError -> {
-                Log.e(TAG, applicationContext.resources.getString(R.string.removing_emoji_error_text), effect.error)
-            }
             is ChatEffect.FileUploadingError -> {
                 binding.root.showSnackBarWithRetryAction(
                     resources.getString(R.string.uploading_file_error_text),
                     Snackbar.LENGTH_LONG
-                ) { uploadingFileBody?.let { ChatEvent.Ui.UploadFile(it) }?.let { store.accept(it) } }
+                ) { store.accept(ChatEvent.Ui.UploadFile(effect.fileName, effect.fileBody)) }
             }
         }
     }
@@ -161,15 +123,32 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
         val emojiName = EmojiCodes.emojiMap[emojiView.emojiCode]
         if (emojiName != null) {
             if (!emojiView.isSelected) {
-                selectedEmojiView = emojiView
-                selectedEmojiName = emojiName
-                isNewSelectedEmojiView = false
-                emojiBox = null
-                store.accept(ChatEvent.Ui.AddReaction(emojiView.messageId, emojiName))
+                store.accept(
+                    ChatEvent.Ui.AddReaction(
+                        emojiView.messageId,
+                        emojiName,
+                        emojiView.emojiCode
+                    )
+                )
+                emojiView.isSelected = true
+                emojiView.emojiCount = emojiView.emojiCount.plus(1)
             } else {
-                selectedEmojiView = emojiView
-                selectedEmojiName = emojiName
-                store.accept(ChatEvent.Ui.RemoveReaction(emojiView.messageId, emojiName))
+                store.accept(
+                    ChatEvent.Ui.RemoveReaction(
+                        emojiView.messageId,
+                        emojiName,
+                        emojiView.emojiCode
+                    )
+                )
+                emojiView.isSelected = false
+                emojiView.emojiCount = emojiView.emojiCount.minus(1)
+                if (emojiView.emojiCount == 0) {
+                    val emojiBox = (emojiView.parent as FlexBoxLayout)
+                    emojiBox.removeView(emojiView)
+                    if (emojiBox.childCount == 1) {
+                        emojiBox.getChildAt(0).visibility = View.GONE
+                    }
+                }
             }
         }
     }
@@ -203,27 +182,33 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
             intent.getStringExtra(STREAM_NAME_KEY)
         )
 
-        store.accept(ChatEvent.Ui.LoadMessages(
+        store.accept(ChatEvent.Ui.LoadLastMessages(
             topicName = topicName,
-            currentAnchor = adapter.anchor,
-            isFirstPortion = true,
-            updateAllMessages = true
+            anchor = adapter.anchor
         ))
 
         chatRecycler.adapter = adapter
 
         chatRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
+            private var isNewPortionLoading = false
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                isNewPortionLoading = false
+            }
+
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
                 val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
-                if (lastVisibleItemPosition == SCROLL_POSITION_FOR_NEXT_PORTION_LOADING) {
-                    store.accept(ChatEvent.Ui.LoadMessages(
-                        topicName = topicName,
-                        currentAnchor = adapter.anchor,
-                        isFirstPortion = false
-                    ))
+                if (lastVisibleItemPosition == SCROLL_POSITION_FOR_NEXT_PORTION_LOADING
+                    && !isNewPortionLoading) {
+                        isNewPortionLoading = true
+                        store.accept(ChatEvent.Ui.LoadPortionOfMessages(
+                            topicName = topicName,
+                            anchor = adapter.anchor
+                        ))
                 }
             }
         })
@@ -283,18 +268,6 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
         dialog.setContentView(bottomSheetLayout)
     }
 
-    private fun addNewEmojiToEmojiBox(
-        emojiBox: FlexBoxLayout?,
-        emojiView: EmojiWithCountView
-    ) {
-        if (emojiBox != null) {
-            emojiBox.addView(emojiView, emojiBox.childCount - 1)
-            if (emojiBox.childCount > 1) {
-                emojiBox.getChildAt(emojiBox.childCount - 1).visibility = View.VISIBLE
-            }
-        }
-    }
-
     override fun onBottomSheetChooseEmoji(
         selectedView: View?,
         chosenEmojiCode: String
@@ -338,17 +311,19 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
         if (emojiBox != null) {
             val emojiView = EmojiWithCountView.createEmojiWithCountView(
                 emojiBox = emojiBox,
-                emoji = EmojiWithCountDto(chosenEmojiCode, 0),
+                emoji = EmojiWithCount(chosenEmojiCode, 0),
                 messageId = messageId,
                 emojiClickListener = this
             )
             val emojiName = EmojiCodes.emojiMap[emojiView.emojiCode]
             if (emojiName != null) {
-                selectedEmojiView = emojiView
-                selectedEmojiName = emojiName
-                isNewSelectedEmojiView = true
-                this.emojiBox = emojiBox
-                store.accept(ChatEvent.Ui.AddReaction(emojiView.messageId, emojiName))
+                store.accept(
+                    ChatEvent.Ui.AddReaction(
+                        emojiView.messageId,
+                        emojiName,
+                        emojiView.emojiCode
+                    )
+                )
             }
         }
     }
@@ -372,9 +347,7 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
                 .asRequestBody(contentResolver.getType(contentUri)?.toMediaTypeOrNull())
             val body: MultipartBody.Part =
                 MultipartBody.Part.createFormData("file", file.name, requestFile)
-            uploadingFileName = fileName
-            uploadingFileBody = body
-            store.accept(ChatEvent.Ui.UploadFile(body))
+            store.accept(ChatEvent.Ui.UploadFile(fileName, body))
         }
 
     companion object {
@@ -382,7 +355,6 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
         const val STREAM_NAME_KEY = "streamName"
         const val TOPIC_NAME_KEY = "topicName"
         const val TOPIC_NARROW_OPERATOR_KEY = "topic"
-        private const val TAG = "ChatActivity"
         private const val SCROLL_POSITION_FOR_NEXT_PORTION_LOADING = 5
     }
 

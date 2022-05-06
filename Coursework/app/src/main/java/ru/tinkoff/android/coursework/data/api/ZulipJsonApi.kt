@@ -6,6 +6,7 @@ import retrofit2.http.*
 import ru.tinkoff.android.coursework.data.api.model.UserDto
 import ru.tinkoff.android.coursework.data.api.model.response.AllStreamsListResponse
 import ru.tinkoff.android.coursework.data.api.model.response.AllUsersListResponse
+import ru.tinkoff.android.coursework.data.api.model.response.LoadSingleMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.MessagesListResponse
 import ru.tinkoff.android.coursework.data.api.model.response.ReactionResponse
 import ru.tinkoff.android.coursework.data.api.model.response.SendMessageResponse
@@ -40,7 +41,7 @@ internal interface ZulipJsonApi {
 
     @GET("api/v1/messages")
     fun getMessages(
-        @Query("num_before") numBefore: Int = NUMBER_OF_MESSAGES_BEFORE_ANCHOR,
+        @Query("num_before") numBefore: Int,
         @Query("num_after") numAfter: Int = NUMBER_OF_MESSAGES_AFTER_ANCHOR,
         @Query("anchor") anchor: String = "first_unread",
         @Query(value = "narrow", encoded = true) narrow: String
@@ -72,9 +73,13 @@ internal interface ZulipJsonApi {
         @Part file: MultipartBody.Part
     ): Single<UploadFileResponse>
 
+    @GET("api/v1/messages/{msg_id}")
+    fun loadSingleMessage(
+        @Path("msg_id") messageId: Long
+    ): Single<LoadSingleMessageResponse>
+
     companion object {
 
-        internal const val NUMBER_OF_MESSAGES_BEFORE_ANCHOR = 20
         internal const val NUMBER_OF_MESSAGES_AFTER_ANCHOR = 0
         internal const val LAST_MESSAGE_ANCHOR = 10000000000000000L
     }

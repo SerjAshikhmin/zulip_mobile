@@ -1,12 +1,19 @@
 package ru.tinkoff.android.coursework
 
 import android.app.Application
-import ru.tinkoff.android.coursework.di.GlobalDi
+import ru.tinkoff.android.coursework.di.ApplicationComponent
+import ru.tinkoff.android.coursework.di.DaggerApplicationComponent
 
-internal class App : Application() {
+class App : Application() {
+
+    internal lateinit var applicationComponent: ApplicationComponent
 
     override fun onCreate() {
         super.onCreate()
-        GlobalDi.init(applicationContext)
+
+        applicationComponent = DaggerApplicationComponent.factory().create(
+            applicationContext = this
+        )
     }
+
 }

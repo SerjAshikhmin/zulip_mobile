@@ -1,7 +1,7 @@
 package ru.tinkoff.android.coursework.presentation.elm.people.models
 
 import android.os.Bundle
-import ru.tinkoff.android.coursework.data.api.model.UserDto
+import ru.tinkoff.android.coursework.domain.model.User
 
 internal sealed class PeopleEvent {
 
@@ -15,7 +15,7 @@ internal sealed class PeopleEvent {
 
     sealed class Internal : PeopleEvent() {
 
-        data class PeopleListLoaded(val items: List<UserDto>) : Internal()
+        data class PeopleListLoaded(val items: List<User>) : Internal()
 
         data class PeopleListLoadingError(val error: Throwable) : Internal()
 

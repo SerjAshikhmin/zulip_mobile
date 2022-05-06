@@ -7,23 +7,29 @@ import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
+import ru.tinkoff.android.coursework.App
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.FragmentProfileBinding
-import ru.tinkoff.android.coursework.data.api.model.UserDto
-import ru.tinkoff.android.coursework.data.db.AppDatabase
-import ru.tinkoff.android.coursework.di.GlobalDi
+import ru.tinkoff.android.coursework.di.ActivityScope
+import ru.tinkoff.android.coursework.di.profile.DaggerProfileComponent
+import ru.tinkoff.android.coursework.domain.model.User
+import ru.tinkoff.android.coursework.presentation.elm.profile.ProfileElmStoreFactory
 import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileEffect
 import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileEvent
 import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileState
 import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
 import vivid.money.elmslie.android.base.ElmFragment
 import vivid.money.elmslie.core.store.Store
+import javax.inject.Inject
 
+@ActivityScope
 internal class ProfileFragment : ElmFragment<ProfileEvent, ProfileEffect, ProfileState>() {
+
+    @Inject
+    internal lateinit var profileElmStoreFactory: ProfileElmStoreFactory
 
     override var initEvent: ProfileEvent = ProfileEvent.Ui.InitEvent
     private lateinit var binding: FragmentProfileBinding
-    private var db: AppDatabase? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,7 +42,6 @@ internal class ProfileFragment : ElmFragment<ProfileEvent, ProfileEffect, Profil
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        db = AppDatabase.getAppDatabase(requireContext())
         binding.backIcon.setOnClickListener {
             requireActivity().onBackPressed()
         }
@@ -49,7 +54,11 @@ internal class ProfileFragment : ElmFragment<ProfileEvent, ProfileEffect, Profil
     }
 
     override fun createStore(): Store<ProfileEvent, ProfileEffect, ProfileState> {
-        return GlobalDi.INSTANCE.profileElmStoreFactory.provide()
+        val profileComponent = DaggerProfileComponent.factory().create(
+            (activity?.application as App).applicationComponent
+        )
+        profileComponent.inject(this)
+        return profileElmStoreFactory.provide()
     }
 
     override fun render(state: ProfileState) {
@@ -68,7 +77,7 @@ internal class ProfileFragment : ElmFragment<ProfileEvent, ProfileEffect, Profil
         }
     }
 
-    private fun fillViewsWithUserData(user: UserDto) {
+    private fun fillViewsWithUserData(user: User) {
         binding.username.text = user.fullName
         binding.userPresence.text = user.presence
         when (user.presence) {

@@ -3,10 +3,9 @@ package ru.tinkoff.android.coursework.data.db.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import ru.tinkoff.android.coursework.data.api.model.EmojiWithCountDto
 
 @Entity(tableName = "message")
-internal data class Message (
+internal data class MessageDb (
 
     @PrimaryKey
     val id: Long = 0,
@@ -27,7 +26,7 @@ internal data class Message (
     val content: String,
 
     @ColumnInfo(name = "emojis")
-    val emojis: List<EmojiWithCountDto>,
+    val emojis: List<EmojiWithCountDb>,
 
     @ColumnInfo(name = "timestamp")
     val timestamp: Long

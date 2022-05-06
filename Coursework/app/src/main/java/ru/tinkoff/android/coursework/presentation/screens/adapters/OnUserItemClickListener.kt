@@ -1,9 +1,9 @@
 package ru.tinkoff.android.coursework.presentation.screens.adapters
 
-import ru.tinkoff.android.coursework.data.api.model.UserDto
+import ru.tinkoff.android.coursework.domain.model.User
 
 internal interface OnUserItemClickListener {
 
-    fun onUserItemClick(user: UserDto)
+    fun onUserItemClick(user: User)
 
 }

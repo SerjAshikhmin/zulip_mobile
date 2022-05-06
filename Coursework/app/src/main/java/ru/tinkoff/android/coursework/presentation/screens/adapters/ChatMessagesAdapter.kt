@@ -14,7 +14,7 @@ import com.bumptech.glide.Glide
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.api.ZulipJsonApi.Companion.LAST_MESSAGE_ANCHOR
 import ru.tinkoff.android.coursework.data.api.model.SELF_USER_ID
-import ru.tinkoff.android.coursework.data.db.model.Message
+import ru.tinkoff.android.coursework.domain.model.Message
 import ru.tinkoff.android.coursework.presentation.customviews.*
 import ru.tinkoff.android.coursework.utils.dpToPx
 import ru.tinkoff.android.coursework.utils.getDateTimeFromTimestamp
@@ -33,7 +33,7 @@ internal class ChatMessagesAdapter(
 
     var anchor = LAST_MESSAGE_ANCHOR
 
-    var messagesWithDateSeparators: List<Any>
+    private var messagesWithDateSeparators: List<Any>
         set(value) {
             // переходим на последнее сообщение в чате, если было добавлено новое сообщение
             if (messages.isNotEmpty() && value.isNotEmpty() && messagesWithDateSeparators.isNotEmpty()
@@ -135,17 +135,6 @@ internal class ChatMessagesAdapter(
             is SelfMessageViewHolder -> holder.bind(messagesWithDateSeparators[position] as Message)
             is SendDateViewHolder -> holder.bind(messagesWithDateSeparators[position] as LocalDate)
         }
-    }
-
-    fun updateWithNextPortion(newMessages: List<Message>, isFirstPortion: Boolean) {
-        if (isFirstPortion) messages = mutableListOf()
-        anchor = newMessages[0].id - 1
-        val oldMessages = messagesWithDateSeparators
-        messages = newMessages.plus(messages)
-
-        val isLastChanged = !oldMessages.isNullOrEmpty()
-                && messagesWithDateSeparators.last() != oldMessages.last()
-        if (isLastChanged) notifyItemChanged(messagesWithDateSeparators.size - 1)
     }
 
     override fun getItemCount(): Int = messagesWithDateSeparators.size

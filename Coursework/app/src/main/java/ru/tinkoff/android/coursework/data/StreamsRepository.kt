@@ -1,11 +1,14 @@
 package ru.tinkoff.android.coursework.data
 
-import io.reactivex.Observable
-import ru.tinkoff.android.coursework.data.api.model.StreamDto
+import io.reactivex.Single
+import ru.tinkoff.android.coursework.domain.model.Stream
 
 internal interface StreamsRepository {
 
-    fun loadStreamsFromDb(): Observable<List<StreamDto>>?
-    fun loadStreamsFromApi(isSubscribedStreams: Boolean): Observable<List<StreamDto>>
+    fun loadStreamsFromDb(): Single<List<Stream>>
+
+    fun loadStreamsFromApi(isSubscribedStreams: Boolean): Single<List<Stream>>
+
+    fun saveStreamsToDb(streams: List<Stream>)
 
 }

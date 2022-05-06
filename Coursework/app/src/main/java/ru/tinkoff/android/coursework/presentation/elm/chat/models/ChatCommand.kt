@@ -1,21 +1,22 @@
 package ru.tinkoff.android.coursework.presentation.elm.chat.models
 
 import okhttp3.MultipartBody
-import ru.tinkoff.android.coursework.data.db.model.Message
 
 internal sealed class ChatCommand {
 
-    data class LoadMessages(
+    data class LoadLastMessages(
         val topicName: String,
-        val currentAnchor: Long,
-        val isFirstPosition: Boolean = false,
-        val updateAllMessages: Boolean = false
+        val anchor: Long,
+        val isFirstPosition: Boolean = false
     ) : ChatCommand()
 
-    data class CacheMessages(
+    data class LoadPortionOfMessages(
         val topicName: String,
-        val newMessages: List<Message>,
-        val actualMessages: List<Message>
+        val anchor: Long
+    ) : ChatCommand()
+
+    data class LoadMessage(
+        val messageId: Long
     ) : ChatCommand()
 
     data class SendMessage(
@@ -34,6 +35,9 @@ internal sealed class ChatCommand {
         val emojiName: String
     ) : ChatCommand()
 
-    data class UploadFile(val fileBody: MultipartBody.Part) : ChatCommand()
+    data class UploadFile(
+        val fileName: String,
+        val fileBody: MultipartBody.Part
+    ) : ChatCommand()
 
 }
