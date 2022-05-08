@@ -15,6 +15,10 @@
             android:id="@+id/action_nav_channels_to_nav_chat"
             app:destination="@id/nav_chat"/>
 
+        <action
+            android:id="@+id/action_nav_channels_to_nav_create_stream"
+            app:destination="@id/nav_create_stream"/>
+
     </fragment>
 
     <fragment
@@ -50,6 +54,14 @@
         android:name="ru.tinkoff.android.coursework.presentation.screens.UserActivity"
         android:label="@string/user_menu_title"
         tools:layout="@layout/activity_user">
+
+    </activity>
+
+    <activity
+        android:id="@+id/nav_create_stream"
+        android:name="ru.tinkoff.android.coursework.presentation.screens.CreateStreamActivity"
+        android:label="@string/create_stream_menu_title"
+        tools:layout="@layout/activity_create_stream">
 
     </activity>
 

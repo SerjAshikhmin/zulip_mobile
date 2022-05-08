@@ -14,6 +14,7 @@ import ru.tinkoff.android.coursework.data.api.model.response.SendMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.UploadFileResponse
 import ru.tinkoff.android.coursework.data.db.AppDatabase
 import ru.tinkoff.android.coursework.data.mappers.MessageMapper
+import ru.tinkoff.android.coursework.domain.chat.ChatInteractor
 import ru.tinkoff.android.coursework.domain.model.Message
 import ru.tinkoff.android.coursework.presentation.screens.ChatActivity
 import javax.inject.Inject
@@ -40,7 +41,11 @@ internal class ChatRepositoryImpl @Inject constructor(
     ): Single<List<Message>> {
         return zulipJsonApi.getMessages(
             numBefore = numOfMessagesInPortion,
-            anchor = anchor.toString(),
+            anchor = if (anchor == ChatInteractor.LAST_MESSAGE_ANCHOR) {
+                ZulipJsonApi.LAST_MESSAGE_ANCHOR.toString()
+            } else {
+                anchor.toString()
+            },
             narrow = arrayOf(
                 NarrowRequest(
                     operator = ChatActivity.TOPIC_NARROW_OPERATOR_KEY,

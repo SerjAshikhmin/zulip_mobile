@@ -27,6 +27,16 @@ internal class StreamsActor(
             channelsInteractor.processSearchQuery(command.query)
             Observable.empty()
         }
+        is StreamsCommand.CreateStream ->
+            channelsInteractor.createStream(
+                name = command.name,
+                description = command.description,
+                isPrivate = command.isPrivate
+            )
+                .mapEvents(
+                    { StreamsEvent.Internal.StreamCreated },
+                    { error -> StreamsEvent.Internal.StreamCreationError(error) }
+                )
     }
 
 }

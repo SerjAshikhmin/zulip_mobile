@@ -8,6 +8,7 @@
     <string name="profile_menu_title">Profile</string>
     <string name="user_menu_title">User</string>
     <string name="chat_menu_title">Chat</string>
+    <string name="create_stream_menu_title">Create stream</string>
     <string name="search_hint">Search...</string>
     <string name="users_search_hint">Users...</string>
     <string name="stream_name_text">#%s</string>
@@ -21,6 +22,12 @@
     <string name="search_streams_error_text">Search streams error</string>
     <string name="sending_message_error_text">Sending message error</string>
     <string name="uploading_file_error_text">Uploading file error</string>
+    <string name="stream_creation_error_text">Stream creation error</string>
     <string name="retry_action_snack_bar_text">Retry</string>
     <string name="profile_toolbar_title">Profile</string>
+    <string name="create_new_channel_text">Create new channel</string>
+    <string name="name_text">Name</string>
+    <string name="description_text">Description</string>
+    <string name="private_text">Private</string>
+    <string name="create_text">Create</string>
 </resources>

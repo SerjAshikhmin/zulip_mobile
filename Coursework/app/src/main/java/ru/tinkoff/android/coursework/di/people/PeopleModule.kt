@@ -15,7 +15,7 @@ internal class PeopleModule {
 
     @Provides
     @ActivityScope
-    fun providePeopleUseCases(repository: PeopleRepository): PeopleInteractor {
+    fun providePeopleInteractor(repository: PeopleRepository): PeopleInteractor {
         return PeopleInteractor(repository)
     }
 

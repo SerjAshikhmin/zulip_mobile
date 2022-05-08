@@ -10,6 +10,7 @@ import ru.tinkoff.android.coursework.data.api.model.response.LoadSingleMessageRe
 import ru.tinkoff.android.coursework.data.api.model.response.MessagesListResponse
 import ru.tinkoff.android.coursework.data.api.model.response.ReactionResponse
 import ru.tinkoff.android.coursework.data.api.model.response.SendMessageResponse
+import ru.tinkoff.android.coursework.data.api.model.response.SubscribeToStreamResponse
 import ru.tinkoff.android.coursework.data.api.model.response.SubscribedStreamsListResponse
 import ru.tinkoff.android.coursework.data.api.model.response.TopicsListResponse
 import ru.tinkoff.android.coursework.data.api.model.response.UploadFileResponse
@@ -77,6 +78,12 @@ internal interface ZulipJsonApi {
     fun loadSingleMessage(
         @Path("msg_id") messageId: Long
     ): Single<LoadSingleMessageResponse>
+
+    @POST("api/v1/users/me/subscriptions")
+    fun subscribeToStream(
+        @Query("invite_only") inviteOnly: Boolean = false,
+        @Query(value = "subscriptions", encoded = true) subscriptions: String
+    ): Single<SubscribeToStreamResponse>
 
     companion object {
 

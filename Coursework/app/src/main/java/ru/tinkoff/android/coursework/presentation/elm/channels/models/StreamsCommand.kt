@@ -8,4 +8,10 @@ internal sealed class StreamsCommand {
 
     data class SearchStreamsByQuery(val query: String) : StreamsCommand()
 
+    data class CreateStream(
+        val name: String,
+        val description: String,
+        val isPrivate: Boolean
+    ) : StreamsCommand()
+
 }

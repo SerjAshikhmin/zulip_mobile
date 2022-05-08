@@ -13,11 +13,11 @@ import ru.tinkoff.android.coursework.domain.model.Topic
 internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemClickListener)
     : RecyclerView.Adapter<TopicItemAdapter.TopicItemViewHolder>() {
 
-    var showShimmer = true
+    var showShimmer = false
     var streamName = ""
 
     var topics: List<Topic>
-        set(value) = differ.submitList(value)
+        set(value) = differ.submitList(value.sortedBy { it.name })
         get() = differ.currentList
 
     private val differ = AsyncListDiffer(this, DiffCallback())

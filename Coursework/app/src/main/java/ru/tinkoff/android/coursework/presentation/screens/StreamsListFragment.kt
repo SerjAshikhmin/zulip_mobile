@@ -46,6 +46,9 @@ internal abstract class StreamsListFragment
         super.onViewCreated(view, savedInstanceState)
         adapter = StreamsListAdapter(this)
         binding.streamsList.adapter = adapter
+        binding.createChannel.setOnClickListener {
+            store.accept(StreamsEvent.Ui.CreateStreamInit)
+        }
     }
 
     override fun createStore(): Store<StreamsEvent, StreamsEffect, StreamsState> {
@@ -57,6 +60,7 @@ internal abstract class StreamsListFragment
     }
 
     override fun render(state: StreamsState) {
+        if (!state.isLoading) binding.swipeRefreshLayout.isRefreshing = false
         with(adapter) {
             showShimmer = state.isLoading
             streams = state.items
@@ -70,6 +74,10 @@ internal abstract class StreamsListFragment
             is StreamsEffect.NavigateToChat -> {
                 NavHostFragment.findNavController(binding.root.findFragment())
                     .navigate(R.id.action_nav_channels_to_nav_chat, effect.bundle)
+            }
+            is StreamsEffect.NavigateToCreateStream -> {
+                NavHostFragment.findNavController(binding.root.findFragment())
+                    .navigate(R.id.action_nav_channels_to_nav_create_stream)
             }
         }
     }

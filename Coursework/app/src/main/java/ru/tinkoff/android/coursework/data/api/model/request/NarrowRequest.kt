@@ -8,4 +8,5 @@ internal class NarrowRequest (
     override fun toString(): String {
         return "{\"operator\": \"$operator\", \"operand\": \"$operand\"}"
     }
+
 }

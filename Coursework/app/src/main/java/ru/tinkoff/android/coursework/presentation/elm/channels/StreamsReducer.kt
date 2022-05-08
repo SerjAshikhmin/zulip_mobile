@@ -11,6 +11,14 @@ internal class StreamsReducer
 
     override fun Result.reduce(event: StreamsEvent): Any {
         return when (event) {
+            is StreamsEvent.Ui.InitEvent -> {
+                state {
+                    copy(
+                        isLoading = false,
+                        error = null
+                    )
+                }
+            }
             is StreamsEvent.Ui.LoadAllStreamsList -> {
                 state {
                     copy(
@@ -56,6 +64,24 @@ internal class StreamsReducer
                 }
                 commands { +StreamsCommand.SearchStreamsByQuery((event.query)) }
             }
+            is StreamsEvent.Ui.CreateStreamRequest -> {
+                state {
+                    copy(
+                        isLoading = true,
+                        error = null
+                    )
+                }
+                commands {
+                    +StreamsCommand.CreateStream(
+                        event.name,
+                        event.description,
+                        event.isPrivate
+                    )
+                }
+            }
+            is StreamsEvent.Ui.CreateStreamInit -> {
+                effects { +StreamsEffect.NavigateToCreateStream }
+            }
 
             is StreamsEvent.Internal.StreamsListLoaded -> {
                 state {
@@ -75,6 +101,15 @@ internal class StreamsReducer
                     )
                 }
             }
+            is StreamsEvent.Internal.StreamCreated -> {
+                state {
+                    copy(
+                        isLoading = true,
+                        error = null
+                    )
+                }
+                effects { +StreamsEffect.StreamCreated }
+            }
             is StreamsEvent.Internal.StreamsListLoadingError -> {
                 state {
                     copy(
@@ -83,6 +118,15 @@ internal class StreamsReducer
                     )
                 }
                 effects { +StreamsEffect.StreamsListLoadError(event.error) }
+            }
+            is StreamsEvent.Internal.StreamCreationError -> {
+                state {
+                    copy(
+                        error = event.error,
+                        isLoading = false
+                    )
+                }
+                effects { +StreamsEffect.StreamCreationError(event.error) }
             }
         }
     }

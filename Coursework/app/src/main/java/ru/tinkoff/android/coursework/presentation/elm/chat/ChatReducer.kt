@@ -72,7 +72,7 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
     private fun Result.processInitEvent() {
         state {
             copy(
-                isLoading = true,
+                isLoading = false,
                 error = null
             )
         }

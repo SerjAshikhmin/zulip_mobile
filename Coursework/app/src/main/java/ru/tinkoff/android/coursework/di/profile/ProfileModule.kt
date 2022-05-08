@@ -14,7 +14,7 @@ internal class ProfileModule {
 
     @Provides
     @ActivityScope
-    fun provideProfileUseCases(repository: PeopleRepository): ProfileInteractor {
+    fun provideProfileInteractor(repository: PeopleRepository): ProfileInteractor {
         return ProfileInteractor(repository)
     }
 

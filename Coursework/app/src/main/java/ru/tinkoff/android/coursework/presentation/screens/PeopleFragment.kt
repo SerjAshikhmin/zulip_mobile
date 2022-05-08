@@ -33,7 +33,7 @@ internal class PeopleFragment
     @Inject
     internal lateinit var peopleElmStoreFactory: PeopleElmStoreFactory
 
-    override val initEvent: PeopleEvent = PeopleEvent.Ui.LoadPeopleList
+    override val initEvent: PeopleEvent = PeopleEvent.Ui.InitEvent
     private lateinit var adapter: PeopleListAdapter
     private lateinit var binding: FragmentPeopleBinding
 
@@ -48,6 +48,12 @@ internal class PeopleFragment
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        store.accept(PeopleEvent.Ui.LoadPeopleList)
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            store.accept(PeopleEvent.Ui.LoadPeopleList)
+            binding.swipeRefreshLayout.isRefreshing = true
+        }
+
         adapter = PeopleListAdapter(this)
         binding.peopleList.adapter = adapter
     }
@@ -61,6 +67,7 @@ internal class PeopleFragment
     }
 
     override fun render(state: PeopleState) {
+        if (!state.isLoading) binding.swipeRefreshLayout.isRefreshing = false
         with(adapter) {
             showShimmer = state.isLoading
             users = state.items

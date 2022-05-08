@@ -107,6 +107,7 @@ internal class ChatInteractor(
 
     companion object {
 
+        internal const val LAST_MESSAGE_ANCHOR = 10000000000000000L
         private const val TAG = "ChatUseCases"
         private const val MAX_NUMBER_OF_MESSAGES_IN_CACHE = 50
         private const val NUMBER_OF_MESSAGES_PER_PORTION = 20

@@ -7,6 +7,7 @@ import ru.tinkoff.android.coursework.di.ApplicationComponent
 import ru.tinkoff.android.coursework.domain.channels.ChannelsInteractor
 import ru.tinkoff.android.coursework.presentation.elm.channels.StreamsActor
 import ru.tinkoff.android.coursework.presentation.screens.ChannelsFragment
+import ru.tinkoff.android.coursework.presentation.screens.CreateStreamActivity
 import ru.tinkoff.android.coursework.presentation.screens.StreamsListFragment
 
 @ActivityScope
@@ -18,13 +19,15 @@ internal interface StreamsComponent {
 
     fun getStreamsRepository(): StreamsRepository
 
-    fun getChannelsUseCases(): ChannelsInteractor
+    fun getChannelsInteractor(): ChannelsInteractor
 
     fun getStreamsActor(): StreamsActor
 
     fun inject(streamsListFragment: StreamsListFragment)
 
     fun inject(channelsFragment: ChannelsFragment)
+
+    fun inject(createStreamActivity: CreateStreamActivity)
 
     @Component.Factory
     interface Factory {

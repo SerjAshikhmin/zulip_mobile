@@ -6,6 +6,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import ru.tinkoff.android.coursework.data.api.ZulipJsonApi
 import ru.tinkoff.android.coursework.data.api.model.StreamDto
+import ru.tinkoff.android.coursework.data.api.model.request.SubscriptionsRequest
+import ru.tinkoff.android.coursework.data.api.model.response.SubscribeToStreamResponse
 import ru.tinkoff.android.coursework.data.api.model.response.TopicsListResponse
 import ru.tinkoff.android.coursework.data.db.AppDatabase
 import ru.tinkoff.android.coursework.data.mappers.StreamMapper
@@ -51,6 +53,22 @@ internal class StreamsRepositoryImpl @Inject constructor(
                 emptyList()
             }
             .subscribe()
+    }
+
+    override fun createStream(
+        name: String,
+        description: String,
+        isPrivate: Boolean
+    ): Single<SubscribeToStreamResponse> {
+        return zulipJsonApi.subscribeToStream(
+            inviteOnly = isPrivate,
+            subscriptions = arrayOf(
+                SubscriptionsRequest(
+                    name = name,
+                    description = description
+                )
+            ).contentToString()
+        )
     }
 
     private fun getTopicsInStream(stream: StreamDto): Single<Stream> {

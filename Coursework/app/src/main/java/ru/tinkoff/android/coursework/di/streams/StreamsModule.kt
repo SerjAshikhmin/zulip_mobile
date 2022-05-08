@@ -15,7 +15,7 @@ internal class StreamsModule {
 
     @Provides
     @ActivityScope
-    fun provideChannelsUseCases(repository: StreamsRepository): ChannelsInteractor {
+    fun provideChannelsInteractor(repository: StreamsRepository): ChannelsInteractor {
         return ChannelsInteractor(repository)
     }
 

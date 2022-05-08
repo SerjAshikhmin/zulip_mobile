@@ -15,7 +15,7 @@ internal class ChatModule {
 
     @Provides
     @ActivityScope
-    fun provideChatUseCases(repository: ChatRepository): ChatInteractor {
+    fun provideChatInteractor(repository: ChatRepository): ChatInteractor {
         return ChatInteractor(repository)
     }
 

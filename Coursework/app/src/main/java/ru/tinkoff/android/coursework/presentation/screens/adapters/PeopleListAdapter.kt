@@ -22,7 +22,7 @@ internal class PeopleListAdapter(private val userItemClickListener: OnUserItemCl
     var showShimmer = true
 
     var users: List<User>
-        set(value) = differ.submitList(value)
+        set(value) = differ.submitList(value.sortedBy { it.fullName })
         get() = differ.currentList
 
     private val differ = AsyncListDiffer(this, DiffCallback())

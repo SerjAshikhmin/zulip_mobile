@@ -8,4 +8,10 @@ internal sealed class StreamsEffect {
 
     data class NavigateToChat(val bundle: Bundle) : StreamsEffect()
 
+    object NavigateToCreateStream : StreamsEffect()
+
+    object StreamCreated : StreamsEffect()
+
+    data class StreamCreationError(val error: Throwable) : StreamsEffect()
+
 }

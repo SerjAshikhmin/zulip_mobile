@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import io.reactivex.disposables.CompositeDisposable
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.ItemStreamInListBinding
 import ru.tinkoff.android.coursework.domain.model.Stream
@@ -17,10 +16,8 @@ internal class StreamsListAdapter(private val topicItemClickListener: OnTopicIte
     var showShimmer = true
 
     var streams: List<Stream>
-        set(value) = differ.submitList(value)
+        set(value) = differ.submitList(value.sortedBy { it.name })
         get() = differ.currentList
-
-    private var compositeDisposable = CompositeDisposable()
 
     private val differ = AsyncListDiffer(this, DiffCallback())
 
@@ -52,18 +49,13 @@ internal class StreamsListAdapter(private val topicItemClickListener: OnTopicIte
             holder.streamName.visibility = View.VISIBLE
 
             val stream = streams[position]
-            holder.initStreamListener(stream)
+            holder.initOpenIconClickListener(stream)
             holder.bind(stream)
         }
     }
 
     override fun getItemCount(): Int {
         return if (showShimmer) SHIMMER_ITEM_COUNT else streams.size
-    }
-
-    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
-        super.onDetachedFromRecyclerView(recyclerView)
-        compositeDisposable.dispose()
     }
 
     inner class StreamListViewHolder(private val binding: ItemStreamInListBinding)
@@ -73,38 +65,47 @@ internal class StreamsListAdapter(private val topicItemClickListener: OnTopicIte
         internal val shimmedText = binding.shimmedText
         internal val shimmerFrameLayout = binding.shimmerLayout
         private val arrowIcon = binding.arrowIcon
-        private var isOpened = false
 
         fun bind(stream: Stream) {
             streamName.text =
                 binding.root.resources.getString(R.string.stream_name_text, stream.name)
         }
 
-        fun initStreamListener(stream: Stream) {
-            binding.root.setOnClickListener {
-                configureTopicItemAdapter(stream)
-            }
-        }
-
-        private fun configureTopicItemAdapter(stream: Stream) {
-            val topItemAdapter = TopicItemAdapter(this@StreamsListAdapter.topicItemClickListener)
-
-            if (!isOpened) {
-                with(topItemAdapter) {
-                    showShimmer = false
-                    topics = stream.topics
-                    streamName = stream.name
-                }
-                arrowIcon.setImageResource(R.drawable.ic_arrow_up)
-                isOpened = true
+        fun initOpenIconClickListener(stream: Stream) {
+            val topItemAdapter: TopicItemAdapter
+            if (binding.topicsList.adapter == null) {
+                topItemAdapter = TopicItemAdapter(this@StreamsListAdapter.topicItemClickListener)
             } else {
-                with(topItemAdapter) {
-                    showShimmer = false
-                    topics = listOf()
+                topItemAdapter = binding.topicsList.adapter as TopicItemAdapter
+                if (stream.isOpened) {
+                    with(topItemAdapter) {
+                        topics = stream.topics
+                        streamName = stream.name
+                    }
+                } else {
+                    topItemAdapter.topics = listOf()
                 }
-                arrowIcon.setImageResource(R.drawable.ic_arrow_down)
-                isOpened = false
+
             }
+
+            binding.arrowIcon.setOnClickListener {
+                if (!stream.isOpened) {
+                    with(topItemAdapter) {
+                        showShimmer = false
+                        topics = stream.topics
+                    }
+                    arrowIcon.setImageResource(R.drawable.ic_arrow_up)
+                    stream.isOpened = true
+                } else {
+                    with(topItemAdapter) {
+                        showShimmer = false
+                        topics = listOf()
+                    }
+                    arrowIcon.setImageResource(R.drawable.ic_arrow_down)
+                    stream.isOpened = false
+                }
+            }
+
             binding.topicsList.adapter = topItemAdapter
         }
     }
