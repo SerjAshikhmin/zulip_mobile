@@ -34,6 +34,9 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
             is ChatEvent.Ui.UploadFile -> {
                 processFileUploadEvent(event)
             }
+            is ChatEvent.Ui.LoadChat -> {
+                processLoadChatEvent(event)
+            }
 
             is ChatEvent.Internal.LastMessagesLoaded -> {
                 processLastMessagesLoadedEvent(event)
@@ -83,12 +86,14 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
             copy(
                 isLoading = true,
                 error = null,
+                streamName = event.streamName,
                 topicName = event.topicName
             )
         }
         commands {
             +ChatCommand.LoadLastMessages(
-                topicName = event.topicName,
+                streamName = state.streamName,
+                topicName = state.topicName,
                 anchor = event.anchor
             )
         }
@@ -103,7 +108,8 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
         }
         commands {
             +ChatCommand.LoadPortionOfMessages(
-                topicName = event.topicName,
+                streamName = state.streamName,
+                topicName = state.topicName,
                 anchor = event.anchor
             )
         }
@@ -171,6 +177,27 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
         }
     }
 
+    private fun Result.processFileUploadEvent(
+        event: ChatEvent.Ui.UploadFile
+    ) {
+        commands {
+            +ChatCommand.UploadFile(
+                event.fileName,
+                event.fileBody
+            )
+        }
+    }
+
+    private fun Result.processLoadChatEvent(event: ChatEvent.Ui.LoadChat) {
+        state {
+            copy(
+                isLoading = false,
+                error = null
+            )
+        }
+        effects { +ChatEffect.NavigateToChat(event.topicName) }
+    }
+
     private fun Result.processLastMessagesLoadedEvent(
         event: ChatEvent.Internal.LastMessagesLoaded
     ) {
@@ -219,22 +246,12 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
             copy(error = null)
         }
         commands { +ChatCommand.LoadLastMessages(
+            streamName = state.streamName,
             topicName = state.topicName,
             anchor = LAST_MESSAGE_ANCHOR,
             isFirstPosition = true
         ) }
         effects { +ChatEffect.MessageSentEffect }
-    }
-
-    private fun Result.processFileUploadEvent(
-        event: ChatEvent.Ui.UploadFile
-    ) {
-        commands {
-            +ChatCommand.UploadFile(
-                event.fileName,
-                event.fileBody
-            )
-        }
     }
 
     private fun Result.processReactionAddedEvent(

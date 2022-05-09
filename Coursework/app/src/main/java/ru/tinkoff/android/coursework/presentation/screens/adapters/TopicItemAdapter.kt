@@ -71,7 +71,7 @@ internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemC
                 )
             )
             binding.root.setOnClickListener {
-                this@TopicItemAdapter.topicItemClickListener.onTopicItemClick(topic, streamName)
+                topicItemClickListener.onTopicItemClick(topic.name, streamName)
             }
         }
     }

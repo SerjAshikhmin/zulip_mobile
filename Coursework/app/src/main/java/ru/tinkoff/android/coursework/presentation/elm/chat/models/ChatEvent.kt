@@ -10,12 +10,12 @@ internal sealed class ChatEvent {
         object InitEvent : ChatEvent.Ui()
 
         data class LoadLastMessages(
+            val streamName: String,
             val topicName: String,
             val anchor: Long
         ) : ChatEvent.Ui()
 
         data class LoadPortionOfMessages(
-            val topicName: String,
             val anchor: Long
         ) : ChatEvent.Ui()
 
@@ -41,6 +41,8 @@ internal sealed class ChatEvent {
             val fileName: String,
             val fileBody: MultipartBody.Part
         ) : ChatEvent.Ui()
+
+        data class LoadChat(val topicName: String) : Ui()
 
     }
 

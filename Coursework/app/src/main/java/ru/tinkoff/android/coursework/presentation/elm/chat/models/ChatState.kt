@@ -10,6 +10,7 @@ import ru.tinkoff.android.coursework.domain.model.Message
 internal data class ChatState(
     val items: @RawValue List<Message> = emptyList(),
     val error: Throwable? = null,
+    val streamName: String = "",
     val topicName: String = "",
     val isLoading: Boolean = false,
     val anchor: Long = ChatInteractor.LAST_MESSAGE_ANCHOR

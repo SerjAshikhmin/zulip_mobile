@@ -11,6 +11,8 @@ internal sealed class ChatEffect {
         val fileUri: String
     ) : ChatEffect()
 
+    data class NavigateToChat(val topicName: String) : ChatEffect()
+
     data class MessagesLoadingError(val error: Throwable) : ChatEffect()
 
     data class MessageSendingError(val error: Throwable) : ChatEffect()

@@ -13,6 +13,7 @@ internal class ChatActor(
     override fun execute(command: ChatCommand): Observable<ChatEvent> = when (command) {
         is ChatCommand.LoadLastMessages ->
             chatInteractor.loadLastMessages(
+                command.streamName,
                 command.topicName,
                 command.anchor
             )
@@ -25,6 +26,7 @@ internal class ChatActor(
                 )
         is ChatCommand.LoadPortionOfMessages ->
             chatInteractor.loadPortionOfMessages(
+                command.streamName,
                 command.topicName,
                 command.anchor
             )

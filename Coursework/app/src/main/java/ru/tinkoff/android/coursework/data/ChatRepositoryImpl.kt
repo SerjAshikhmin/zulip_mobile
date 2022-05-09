@@ -16,7 +16,7 @@ import ru.tinkoff.android.coursework.data.db.AppDatabase
 import ru.tinkoff.android.coursework.data.mappers.MessageMapper
 import ru.tinkoff.android.coursework.domain.chat.ChatInteractor
 import ru.tinkoff.android.coursework.domain.model.Message
-import ru.tinkoff.android.coursework.presentation.screens.ChatActivity
+import ru.tinkoff.android.coursework.presentation.screens.StreamsListFragment.Companion.ALL_TOPICS_IN_STREAM
 import javax.inject.Inject
 
 internal class ChatRepositoryImpl @Inject constructor(
@@ -35,10 +35,26 @@ internal class ChatRepositoryImpl @Inject constructor(
     }
 
     override fun loadMessagesFromApi(
+        streamName: String,
         topicName: String,
         anchor: Long,
         numOfMessagesInPortion: Int
     ): Single<List<Message>> {
+        val narrow = if (topicName == ALL_TOPICS_IN_STREAM) {
+            arrayOf(
+                NarrowRequest(
+                    operator = ZulipJsonApi.STREAM_NARROW_OPERATOR_KEY,
+                    operand = streamName
+                )
+            ).contentToString()
+        } else {
+            arrayOf(
+                NarrowRequest(
+                    operator = ZulipJsonApi.TOPIC_NARROW_OPERATOR_KEY,
+                    operand = topicName
+                )
+            ).contentToString()
+        }
         return zulipJsonApi.getMessages(
             numBefore = numOfMessagesInPortion,
             anchor = if (anchor == ChatInteractor.LAST_MESSAGE_ANCHOR) {
@@ -46,12 +62,7 @@ internal class ChatRepositoryImpl @Inject constructor(
             } else {
                 anchor.toString()
             },
-            narrow = arrayOf(
-                NarrowRequest(
-                    operator = ChatActivity.TOPIC_NARROW_OPERATOR_KEY,
-                    operand = topicName
-                )
-            ).contentToString()
+            narrow = narrow
         )
             .map { MessageMapper.messagesDtoToMessagesList(it.messages) }
     }

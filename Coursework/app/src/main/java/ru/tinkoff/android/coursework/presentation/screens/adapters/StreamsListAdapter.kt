@@ -10,8 +10,10 @@ import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.ItemStreamInListBinding
 import ru.tinkoff.android.coursework.domain.model.Stream
 
-internal class StreamsListAdapter(private val topicItemClickListener: OnTopicItemClickListener)
-    : RecyclerView.Adapter<StreamsListAdapter.StreamListViewHolder>() {
+internal class StreamsListAdapter(
+    private val streamItemClickListener: OnStreamItemClickListener,
+    private val topicItemClickListener: OnTopicItemClickListener
+) : RecyclerView.Adapter<StreamsListAdapter.StreamListViewHolder>() {
 
     var showShimmer = true
 
@@ -46,7 +48,7 @@ internal class StreamsListAdapter(private val topicItemClickListener: OnTopicIte
             holder.shimmerFrameLayout.stopShimmer()
             holder.shimmerFrameLayout.setShimmer(null)
             holder.shimmedText.visibility = View.GONE
-            holder.streamName.visibility = View.VISIBLE
+            holder.streamNameTextView.visibility = View.VISIBLE
 
             val stream = streams[position]
             holder.initOpenIconClickListener(stream)
@@ -61,14 +63,16 @@ internal class StreamsListAdapter(private val topicItemClickListener: OnTopicIte
     inner class StreamListViewHolder(private val binding: ItemStreamInListBinding)
         : RecyclerView.ViewHolder(binding.root) {
 
-        internal val streamName = binding.streamName
+        internal val streamNameTextView = binding.streamName
         internal val shimmedText = binding.shimmedText
         internal val shimmerFrameLayout = binding.shimmerLayout
         private val arrowIcon = binding.arrowIcon
+        private lateinit var streamName: String
 
         fun bind(stream: Stream) {
-            streamName.text =
+            streamNameTextView.text =
                 binding.root.resources.getString(R.string.stream_name_text, stream.name)
+            streamName = stream.name
         }
 
         fun initOpenIconClickListener(stream: Stream) {
@@ -85,7 +89,10 @@ internal class StreamsListAdapter(private val topicItemClickListener: OnTopicIte
                 } else {
                     topItemAdapter.topics = listOf()
                 }
+            }
 
+            binding.root.setOnClickListener {
+                this@StreamsListAdapter.streamItemClickListener.onStreamItemClick(streamName)
             }
 
             binding.arrowIcon.setOnClickListener {
@@ -112,7 +119,7 @@ internal class StreamsListAdapter(private val topicItemClickListener: OnTopicIte
 
     companion object {
 
-        const val SHIMMER_ITEM_COUNT = 4
+        const val SHIMMER_ITEM_COUNT = 3
     }
 
 }

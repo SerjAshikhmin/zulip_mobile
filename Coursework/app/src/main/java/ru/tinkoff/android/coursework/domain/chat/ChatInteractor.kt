@@ -17,6 +17,7 @@ internal class ChatInteractor(
 ) {
 
     fun loadLastMessages(
+        streamName: String,
         topicName: String,
         anchor: Long
     ): Observable<List<Message>> {
@@ -24,6 +25,7 @@ internal class ChatInteractor(
             chatRepository.loadMessagesFromDb(topicName)
                 .toObservable(),
             chatRepository.loadMessagesFromApi(
+                streamName,
                 topicName,
                 anchor,
                 NUMBER_OF_MESSAGES_IN_LAST_PORTION
@@ -39,10 +41,12 @@ internal class ChatInteractor(
     }
 
     fun loadPortionOfMessages(
+        streamName: String,
         topicName: String,
         anchor: Long
     ): Observable<List<Message>> {
         return chatRepository.loadMessagesFromApi(
+            streamName,
             topicName,
             anchor,
             NUMBER_OF_MESSAGES_PER_PORTION

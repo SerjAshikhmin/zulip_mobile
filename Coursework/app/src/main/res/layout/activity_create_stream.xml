@@ -107,7 +107,7 @@
         android:paddingEnd="40dp"
         android:layout_margin="20dp"
         android:fontFamily="@font/inter"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:textAllCaps="false"
         android:textColor="@color/whiteVariant"
         app:backgroundTint="@color/teal_500"

@@ -17,6 +17,7 @@ import ru.tinkoff.android.coursework.presentation.elm.channels.StreamsElmStoreFa
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEffect
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEvent
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsState
+import ru.tinkoff.android.coursework.presentation.screens.adapters.OnStreamItemClickListener
 import ru.tinkoff.android.coursework.presentation.screens.adapters.StreamsListAdapter
 import ru.tinkoff.android.coursework.presentation.screens.adapters.OnTopicItemClickListener
 import vivid.money.elmslie.android.base.ElmFragment
@@ -25,7 +26,8 @@ import javax.inject.Inject
 
 @ActivityScope
 internal abstract class StreamsListFragment
-    : ElmFragment<StreamsEvent, StreamsEffect, StreamsState>(), OnTopicItemClickListener {
+    : ElmFragment<StreamsEvent, StreamsEffect, StreamsState>(),
+    OnStreamItemClickListener, OnTopicItemClickListener {
 
     @Inject
     internal lateinit var streamsElmStoreFactory: StreamsElmStoreFactory
@@ -44,7 +46,7 @@ internal abstract class StreamsListFragment
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        adapter = StreamsListAdapter(this)
+        adapter = StreamsListAdapter(this, this)
         binding.streamsList.adapter = adapter
         binding.createChannel.setOnClickListener {
             store.accept(StreamsEvent.Ui.CreateStreamInit)
@@ -82,12 +84,25 @@ internal abstract class StreamsListFragment
         }
     }
 
-    override fun onTopicItemClick(topic: Topic, streamName: String) {
+    override fun onTopicItemClick(topicName: String, streamName: String) {
         val bundle = bundleOf(
             ChatActivity.STREAM_NAME_KEY to streamName,
-            ChatActivity.TOPIC_NAME_KEY to topic.name
+            ChatActivity.TOPIC_NAME_KEY to topicName
         )
         store.accept(StreamsEvent.Ui.LoadChat(bundle))
+    }
+
+    override fun onStreamItemClick(streamName: String) {
+        val bundle = bundleOf(
+            ChatActivity.STREAM_NAME_KEY to streamName,
+            ChatActivity.TOPIC_NAME_KEY to ALL_TOPICS_IN_STREAM
+        )
+        store.accept(StreamsEvent.Ui.LoadChat(bundle))
+    }
+
+    companion object {
+
+        internal const val ALL_TOPICS_IN_STREAM = "allstreamtopics"
     }
 
 }

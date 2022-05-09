@@ -89,6 +89,8 @@ internal interface ZulipJsonApi {
 
         internal const val NUMBER_OF_MESSAGES_AFTER_ANCHOR = 0
         internal const val LAST_MESSAGE_ANCHOR = 10000000000000000L
+        internal const val TOPIC_NARROW_OPERATOR_KEY = "topic"
+        internal const val STREAM_NARROW_OPERATOR_KEY = "stream"
     }
 
 }

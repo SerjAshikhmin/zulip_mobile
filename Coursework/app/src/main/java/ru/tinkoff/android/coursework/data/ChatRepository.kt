@@ -12,6 +12,7 @@ internal interface ChatRepository {
     fun loadMessagesFromDb(topicName: String): Single<List<Message>>
 
     fun loadMessagesFromApi(
+        streamName: String,
         topicName: String,
         anchor: Long,
         numOfMessagesInPortion: Int

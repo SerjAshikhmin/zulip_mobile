@@ -2,6 +2,7 @@ package ru.tinkoff.android.coursework.presentation.screens
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
@@ -36,6 +37,7 @@ import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatState
 import ru.tinkoff.android.coursework.presentation.screens.adapters.ChatMessagesAdapter
 import ru.tinkoff.android.coursework.presentation.screens.adapters.OnBottomSheetChooseEmojiListener
 import ru.tinkoff.android.coursework.presentation.screens.adapters.OnEmojiClickListener
+import ru.tinkoff.android.coursework.presentation.screens.adapters.OnTopicItemClickListener
 import ru.tinkoff.android.coursework.utils.copy
 import ru.tinkoff.android.coursework.utils.getFileNameFromContentUri
 import ru.tinkoff.android.coursework.utils.hasPermissions
@@ -47,7 +49,7 @@ import javax.inject.Inject
 
 @ActivityScope
 internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
-    OnEmojiClickListener, OnBottomSheetChooseEmojiListener {
+    OnEmojiClickListener, OnBottomSheetChooseEmojiListener, OnTopicItemClickListener {
 
     @Inject
     internal lateinit var chatElmStoreFactory: ChatElmStoreFactory
@@ -85,7 +87,6 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
         with (adapter) {
             messages = state.items
             anchor = state.anchor
-            println("state updated")
         }
     }
 
@@ -97,6 +98,12 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
             is ChatEffect.FileUploadedEffect -> {
                 binding.enterMessage.text.append("[${effect.fileName}](${effect.fileUri})\n\n")
                 binding.sendButton.showActionIcon(R.drawable.ic_send, R.color.teal_500)
+            }
+            is ChatEffect.NavigateToChat -> {
+                val intent = Intent(this, ChatActivity::class.java)
+                intent.putExtra(STREAM_NAME_KEY, streamName)
+                intent.putExtra(TOPIC_NAME_KEY, effect.topicName)
+                startActivity(intent)
             }
             is ChatEffect.MessagesLoadingError -> {
                 binding.root.showSnackBarWithRetryAction(
@@ -153,13 +160,39 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
         }
     }
 
+    override fun onBottomSheetChooseEmoji(
+        selectedView: View?,
+        chosenEmojiCode: String
+    ) {
+        val emojiBox = when (selectedView) {
+            is MessageViewGroup -> selectedView.binding.emojiBox
+            is SelfMessageViewGroup -> selectedView.binding.emojiBox
+            is ImageView -> selectedView.parent as FlexBoxLayout
+            else -> null
+        }
+        val emoji = emojiBox?.children?.firstOrNull {
+            it is EmojiWithCountView && it.emojiCode == chosenEmojiCode
+        }
+        if (emoji is EmojiWithCountView) {
+            if (!emoji.isSelected) {
+                emoji.isSelected = true
+                emoji.emojiCount++
+            }
+        } else {
+            addNewEmojiToMessage(selectedView, emojiBox, chosenEmojiCode)
+        }
+    }
+
+    override fun onTopicItemClick(topicName: String, streamName: String) {
+        store.accept(ChatEvent.Ui.LoadChat(topicName))
+    }
+
     private fun configureToolbar() {
         with(binding) {
             backIcon.setOnClickListener {
                 onBackPressed()
             }
-            topicName.text = adapter.topicName
-            streamName.text = adapter.streamName
+            streamName.text = adapter.streamNameText
         }
     }
 
@@ -168,21 +201,24 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
         val layoutManager = LinearLayoutManager(this)
         layoutManager.stackFromEnd = true
         chatRecycler.layoutManager = layoutManager
-        adapter = ChatMessagesAdapter(dialog, chatRecycler, this)
+        adapter = ChatMessagesAdapter(dialog, chatRecycler, this, this)
 
         topicName = intent.getStringExtra(TOPIC_NAME_KEY)?.lowercase() ?: ""
-        adapter.topicName = resources.getString(
+        adapter.topicNameValue = topicName
+        adapter.topicNameText = resources.getString(
             R.string.topic_name_text,
             topicName
         )
 
         streamName = intent.getStringExtra(STREAM_NAME_KEY)?.lowercase() ?: ""
-        adapter.streamName = resources.getString(
+        adapter.streamNameValue = streamName
+        adapter.streamNameText = resources.getString(
             R.string.stream_name_text,
             intent.getStringExtra(STREAM_NAME_KEY)
         )
 
         store.accept(ChatEvent.Ui.LoadLastMessages(
+            streamName = streamName,
             topicName = topicName,
             anchor = adapter.anchor
         ))
@@ -205,10 +241,7 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
                 if (lastVisibleItemPosition == SCROLL_POSITION_FOR_NEXT_PORTION_LOADING
                     && !isNewPortionLoading) {
                         isNewPortionLoading = true
-                        store.accept(ChatEvent.Ui.LoadPortionOfMessages(
-                            topicName = topicName,
-                            anchor = adapter.anchor
-                        ))
+                        store.accept(ChatEvent.Ui.LoadPortionOfMessages(anchor = adapter.anchor))
                 }
             }
         })
@@ -266,29 +299,6 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
             bottomSheetChooseEmojiListener = this
         )
         dialog.setContentView(bottomSheetLayout)
-    }
-
-    override fun onBottomSheetChooseEmoji(
-        selectedView: View?,
-        chosenEmojiCode: String
-    ) {
-        val emojiBox = when (selectedView) {
-            is MessageViewGroup -> selectedView.binding.emojiBox
-            is SelfMessageViewGroup -> selectedView.binding.emojiBox
-            is ImageView -> selectedView.parent as FlexBoxLayout
-            else -> null
-        }
-        val emoji = emojiBox?.children?.firstOrNull {
-            it is EmojiWithCountView && it.emojiCode == chosenEmojiCode
-        }
-        if (emoji is EmojiWithCountView) {
-            if (!emoji.isSelected) {
-                emoji.isSelected = true
-                emoji.emojiCount++
-            }
-        } else {
-            addNewEmojiToMessage(selectedView, emojiBox, chosenEmojiCode)
-        }
     }
 
     private fun addNewEmojiToMessage(
@@ -352,9 +362,8 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
 
     companion object {
 
-        const val STREAM_NAME_KEY = "streamName"
-        const val TOPIC_NAME_KEY = "topicName"
-        const val TOPIC_NARROW_OPERATOR_KEY = "topic"
+        internal const val STREAM_NAME_KEY = "streamName"
+        internal const val TOPIC_NAME_KEY = "topicName"
         private const val SCROLL_POSITION_FOR_NEXT_PORTION_LOADING = 5
     }
 
