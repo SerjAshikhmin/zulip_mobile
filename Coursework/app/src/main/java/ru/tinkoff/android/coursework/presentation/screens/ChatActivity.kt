@@ -1,14 +1,12 @@
 package ru.tinkoff.android.coursework.presentation.screens
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.ImageView
-import android.widget.LinearLayout
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -34,6 +32,7 @@ import ru.tinkoff.android.coursework.presentation.elm.chat.ChatElmStoreFactory
 import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatEffect
 import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatEvent
 import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatState
+import ru.tinkoff.android.coursework.presentation.screens.StreamsListFragment.Companion.ALL_TOPICS_IN_STREAM
 import ru.tinkoff.android.coursework.presentation.screens.adapters.ChatMessagesAdapter
 import ru.tinkoff.android.coursework.presentation.screens.adapters.OnBottomSheetChooseEmojiListener
 import ru.tinkoff.android.coursework.presentation.screens.adapters.OnEmojiClickListener
@@ -46,6 +45,7 @@ import vivid.money.elmslie.android.base.ElmActivity
 import vivid.money.elmslie.core.store.Store
 import java.io.*
 import javax.inject.Inject
+
 
 @ActivityScope
 internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
@@ -62,6 +62,7 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
     private lateinit var streamName: String
     private lateinit var topicName: String
     private var selectFileResultLauncher = initializeSelectFileResultLauncher()
+    private var isFirstClickToEnterMessage = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,8 +70,8 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
         setContentView(binding.root)
 
         createAndConfigureBottomSheet()
-        configureEnterMessageSection()
         configureChatRecycler()
+        configureEnterMessageSection()
         configureToolbar()
     }
 
@@ -217,11 +218,13 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
             intent.getStringExtra(STREAM_NAME_KEY)
         )
 
-        store.accept(ChatEvent.Ui.LoadLastMessages(
-            streamName = streamName,
-            topicName = topicName,
-            anchor = adapter.anchor
-        ))
+        store.accept(
+            ChatEvent.Ui.LoadLastMessages(
+                streamName = streamName,
+                topicName = topicName,
+                anchor = adapter.anchor
+            )
+        )
 
         chatRecycler.adapter = adapter
 
@@ -250,6 +253,20 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
     private fun configureEnterMessageSection() {
         val enterMessage = binding.enterMessage
         val sendButton = binding.sendButton
+        val topicEditText = binding.topicEditText
+        if (topicName == ALL_TOPICS_IN_STREAM) {
+            configureTopicEditTextView(topicEditText)
+        }
+
+        enterMessage.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus && topicName == ALL_TOPICS_IN_STREAM && isFirstClickToEnterMessage) {
+                topicEditText.visibility = View.VISIBLE
+                if (topicEditText.text.isEmpty()) {
+                    topicEditText.requestFocus()
+                    isFirstClickToEnterMessage = false
+                }
+            }
+        }
 
         enterMessage.doAfterTextChanged {
             if (enterMessage.text.isEmpty()) {
@@ -262,14 +279,15 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
 
         sendButton.setOnClickListener {
             if (enterMessage.text.isNotEmpty()) {
-                store.accept(ChatEvent.Ui.SendMessage(
-                    topicName = topicName,
-                    streamName = streamName,
-                    content = enterMessage.text.toString()
-                ))
-                val imm: InputMethodManager =
-                    getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(enterMessage.windowToken, 0)
+                val topicName = getTopicNameForSendingMessage(topicEditText)
+                store.accept(
+                    ChatEvent.Ui.SendMessage(
+                        topicName = topicName,
+                        streamName = streamName,
+                        content = enterMessage.text.toString()
+                    )
+                )
+                hideKeyboard(enterMessage)
             } else {
                 if (!hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     ActivityCompat.requestPermissions(
@@ -283,6 +301,43 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
             }
         }
     }
+
+    private fun configureTopicEditTextView(topicEditText: AutoCompleteTextView) {
+        topicEditText.setOnClickListener {
+            if (topicEditText.text.isEmpty()) {
+                updateTopicsAdapter(topicEditText)
+                topicEditText.showDropDown()
+            }
+        }
+
+        topicEditText.setOnFocusChangeListener { view, hasFocus ->
+            if (hasFocus && (view as EditText).text.isEmpty()) {
+                updateTopicsAdapter(topicEditText)
+                topicEditText.showDropDown()
+            }
+        }
+    }
+
+    private fun updateTopicsAdapter(topicEditText: AutoCompleteTextView) {
+        topicEditText.setAdapter(
+            ArrayAdapter(
+                this,
+                R.layout.view_topic_name_in_drop_down,
+                adapter.topics.toMutableList().map { it.name }.sorted()
+            )
+        )
+    }
+
+    private fun getTopicNameForSendingMessage(topicEditText: AutoCompleteTextView) =
+        if (topicName != ALL_TOPICS_IN_STREAM) {
+            topicName
+        } else {
+            if (topicEditText.text.isNotEmpty()) {
+                topicEditText.text.toString()
+            } else {
+                NO_TOPIC_STRING_VALUE
+            }
+        }
 
     private fun FloatingActionButton.showActionIcon(drawableId: Int, colorId: Int) {
         setImageResource(drawableId)
@@ -360,10 +415,17 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
             store.accept(ChatEvent.Ui.UploadFile(fileName, body))
         }
 
+    private fun hideKeyboard(view: View) {
+        val imm: InputMethodManager =
+            getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
     companion object {
 
         internal const val STREAM_NAME_KEY = "streamName"
         internal const val TOPIC_NAME_KEY = "topicName"
+        internal const val NO_TOPIC_STRING_VALUE = "(no topic)"
         private const val SCROLL_POSITION_FOR_NEXT_PORTION_LOADING = 5
     }
 

@@ -16,6 +16,7 @@ import ru.tinkoff.android.coursework.data.api.ZulipJsonApi.Companion.LAST_MESSAG
 import ru.tinkoff.android.coursework.data.api.model.SELF_USER_ID
 import ru.tinkoff.android.coursework.domain.model.Message
 import ru.tinkoff.android.coursework.presentation.customviews.*
+import ru.tinkoff.android.coursework.presentation.screens.ChatActivity.Companion.NO_TOPIC_STRING_VALUE
 import ru.tinkoff.android.coursework.presentation.screens.StreamsListFragment.Companion.ALL_TOPICS_IN_STREAM
 import ru.tinkoff.android.coursework.utils.dpToPx
 import ru.tinkoff.android.coursework.utils.getDateTimeFromTimestamp
@@ -56,6 +57,8 @@ internal class ChatMessagesAdapter(
             field = value
             items = insertDateSeparatorsAndTopicNames(value)
         }
+
+    var topics: MutableSet<TopicName> = mutableSetOf()
 
     private val differ = AsyncListDiffer(this, DiffCallback())
 
@@ -132,7 +135,7 @@ internal class ChatMessagesAdapter(
             }
             TYPE_TOPIC_NAME -> {
                 val topicNameView = LayoutInflater.from(parent.context).inflate(
-                    R.layout.view_topic_name,
+                    R.layout.view_topic_name_in_chat,
                     parent,
                     false
                 ) as TextView
@@ -199,7 +202,8 @@ internal class ChatMessagesAdapter(
         }
     }
 
-    class SendDateViewHolder(private val sendDateView: FrameLayout) : BaseViewHolder(sendDateView) {
+    class SendDateViewHolder(private val sendDateView: FrameLayout)
+        : BaseViewHolder(sendDateView) {
 
         fun bind(sendDate: LocalDate?) {
             var sendDateStr =
@@ -214,13 +218,18 @@ internal class ChatMessagesAdapter(
         }
     }
 
-    inner class TopicNameViewHolder(private val topicNameView: TextView) : BaseViewHolder(topicNameView) {
+    inner class TopicNameViewHolder(private val topicNameView: TextView)
+        : BaseViewHolder(topicNameView) {
 
         fun bind(topicName: TopicName) {
-            topicNameView.text = topicNameView.resources.getString(
-                R.string.topic_name_text,
+            topicNameView.text = if (topicName.name != NO_TOPIC_STRING_VALUE) {
+                topicNameView.resources.getString(
+                    R.string.topic_name_text,
+                    topicName.name
+                )
+            } else {
                 topicName.name
-            )
+            }
             if (this@ChatMessagesAdapter.topicNameValue == ALL_TOPICS_IN_STREAM) {
                 topicNameView.setOnClickListener {
                     topicItemClickListener.onTopicItemClick(topicName.name, streamNameValue)
@@ -235,13 +244,17 @@ internal class ChatMessagesAdapter(
             val curTopic = messages[curIndex].topicName
             val curDate = getDateTimeFromTimestamp(messages[curIndex].timestamp).toLocalDate()
             if (curIndex == 0) {
-                items.add(TopicName(curTopic))
+                val topic = TopicName(curTopic)
+                items.add(topic)
                 items.add(curDate)
+                topics.add(topic)
             } else {
                 val prevTopic = messages[curIndex - 1].topicName
                 val prevDate = getDateTimeFromTimestamp(messages[curIndex - 1].timestamp).toLocalDate()
                 if (prevTopic != curTopic) {
-                    items.add(TopicName(curTopic))
+                    val topic = TopicName(curTopic)
+                    items.add(topic)
+                    topics.add(topic)
                 }
                 if (prevDate != curDate) {
                     items.add(curDate)

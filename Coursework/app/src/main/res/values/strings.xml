@@ -1,8 +1,6 @@
 <resources>
     <string name="app_name">Coursework</string>
-    <string name="username">Юзернейм Юзернеймов</string>
-    <string name="message">Равным образом реализация намеченного плана развития напрямую зависит от дальнейших направлений развитая системы массового участия. Практический опыт показывает, что социально-экономическое развитие напрямую зависит от форм воздействия! Не следует, однако, забывать о том, что социально-экономическое развитие способствует подготовке и реализации ключевых компонентов планируемого обновления.</string>
-    <string name="enter_message_hint">Написать...</string>
+    <string name="enter_message_hint">Reply...</string>
     <string name="channels_menu_title">Channels</string>
     <string name="people_menu_title">People</string>
     <string name="profile_menu_title">Profile</string>
@@ -30,4 +28,5 @@
     <string name="description_text">Description</string>
     <string name="private_text">Private</string>
     <string name="create_text">Create</string>
+    <string name="topic_edit_text_hint">Topic</string>
 </resources>
