@@ -71,9 +71,9 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
     }
 
     override fun render(state: StreamsState) {
-        val streamsListPagerAdapter = (binding.pager.adapter as StreamsListPagerAdapter)
+        val streamsListPagerAdapter = (binding.pager.adapter as? StreamsListPagerAdapter)
 
-        if (streamsListPagerAdapter.isAllStreamsListFragment()) {
+        if (streamsListPagerAdapter?.isAllStreamsListFragment() == true) {
             streamsListPagerAdapter.allStreamsListFragment.updateStreams(
                 state.items
             )
@@ -83,8 +83,8 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
     override fun handleEffect(effect: StreamsEffect) {
         when(effect) {
             is StreamsEffect.StreamsListLoadError -> {
-                (binding.pager.adapter as StreamsListPagerAdapter)
-                    .allStreamsListFragment.updateStreams(listOf())
+                (binding.pager.adapter as? StreamsListPagerAdapter)
+                    ?.allStreamsListFragment?.updateStreams(listOf())
 
                 store.accept(StreamsEvent.Ui.SubscribeOnSearchStreamsEvents)
 

@@ -19,7 +19,7 @@ import ru.tinkoff.android.coursework.presentation.elm.people.PeopleElmStoreFacto
 import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleEffect
 import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleEvent
 import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleState
-import ru.tinkoff.android.coursework.presentation.screens.adapters.OnUserItemClickListener
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnUserItemClickListener
 import ru.tinkoff.android.coursework.presentation.screens.adapters.PeopleListAdapter
 import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
 import vivid.money.elmslie.android.base.ElmFragment

@@ -19,6 +19,7 @@
     <string name="messages_not_found_error_text">Messages not found</string>
     <string name="search_streams_error_text">Search streams error</string>
     <string name="sending_message_error_text">Sending message error</string>
+    <string name="deleting_message_error_text">Deleting message error</string>
     <string name="uploading_file_error_text">Uploading file error</string>
     <string name="stream_creation_error_text">Stream creation error</string>
     <string name="retry_action_snack_bar_text">Retry</string>
@@ -29,4 +30,8 @@
     <string name="private_text">Private</string>
     <string name="create_text">Create</string>
     <string name="topic_edit_text_hint">Topic</string>
+    <string name="add_a_reaction_action_text">Add a reaction</string>
+    <string name="delete_message_action_text">Delete message</string>
+    <string name="edit_message_action_text">Edit message</string>
+    <string name="copy_to_clipboard_action_text">Copy to clipboard</string>
 </resources>

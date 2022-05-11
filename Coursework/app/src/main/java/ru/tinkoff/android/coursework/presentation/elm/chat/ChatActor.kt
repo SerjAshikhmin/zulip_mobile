@@ -72,13 +72,18 @@ internal class ChatActor(
             .mapEvents(
                 { response -> ChatEvent.Internal.FileUploaded(
                     command.fileName,
-                    response.uri)
-                },
+                    response.uri
+                ) },
                 { error -> ChatEvent.Internal.FileUploadingError(
                     error,
                     command.fileName,
                     command.fileBody
                 ) }
+            )
+        is ChatCommand.DeleteMessage -> chatInteractor.deleteMessage(command.messageId)
+            .mapEvents(
+                { ChatEvent.Internal.MessageDeleted(command.messageId) },
+                { error -> ChatEvent.Internal.MessageDeletingError(error) }
             )
     }
 

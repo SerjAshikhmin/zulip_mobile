@@ -9,7 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.domain.model.EmojiWithCount
-import ru.tinkoff.android.coursework.presentation.screens.adapters.OnEmojiClickListener
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnEmojiClickListener
 
 internal class EmojiWithCountView @JvmOverloads constructor(
     context: Context,

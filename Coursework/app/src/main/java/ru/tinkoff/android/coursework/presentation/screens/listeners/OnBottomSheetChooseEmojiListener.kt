@@ -1,4 +1,4 @@
-package ru.tinkoff.android.coursework.presentation.screens.adapters
+package ru.tinkoff.android.coursework.presentation.screens.listeners
 
 import android.view.View
 

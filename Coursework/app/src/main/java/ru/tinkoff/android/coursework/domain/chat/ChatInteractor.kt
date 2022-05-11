@@ -1,12 +1,12 @@
 package ru.tinkoff.android.coursework.domain.chat
 
-import android.util.Log
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import okhttp3.MultipartBody
 import ru.tinkoff.android.coursework.data.ChatRepository
+import ru.tinkoff.android.coursework.data.api.model.response.DeleteMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.ReactionResponse
 import ru.tinkoff.android.coursework.data.api.model.response.SendMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.UploadFileResponse
@@ -78,9 +78,6 @@ internal class ChatInteractor(
         return chatRepository.addReaction(messageId, emojiName)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnError {
-                Log.e(TAG, "Adding emoji error", it)
-            }
     }
 
     fun removeReaction(
@@ -90,13 +87,16 @@ internal class ChatInteractor(
         return chatRepository.removeReaction(messageId, emojiName)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnError {
-                Log.e(TAG, "Removing emoji error", it)
-            }
     }
 
     fun uploadFile(fileBody: MultipartBody.Part): Single<UploadFileResponse> {
         return chatRepository.uploadFile(fileBody)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+    }
+
+    fun deleteMessage(messageId: Long): Single<DeleteMessageResponse> {
+        return chatRepository.deleteMessage(messageId)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
     }
@@ -112,7 +112,6 @@ internal class ChatInteractor(
     companion object {
 
         internal const val LAST_MESSAGE_ANCHOR = 10000000000000000L
-        private const val TAG = "ChatUseCases"
         private const val MAX_NUMBER_OF_MESSAGES_IN_CACHE = 50
         private const val NUMBER_OF_MESSAGES_PER_PORTION = 20
         private const val NUMBER_OF_MESSAGES_IN_LAST_PORTION = MAX_NUMBER_OF_MESSAGES_IN_CACHE

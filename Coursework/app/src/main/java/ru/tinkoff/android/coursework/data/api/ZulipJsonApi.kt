@@ -6,6 +6,7 @@ import retrofit2.http.*
 import ru.tinkoff.android.coursework.data.api.model.UserDto
 import ru.tinkoff.android.coursework.data.api.model.response.AllStreamsListResponse
 import ru.tinkoff.android.coursework.data.api.model.response.AllUsersListResponse
+import ru.tinkoff.android.coursework.data.api.model.response.DeleteMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.LoadSingleMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.MessagesListResponse
 import ru.tinkoff.android.coursework.data.api.model.response.ReactionResponse
@@ -78,6 +79,11 @@ internal interface ZulipJsonApi {
     fun loadSingleMessage(
         @Path("msg_id") messageId: Long
     ): Single<LoadSingleMessageResponse>
+
+    @DELETE("api/v1/messages/{msg_id}")
+    fun deleteMessage(
+        @Path("msg_id") messageId: Long
+    ): Single<DeleteMessageResponse>
 
     @POST("api/v1/users/me/subscriptions")
     fun subscribeToStream(

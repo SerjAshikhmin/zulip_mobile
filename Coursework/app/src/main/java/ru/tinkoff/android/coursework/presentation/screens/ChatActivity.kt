@@ -34,9 +34,11 @@ import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatEvent
 import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatState
 import ru.tinkoff.android.coursework.presentation.screens.StreamsListFragment.Companion.ALL_TOPICS_IN_STREAM
 import ru.tinkoff.android.coursework.presentation.screens.adapters.ChatMessagesAdapter
-import ru.tinkoff.android.coursework.presentation.screens.adapters.OnBottomSheetChooseEmojiListener
-import ru.tinkoff.android.coursework.presentation.screens.adapters.OnEmojiClickListener
-import ru.tinkoff.android.coursework.presentation.screens.adapters.OnTopicItemClickListener
+import ru.tinkoff.android.coursework.presentation.screens.listeners.*
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnBottomSheetAddReactionListener
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnBottomSheetChooseEmojiListener
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnBottomSheetDeleteMessageListener
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnEmojiClickListener
 import ru.tinkoff.android.coursework.utils.copy
 import ru.tinkoff.android.coursework.utils.getFileNameFromContentUri
 import ru.tinkoff.android.coursework.utils.hasPermissions
@@ -46,17 +48,18 @@ import vivid.money.elmslie.core.store.Store
 import java.io.*
 import javax.inject.Inject
 
-
 @ActivityScope
-internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
-    OnEmojiClickListener, OnBottomSheetChooseEmojiListener, OnTopicItemClickListener {
+internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), OnEmojiClickListener,
+    OnBottomSheetChooseEmojiListener, OnBottomSheetAddReactionListener,
+    OnBottomSheetDeleteMessageListener, OnTopicItemClickListener {
 
     @Inject
     internal lateinit var chatElmStoreFactory: ChatElmStoreFactory
 
     override var initEvent: ChatEvent = ChatEvent.Ui.InitEvent
     private lateinit var binding: ActivityChatBinding
-    private lateinit var dialog: EmojiBottomSheetDialog
+    private lateinit var actionsDialog: ChatActionsBottomSheetDialog
+    private lateinit var emojisDialog: EmojiBottomSheetDialog
     private lateinit var chatRecycler: RecyclerView
     private lateinit var adapter: ChatMessagesAdapter
     private lateinit var streamName: String
@@ -69,7 +72,8 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        createAndConfigureBottomSheet()
+        createAndConfigureActionsBottomSheet()
+        createAndConfigureEmojisBottomSheet()
         configureChatRecycler()
         configureEnterMessageSection()
         configureToolbar()
@@ -118,6 +122,14 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
                     Snackbar.LENGTH_LONG
                 ) { }
             }
+            is ChatEffect.MessageDeletingError -> {
+                Toast.makeText(
+                    this,
+                    resources.getString(R.string.deleting_message_error_text),
+                    Toast.LENGTH_LONG
+                )
+                    .show()
+            }
             is ChatEffect.FileUploadingError -> {
                 binding.root.showSnackBarWithRetryAction(
                     resources.getString(R.string.uploading_file_error_text),
@@ -151,9 +163,9 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
                 emojiView.isSelected = false
                 emojiView.emojiCount = emojiView.emojiCount.minus(1)
                 if (emojiView.emojiCount == 0) {
-                    val emojiBox = (emojiView.parent as FlexBoxLayout)
-                    emojiBox.removeView(emojiView)
-                    if (emojiBox.childCount == 1) {
+                    val emojiBox = (emojiView.parent as? FlexBoxLayout)
+                    emojiBox?.removeView(emojiView)
+                    if (emojiBox?.childCount == 1) {
                         emojiBox.getChildAt(0).visibility = View.GONE
                     }
                 }
@@ -168,7 +180,7 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
         val emojiBox = when (selectedView) {
             is MessageViewGroup -> selectedView.binding.emojiBox
             is SelfMessageViewGroup -> selectedView.binding.emojiBox
-            is ImageView -> selectedView.parent as FlexBoxLayout
+            is ImageView -> selectedView.parent as? FlexBoxLayout
             else -> null
         }
         val emoji = emojiBox?.children?.firstOrNull {
@@ -184,8 +196,28 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
         }
     }
 
-    override fun onTopicItemClick(topicName: String, streamName: String) {
-        store.accept(ChatEvent.Ui.LoadChat(topicName))
+    override fun onBottomSheetAddReaction(selectedView: View?) {
+        if (selectedView != null) {
+            actionsDialog.dismiss()
+            emojisDialog.show(selectedView)
+        }
+    }
+
+    override fun onBottomSheetDeleteMessage(selectedView: View?) {
+        if (selectedView is MessageViewGroup) {
+            store.accept(ChatEvent.Ui.DeleteMessage(selectedView.messageId))
+        } else {
+            if (selectedView is SelfMessageViewGroup) {
+                store.accept(ChatEvent.Ui.DeleteMessage(selectedView.messageId))
+            }
+        }
+        actionsDialog.dismiss()
+    }
+
+    override fun onTopicItemClick(topicName: String?, streamName: String?) {
+        if (topicName != null) {
+            store.accept(ChatEvent.Ui.LoadChat(topicName))
+        }
     }
 
     private fun configureToolbar() {
@@ -202,7 +234,7 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
         val layoutManager = LinearLayoutManager(this)
         layoutManager.stackFromEnd = true
         chatRecycler.layoutManager = layoutManager
-        adapter = ChatMessagesAdapter(dialog, chatRecycler, this, this)
+        adapter = ChatMessagesAdapter(actionsDialog, emojisDialog, chatRecycler, this, this)
 
         topicName = intent.getStringExtra(TOPIC_NAME_KEY)?.lowercase() ?: ""
         adapter.topicNameValue = topicName
@@ -311,7 +343,7 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
         }
 
         topicEditText.setOnFocusChangeListener { view, hasFocus ->
-            if (hasFocus && (view as EditText).text.isEmpty()) {
+            if (hasFocus && (view as? EditText)?.text?.isEmpty() == true) {
                 updateTopicsAdapter(topicEditText)
                 topicEditText.showDropDown()
             }
@@ -344,16 +376,28 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(),
         imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this.context, colorId))
     }
 
-    private fun createAndConfigureBottomSheet() {
+    private fun createAndConfigureActionsBottomSheet() {
         val bottomSheetLayout =
-            layoutInflater.inflate(R.layout.layout_bottom_sheet, null) as LinearLayout
-        dialog = EmojiBottomSheetDialog(
+            layoutInflater.inflate(R.layout.layout_bottom_sheet_chat_actions, null) as LinearLayout
+        actionsDialog = ChatActionsBottomSheetDialog(
+            context = this,
+            theme = R.style.BottomSheetDialogTheme,
+            bottomSheetAddReactionListener = this,
+            bottomSheetDeleteMessageListener = this
+        )
+        actionsDialog.setContentView(bottomSheetLayout)
+    }
+
+    private fun createAndConfigureEmojisBottomSheet() {
+        val bottomSheetLayout =
+            layoutInflater.inflate(R.layout.layout_bottom_sheet_emojis, null) as LinearLayout
+        emojisDialog = EmojiBottomSheetDialog(
             context = this,
             theme = R.style.BottomSheetDialogTheme,
             bottomSheet = bottomSheetLayout,
             bottomSheetChooseEmojiListener = this
         )
-        dialog.setContentView(bottomSheetLayout)
+        emojisDialog.setContentView(bottomSheetLayout)
     }
 
     private fun addNewEmojiToMessage(

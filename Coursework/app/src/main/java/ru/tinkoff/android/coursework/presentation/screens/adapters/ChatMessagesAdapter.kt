@@ -18,6 +18,8 @@ import ru.tinkoff.android.coursework.domain.model.Message
 import ru.tinkoff.android.coursework.presentation.customviews.*
 import ru.tinkoff.android.coursework.presentation.screens.ChatActivity.Companion.NO_TOPIC_STRING_VALUE
 import ru.tinkoff.android.coursework.presentation.screens.StreamsListFragment.Companion.ALL_TOPICS_IN_STREAM
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnEmojiClickListener
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnTopicItemClickListener
 import ru.tinkoff.android.coursework.utils.dpToPx
 import ru.tinkoff.android.coursework.utils.getDateTimeFromTimestamp
 import ru.tinkoff.android.coursework.utils.getFormattedContentFromHtml
@@ -25,7 +27,8 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 internal class ChatMessagesAdapter(
-    private val dialog: EmojiBottomSheetDialog,
+    private var actionsDialog: ChatActionsBottomSheetDialog,
+    private val emojisDialog: EmojiBottomSheetDialog,
     private val chatRecycler: RecyclerView,
     private val emojiClickListener: OnEmojiClickListener,
     private val topicItemClickListener: OnTopicItemClickListener
@@ -106,7 +109,7 @@ internal class ChatMessagesAdapter(
                 layoutParams.setMargins(parent.context.dpToPx(DEFAULT_MARGIN_DP))
                 messageView.layoutParams = layoutParams
                 messageView.setOnLongClickListener {
-                    return@setOnLongClickListener messageOnClickFunc(dialog, messageView)
+                    return@setOnLongClickListener messageOnClickFunc(actionsDialog, messageView)
                 }
                 MessageViewHolder(messageView)
             }
@@ -121,7 +124,7 @@ internal class ChatMessagesAdapter(
                 parent.layoutParams.resolveLayoutDirection(LayoutDirection.RTL)
                 selfMessageView.layoutParams = layoutParams
                 selfMessageView.setOnLongClickListener {
-                    return@setOnLongClickListener messageOnClickFunc(dialog, selfMessageView)
+                    return@setOnLongClickListener messageOnClickFunc(actionsDialog, selfMessageView)
                 }
                 SelfMessageViewHolder(selfMessageView)
             }
@@ -147,10 +150,10 @@ internal class ChatMessagesAdapter(
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         return when (holder) {
-            is MessageViewHolder -> holder.bind(items[position] as Message)
-            is SelfMessageViewHolder -> holder.bind(items[position] as Message)
-            is SendDateViewHolder -> holder.bind(items[position] as LocalDate)
-            is TopicNameViewHolder -> holder.bind(items[position] as TopicName)
+            is MessageViewHolder -> holder.bind(items[position] as? Message)
+            is SelfMessageViewHolder -> holder.bind(items[position] as? Message)
+            is SendDateViewHolder -> holder.bind(items[position] as? LocalDate)
+            is TopicNameViewHolder -> holder.bind(items[position] as? TopicName)
         }
     }
 
@@ -214,25 +217,25 @@ internal class ChatMessagesAdapter(
                     it.length - 2, it[it.length - 3].uppercaseChar().toString()
                 )
             }
-            (sendDateView.getChildAt(0) as TextView).text = sendDateStr
+            (sendDateView.getChildAt(0) as? TextView)?.text = sendDateStr
         }
     }
 
     inner class TopicNameViewHolder(private val topicNameView: TextView)
         : BaseViewHolder(topicNameView) {
 
-        fun bind(topicName: TopicName) {
-            topicNameView.text = if (topicName.name != NO_TOPIC_STRING_VALUE) {
+        fun bind(topicName: TopicName?) {
+            topicNameView.text = if (topicName?.name != NO_TOPIC_STRING_VALUE) {
                 topicNameView.resources.getString(
                     R.string.topic_name_text,
-                    topicName.name
+                    topicName?.name
                 )
             } else {
                 topicName.name
             }
             if (this@ChatMessagesAdapter.topicNameValue == ALL_TOPICS_IN_STREAM) {
                 topicNameView.setOnClickListener {
-                    topicItemClickListener.onTopicItemClick(topicName.name, streamNameValue)
+                    topicItemClickListener.onTopicItemClick(topicName?.name, streamNameValue)
                 }
             }
         }
@@ -265,7 +268,7 @@ internal class ChatMessagesAdapter(
         return items
     }
 
-    private fun messageOnClickFunc(dialog: EmojiBottomSheetDialog, view: View): Boolean {
+    private fun messageOnClickFunc(dialog: ChatActionsBottomSheetDialog, view: View): Boolean {
         dialog.show(view)
         return true
     }
@@ -278,7 +281,7 @@ internal class ChatMessagesAdapter(
             false
         ) as ImageView
         addEmojiView.setOnClickListener {
-            this@ChatMessagesAdapter.dialog.show(addEmojiView)
+            this@ChatMessagesAdapter.emojisDialog.show(addEmojiView)
         }
         emojiBox.addView(addEmojiView)
 

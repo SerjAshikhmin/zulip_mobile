@@ -52,7 +52,8 @@ internal object MessageMapper {
             topicName = messageDto.topicName,
             avatarUrl = messageDto.avatarUrl,
             content = messageDto.content,
-            emojis = getEmojisWithCountList(messageDto.reactions) as MutableList<EmojiWithCount>,
+            emojis = getEmojisWithCountList(messageDto.reactions) as? MutableList<EmojiWithCount>
+                ?: mutableListOf(),
             timestamp = messageDto.timestamp
         )
     }

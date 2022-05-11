@@ -12,14 +12,13 @@ import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.FragmentStreamsListBinding
 import ru.tinkoff.android.coursework.di.ActivityScope
 import ru.tinkoff.android.coursework.di.streams.DaggerStreamsComponent
-import ru.tinkoff.android.coursework.domain.model.Topic
 import ru.tinkoff.android.coursework.presentation.elm.channels.StreamsElmStoreFactory
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEffect
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEvent
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsState
-import ru.tinkoff.android.coursework.presentation.screens.adapters.OnStreamItemClickListener
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnStreamItemClickListener
 import ru.tinkoff.android.coursework.presentation.screens.adapters.StreamsListAdapter
-import ru.tinkoff.android.coursework.presentation.screens.adapters.OnTopicItemClickListener
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnTopicItemClickListener
 import vivid.money.elmslie.android.base.ElmFragment
 import vivid.money.elmslie.core.store.Store
 import javax.inject.Inject
@@ -84,7 +83,7 @@ internal abstract class StreamsListFragment
         }
     }
 
-    override fun onTopicItemClick(topicName: String, streamName: String) {
+    override fun onTopicItemClick(topicName: String?, streamName: String?) {
         val bundle = bundleOf(
             ChatActivity.STREAM_NAME_KEY to streamName,
             ChatActivity.TOPIC_NAME_KEY to topicName

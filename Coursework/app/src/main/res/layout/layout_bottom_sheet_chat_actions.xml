@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/bottom_sheet_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bottom_sheet_background"
+    android:orientation="vertical">
+
+    <ImageView
+        android:layout_width="60dp"
+        android:layout_height="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bottom_sheet_slider_background"
+        android:layout_gravity="center|top" />
+
+    <TextView
+        android:id="@+id/add_reaction_action"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/grey_200"
+        android:textSize="16sp"
+        android:gravity="start"
+        android:layout_gravity="top"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:text="@string/add_a_reaction_action_text"/>
+
+    <TextView
+        android:id="@+id/delete_message_action"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/grey_200"
+        android:textSize="16sp"
+        android:gravity="start"
+        android:layout_gravity="top"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:text="@string/delete_message_action_text"/>
+
+    <TextView
+        android:id="@+id/edit_message_action"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/grey_200"
+        android:textSize="16sp"
+        android:gravity="start"
+        android:layout_gravity="top"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:text="@string/edit_message_action_text"/>
+
+    <TextView
+        android:id="@+id/copy_to_clipboard_action"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/grey_200"
+        android:textSize="16sp"
+        android:gravity="start"
+        android:layout_gravity="top"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="32dp"
+        android:text="@string/copy_to_clipboard_action_text"/>
+
+</LinearLayout>

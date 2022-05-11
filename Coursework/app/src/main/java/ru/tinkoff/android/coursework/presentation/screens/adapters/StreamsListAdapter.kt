@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.ItemStreamInListBinding
 import ru.tinkoff.android.coursework.domain.model.Stream
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnStreamItemClickListener
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnTopicItemClickListener
 
 internal class StreamsListAdapter(
     private val streamItemClickListener: OnStreamItemClickListener,
