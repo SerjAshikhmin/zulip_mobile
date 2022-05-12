@@ -7,6 +7,7 @@ import androidx.annotation.StyleRes
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import ru.tinkoff.android.coursework.databinding.LayoutBottomSheetChatActionsBinding
 import ru.tinkoff.android.coursework.presentation.screens.listeners.OnBottomSheetAddReactionListener
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnBottomSheetCopyToClipboardListener
 import ru.tinkoff.android.coursework.presentation.screens.listeners.OnBottomSheetDeleteMessageListener
 
 internal class ChatActionsBottomSheetDialog (
@@ -14,6 +15,7 @@ internal class ChatActionsBottomSheetDialog (
     @StyleRes theme: Int,
     private val bottomSheetAddReactionListener: OnBottomSheetAddReactionListener,
     private val bottomSheetDeleteMessageListener: OnBottomSheetDeleteMessageListener,
+    private val bottomSheetCopyToClipboardListener: OnBottomSheetCopyToClipboardListener
 ) : BottomSheetDialog(context, theme) {
 
     private lateinit var binding: LayoutBottomSheetChatActionsBinding
@@ -39,6 +41,10 @@ internal class ChatActionsBottomSheetDialog (
 
         binding.deleteMessageAction.setOnClickListener {
             bottomSheetDeleteMessageListener.onBottomSheetDeleteMessage(selectedView)
+        }
+
+        binding.copyToClipboardAction.setOnClickListener {
+            bottomSheetCopyToClipboardListener.onBottomSheetCopyToClipboard(selectedView)
         }
     }
 

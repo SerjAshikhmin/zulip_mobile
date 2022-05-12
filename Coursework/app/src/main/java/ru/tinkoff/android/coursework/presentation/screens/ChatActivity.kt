@@ -1,6 +1,8 @@
 package ru.tinkoff.android.coursework.presentation.screens
 
 import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
@@ -35,10 +37,6 @@ import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatState
 import ru.tinkoff.android.coursework.presentation.screens.StreamsListFragment.Companion.ALL_TOPICS_IN_STREAM
 import ru.tinkoff.android.coursework.presentation.screens.adapters.ChatMessagesAdapter
 import ru.tinkoff.android.coursework.presentation.screens.listeners.*
-import ru.tinkoff.android.coursework.presentation.screens.listeners.OnBottomSheetAddReactionListener
-import ru.tinkoff.android.coursework.presentation.screens.listeners.OnBottomSheetChooseEmojiListener
-import ru.tinkoff.android.coursework.presentation.screens.listeners.OnBottomSheetDeleteMessageListener
-import ru.tinkoff.android.coursework.presentation.screens.listeners.OnEmojiClickListener
 import ru.tinkoff.android.coursework.utils.copy
 import ru.tinkoff.android.coursework.utils.getFileNameFromContentUri
 import ru.tinkoff.android.coursework.utils.hasPermissions
@@ -51,7 +49,8 @@ import javax.inject.Inject
 @ActivityScope
 internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), OnEmojiClickListener,
     OnBottomSheetChooseEmojiListener, OnBottomSheetAddReactionListener,
-    OnBottomSheetDeleteMessageListener, OnTopicItemClickListener {
+    OnBottomSheetDeleteMessageListener, OnTopicItemClickListener,
+    OnBottomSheetCopyToClipboardListener {
 
     @Inject
     internal lateinit var chatElmStoreFactory: ChatElmStoreFactory
@@ -209,6 +208,17 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
         } else {
             if (selectedView is SelfMessageViewGroup) {
                 store.accept(ChatEvent.Ui.DeleteMessage(selectedView.messageId))
+            }
+        }
+        actionsDialog.dismiss()
+    }
+
+    override fun onBottomSheetCopyToClipboard(selectedView: View?) {
+        if (selectedView is MessageViewGroup) {
+            copyTextToClipboard(selectedView.binding.messageText.text)
+        } else {
+            if (selectedView is SelfMessageViewGroup) {
+                copyTextToClipboard(selectedView.binding.message.text)
             }
         }
         actionsDialog.dismiss()
@@ -383,7 +393,8 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
             context = this,
             theme = R.style.BottomSheetDialogTheme,
             bottomSheetAddReactionListener = this,
-            bottomSheetDeleteMessageListener = this
+            bottomSheetDeleteMessageListener = this,
+            bottomSheetCopyToClipboardListener = this
         )
         actionsDialog.setContentView(bottomSheetLayout)
     }
@@ -465,12 +476,19 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
         imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
+    private fun copyTextToClipboard(text: CharSequence) {
+        val clipboard: ClipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText(CLIP_DATA_TEXT_LABEL, text)
+        clipboard.setPrimaryClip(clip)
+    }
+
     companion object {
 
         internal const val STREAM_NAME_KEY = "streamName"
         internal const val TOPIC_NAME_KEY = "topicName"
         internal const val NO_TOPIC_STRING_VALUE = "(no topic)"
         private const val SCROLL_POSITION_FOR_NEXT_PORTION_LOADING = 5
+        private const val CLIP_DATA_TEXT_LABEL = "text"
     }
 
 }
