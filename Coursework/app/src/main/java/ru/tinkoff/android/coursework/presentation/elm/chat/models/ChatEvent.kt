@@ -50,6 +50,16 @@ internal sealed class ChatEvent {
             val messageId: Long
         ) : Ui()
 
+        data class StartEditMessage(
+            val message: Message
+        ) : Ui()
+
+        data class EditMessage(
+            val messageId: Long,
+            val topicName: String,
+            val content: String
+        ) : Ui()
+
     }
 
     sealed class Internal : ChatEvent() {
@@ -87,6 +97,10 @@ internal sealed class ChatEvent {
             val messageId: Long
         ) : Internal()
 
+        data class MessageEdited(
+            val messageId: Long
+        ) : Internal()
+
         data class MessagesLoadingError(
             val error: Throwable
         ) : Internal()
@@ -96,6 +110,10 @@ internal sealed class ChatEvent {
         ) : Internal()
 
         data class MessageDeletingError(
+            val error: Throwable
+        ) : Internal()
+
+        data class MessageEditingError(
             val error: Throwable
         ) : Internal()
 

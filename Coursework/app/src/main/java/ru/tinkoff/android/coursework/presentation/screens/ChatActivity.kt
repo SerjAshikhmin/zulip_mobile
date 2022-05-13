@@ -37,6 +37,7 @@ import ru.tinkoff.android.coursework.presentation.elm.chat.models.ChatState
 import ru.tinkoff.android.coursework.presentation.screens.StreamsListFragment.Companion.ALL_TOPICS_IN_STREAM
 import ru.tinkoff.android.coursework.presentation.screens.adapters.ChatMessagesAdapter
 import ru.tinkoff.android.coursework.presentation.screens.listeners.*
+import ru.tinkoff.android.coursework.utils.*
 import ru.tinkoff.android.coursework.utils.copy
 import ru.tinkoff.android.coursework.utils.getFileNameFromContentUri
 import ru.tinkoff.android.coursework.utils.hasPermissions
@@ -50,7 +51,7 @@ import javax.inject.Inject
 internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), OnEmojiClickListener,
     OnBottomSheetChooseEmojiListener, OnBottomSheetAddReactionListener,
     OnBottomSheetDeleteMessageListener, OnTopicItemClickListener,
-    OnBottomSheetCopyToClipboardListener {
+    OnBottomSheetCopyToClipboardListener, OnBottomSheetEditMessageListener {
 
     @Inject
     internal lateinit var chatElmStoreFactory: ChatElmStoreFactory
@@ -65,6 +66,7 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
     private lateinit var topicName: String
     private var selectFileResultLauncher = initializeSelectFileResultLauncher()
     private var isFirstClickToEnterMessage = true
+    private var editedMessageId = NO_EDITED_MESSAGE_ID
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -103,6 +105,27 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
                 binding.enterMessage.text.append("[${effect.fileName}](${effect.fileUri})\n\n")
                 binding.sendButton.showActionIcon(R.drawable.ic_send, R.color.teal_500)
             }
+            is ChatEffect.StartEditMessageEffect -> {
+                with(binding) {
+                    topicEditText.visibility = View.VISIBLE
+                    topicEditText.setText(effect.message.topicName)
+                    enterMessage.setText(getFormattedContentFromHtml(effect.message.content)?.trim())
+                    sendButton.showActionIcon(R.drawable.ic_confirm_edit, R.color.teal_500)
+                }
+                editedMessageId = effect.message.id
+            }
+            is ChatEffect.MessageEditedEffect -> {
+                with(binding) {
+                    sendButton.showActionIcon(R.drawable.ic_add, R.color.grey_500)
+                    enterMessage.text.clear()
+                    if (topicName != ALL_TOPICS_IN_STREAM) {
+                        topicEditText.visibility = View.GONE
+                    } else {
+                        topicEditText.text.clear()
+                    }
+                }
+                editedMessageId = NO_EDITED_MESSAGE_ID
+            }
             is ChatEffect.NavigateToChat -> {
                 val intent = Intent(this, ChatActivity::class.java)
                 intent.putExtra(STREAM_NAME_KEY, streamName)
@@ -125,6 +148,14 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
                 Toast.makeText(
                     this,
                     resources.getString(R.string.deleting_message_error_text),
+                    Toast.LENGTH_LONG
+                )
+                    .show()
+            }
+            is ChatEffect.MessageEditingError -> {
+                Toast.makeText(
+                    this,
+                    resources.getString(R.string.editing_message_error_text),
                     Toast.LENGTH_LONG
                 )
                     .show()
@@ -203,11 +234,21 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
     }
 
     override fun onBottomSheetDeleteMessage(selectedView: View?) {
-        if (selectedView is MessageViewGroup) {
+        if (selectedView is SelfMessageViewGroup) {
             store.accept(ChatEvent.Ui.DeleteMessage(selectedView.messageId))
-        } else {
-            if (selectedView is SelfMessageViewGroup) {
-                store.accept(ChatEvent.Ui.DeleteMessage(selectedView.messageId))
+        }
+        actionsDialog.dismiss()
+    }
+
+    override fun onBottomSheetEditMessage(selectedView: View?) {
+        var messageId: Long? = null
+        if (selectedView is SelfMessageViewGroup) {
+            messageId = selectedView.messageId
+        }
+        if (messageId != null) {
+            val messageToEdit = adapter.messages.find { it.id == messageId }
+            if (messageToEdit != null) {
+                store.accept(ChatEvent.Ui.StartEditMessage(messageToEdit))
             }
         }
         actionsDialog.dismiss()
@@ -321,14 +362,24 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
 
         sendButton.setOnClickListener {
             if (enterMessage.text.isNotEmpty()) {
-                val topicName = getTopicNameForSendingMessage(topicEditText)
-                store.accept(
-                    ChatEvent.Ui.SendMessage(
-                        topicName = topicName,
-                        streamName = streamName,
-                        content = enterMessage.text.toString()
+                if (editedMessageId != NO_EDITED_MESSAGE_ID) {
+                    store.accept(
+                        ChatEvent.Ui.EditMessage(
+                            messageId = editedMessageId,
+                            topicName = binding.topicEditText.text.toString(),
+                            content = enterMessage.text.toString()
+                        )
                     )
-                )
+                } else {
+                    val topicName = getTopicNameForSendingMessage(topicEditText)
+                    store.accept(
+                        ChatEvent.Ui.SendMessage(
+                            topicName = topicName,
+                            streamName = streamName,
+                            content = enterMessage.text.toString()
+                        )
+                    )
+                }
                 hideKeyboard(enterMessage)
             } else {
                 if (!hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
@@ -394,6 +445,7 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
             theme = R.style.BottomSheetDialogTheme,
             bottomSheetAddReactionListener = this,
             bottomSheetDeleteMessageListener = this,
+            bottomSheetEditMessageListener = this,
             bottomSheetCopyToClipboardListener = this
         )
         actionsDialog.setContentView(bottomSheetLayout)
@@ -489,6 +541,7 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
         internal const val NO_TOPIC_STRING_VALUE = "(no topic)"
         private const val SCROLL_POSITION_FOR_NEXT_PORTION_LOADING = 5
         private const val CLIP_DATA_TEXT_LABEL = "text"
+        private const val NO_EDITED_MESSAGE_ID = 0L
     }
 
 }

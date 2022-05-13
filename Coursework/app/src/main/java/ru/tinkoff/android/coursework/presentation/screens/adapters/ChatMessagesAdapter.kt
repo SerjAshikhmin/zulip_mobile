@@ -173,7 +173,7 @@ internal class ChatMessagesAdapter(
             message?.let {
                 messageView.messageId = message.id
                 username.text = it.userFullName
-                messageTextView.text = getFormattedContentFromHtml(it.content)
+                messageTextView.text = getFormattedContentFromHtml(it.content)?.trim()
 
                 if (it.avatarUrl != null) {
                     Glide.with(messageTextView)
@@ -199,7 +199,7 @@ internal class ChatMessagesAdapter(
         fun bind(message: Message?) {
             message?.let {
                 selfMessageView.messageId = message.id
-                messageTextView.text = getFormattedContentFromHtml(it.content)
+                messageTextView.text = getFormattedContentFromHtml(it.content)?.trim()
                 fillEmojiBox(it, emojiBox)
             }
         }

@@ -6,7 +6,7 @@ import retrofit2.http.*
 import ru.tinkoff.android.coursework.data.api.model.UserDto
 import ru.tinkoff.android.coursework.data.api.model.response.AllStreamsListResponse
 import ru.tinkoff.android.coursework.data.api.model.response.AllUsersListResponse
-import ru.tinkoff.android.coursework.data.api.model.response.DeleteMessageResponse
+import ru.tinkoff.android.coursework.data.api.model.response.ActionWithMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.LoadSingleMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.MessagesListResponse
 import ru.tinkoff.android.coursework.data.api.model.response.ReactionResponse
@@ -54,7 +54,7 @@ internal interface ZulipJsonApi {
         @Query("type") type: String = "stream",
         @Query("to") to: String,
         @Query("content") content: String,
-        @Query("topic") topic: String,
+        @Query("topic") topic: String
     ): Single<SendMessageResponse>
 
     @POST("api/v1/messages/{message_id}/reactions")
@@ -83,7 +83,14 @@ internal interface ZulipJsonApi {
     @DELETE("api/v1/messages/{msg_id}")
     fun deleteMessage(
         @Path("msg_id") messageId: Long
-    ): Single<DeleteMessageResponse>
+    ): Single<ActionWithMessageResponse>
+
+    @PATCH("api/v1/messages/{msg_id}")
+    fun editMessage(
+        @Path("msg_id") messageId: Long,
+        @Query("topic") topic: String,
+        @Query("content") content: String
+    ): Single<ActionWithMessageResponse>
 
     @POST("api/v1/users/me/subscriptions")
     fun subscribeToStream(

@@ -9,12 +9,14 @@ import ru.tinkoff.android.coursework.databinding.LayoutBottomSheetChatActionsBin
 import ru.tinkoff.android.coursework.presentation.screens.listeners.OnBottomSheetAddReactionListener
 import ru.tinkoff.android.coursework.presentation.screens.listeners.OnBottomSheetCopyToClipboardListener
 import ru.tinkoff.android.coursework.presentation.screens.listeners.OnBottomSheetDeleteMessageListener
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnBottomSheetEditMessageListener
 
 internal class ChatActionsBottomSheetDialog (
     context: Context,
     @StyleRes theme: Int,
     private val bottomSheetAddReactionListener: OnBottomSheetAddReactionListener,
     private val bottomSheetDeleteMessageListener: OnBottomSheetDeleteMessageListener,
+    private val bottomSheetEditMessageListener: OnBottomSheetEditMessageListener,
     private val bottomSheetCopyToClipboardListener: OnBottomSheetCopyToClipboardListener
 ) : BottomSheetDialog(context, theme) {
 
@@ -27,11 +29,26 @@ internal class ChatActionsBottomSheetDialog (
         setContentView(binding.root)
 
         initActionsClickListeners()
+        checkActionsToShow()
     }
 
     fun show(view: View) {
         selectedView = view
+        if (::binding.isInitialized) {
+            checkActionsToShow()
+        }
         show()
+    }
+
+    private fun checkActionsToShow() {
+        if (selectedView is MessageViewGroup) {
+            binding.deleteMessageAction.visibility = View.GONE
+            binding.editMessageAction.visibility = View.GONE
+        }
+        if (selectedView is SelfMessageViewGroup) {
+            binding.deleteMessageAction.visibility = View.VISIBLE
+            binding.editMessageAction.visibility = View.VISIBLE
+        }
     }
 
     private fun initActionsClickListeners() {
@@ -45,6 +62,10 @@ internal class ChatActionsBottomSheetDialog (
 
         binding.copyToClipboardAction.setOnClickListener {
             bottomSheetCopyToClipboardListener.onBottomSheetCopyToClipboard(selectedView)
+        }
+
+        binding.editMessageAction.setOnClickListener {
+            bottomSheetEditMessageListener.onBottomSheetEditMessage(selectedView)
         }
     }
 

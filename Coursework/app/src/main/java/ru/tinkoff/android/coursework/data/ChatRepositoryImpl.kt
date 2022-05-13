@@ -9,7 +9,7 @@ import okhttp3.MultipartBody
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.api.ZulipJsonApi
 import ru.tinkoff.android.coursework.data.api.model.request.NarrowRequest
-import ru.tinkoff.android.coursework.data.api.model.response.DeleteMessageResponse
+import ru.tinkoff.android.coursework.data.api.model.response.ActionWithMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.ReactionResponse
 import ru.tinkoff.android.coursework.data.api.model.response.SendMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.UploadFileResponse
@@ -128,8 +128,16 @@ internal class ChatRepositoryImpl @Inject constructor(
             .map { MessageMapper.messageDtoToMessage(it.message) }
     }
 
-    override fun deleteMessage(messageId: Long): Single<DeleteMessageResponse> {
+    override fun deleteMessage(messageId: Long): Single<ActionWithMessageResponse> {
         return zulipJsonApi.deleteMessage(messageId)
+    }
+
+    override fun editMessage(
+        messageId: Long,
+        topicName: String,
+        content: String
+    ): Single<ActionWithMessageResponse> {
+        return zulipJsonApi.editMessage(messageId, topicName, content)
     }
 
     companion object {

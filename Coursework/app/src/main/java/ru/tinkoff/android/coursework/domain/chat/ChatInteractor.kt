@@ -6,7 +6,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import okhttp3.MultipartBody
 import ru.tinkoff.android.coursework.data.ChatRepository
-import ru.tinkoff.android.coursework.data.api.model.response.DeleteMessageResponse
+import ru.tinkoff.android.coursework.data.api.model.response.ActionWithMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.ReactionResponse
 import ru.tinkoff.android.coursework.data.api.model.response.SendMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.UploadFileResponse
@@ -95,8 +95,18 @@ internal class ChatInteractor(
             .observeOn(AndroidSchedulers.mainThread())
     }
 
-    fun deleteMessage(messageId: Long): Single<DeleteMessageResponse> {
+    fun deleteMessage(messageId: Long): Single<ActionWithMessageResponse> {
         return chatRepository.deleteMessage(messageId)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+    }
+
+    fun editMessage(
+        messageId: Long,
+        topicName: String,
+        content: String
+    ): Single<ActionWithMessageResponse> {
+        return chatRepository.editMessage(messageId, topicName, content)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
     }

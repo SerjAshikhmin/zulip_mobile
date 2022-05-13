@@ -2,7 +2,7 @@ package ru.tinkoff.android.coursework.data
 
 import io.reactivex.Single
 import okhttp3.MultipartBody
-import ru.tinkoff.android.coursework.data.api.model.response.DeleteMessageResponse
+import ru.tinkoff.android.coursework.data.api.model.response.ActionWithMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.ReactionResponse
 import ru.tinkoff.android.coursework.data.api.model.response.SendMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.UploadFileResponse
@@ -43,6 +43,12 @@ internal interface ChatRepository {
 
     fun loadSingleMessageFromApi(messageId: Long): Single<Message>
 
-    fun deleteMessage(messageId: Long): Single<DeleteMessageResponse>
+    fun deleteMessage(messageId: Long): Single<ActionWithMessageResponse>
+
+    fun editMessage(
+        messageId: Long,
+        topicName: String,
+        content: String
+    ): Single<ActionWithMessageResponse>
 
 }

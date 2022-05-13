@@ -40,6 +40,12 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
             is ChatEvent.Ui.DeleteMessage -> {
                 processDeleteMessageEvent(event)
             }
+            is ChatEvent.Ui.StartEditMessage -> {
+                processStartEditMessageEvent(event)
+            }
+            is ChatEvent.Ui.EditMessage -> {
+                processEditMessageEvent(event)
+            }
 
             is ChatEvent.Internal.LastMessagesLoaded -> {
                 processLastMessagesLoadedEvent(event)
@@ -65,6 +71,9 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
             is ChatEvent.Internal.MessageDeleted -> {
                 processMessageDeletedEvent(event)
             }
+            is ChatEvent.Internal.MessageEdited -> {
+                processMessageEditedEvent(event)
+            }
 
             is ChatEvent.Internal.MessagesLoadingError -> {
                 processMessagesLoadingError(event)
@@ -77,6 +86,9 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
             }
             is ChatEvent.Internal.MessageDeletingError -> {
                 processMessageDeletingError(event)
+            }
+            is ChatEvent.Internal.MessageEditingError -> {
+                processMessageEditingError(event)
             }
         }
     }
@@ -222,10 +234,27 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
     private fun Result.processDeleteMessageEvent(
         event: ChatEvent.Ui.DeleteMessage
     ) {
-        state { copy(error = null) }
         commands {
             +ChatCommand.DeleteMessage(
                 messageId = event.messageId
+            )
+        }
+    }
+
+    private fun Result.processStartEditMessageEvent(
+        event: ChatEvent.Ui.StartEditMessage
+    ) {
+        effects { +ChatEffect.StartEditMessageEffect(event.message) }
+    }
+
+    private fun Result.processEditMessageEvent(
+        event: ChatEvent.Ui.EditMessage
+    ) {
+        commands {
+            +ChatCommand.EditMessage(
+                messageId = event.messageId,
+                topicName = event.topicName,
+                content = event.content
             )
         }
     }
@@ -321,6 +350,16 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
         ) }
     }
 
+    private fun Result.processMessageEditedEvent(event: ChatEvent.Internal.MessageEdited) {
+        state { copy(error = null) }
+        commands {
+            +ChatCommand.LoadMessage(
+                messageId = event.messageId
+            )
+        }
+        effects { +ChatEffect.MessageEditedEffect }
+    }
+
     private fun Result.processMessagesLoadingError(
         event: ChatEvent.Internal.MessagesLoadingError
     ) {
@@ -355,6 +394,13 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
     ) {
         state { copy(error = event.error) }
         effects { +ChatEffect.MessageDeletingError(event.error) }
+    }
+
+    private fun Result.processMessageEditingError(
+        event: ChatEvent.Internal.MessageEditingError
+    ) {
+        state { copy(error = event.error) }
+        effects { +ChatEffect.MessageEditingError(event.error) }
     }
 
 }

@@ -45,4 +45,10 @@ internal sealed class ChatCommand {
         val messageId: Long
     ) : ChatCommand()
 
+    data class EditMessage(
+        val messageId: Long,
+        val topicName: String,
+        val content: String
+    ) : ChatCommand()
+
 }

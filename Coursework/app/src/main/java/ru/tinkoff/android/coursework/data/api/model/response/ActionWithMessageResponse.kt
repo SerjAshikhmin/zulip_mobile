@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal class DeleteMessageResponse (
+internal class ActionWithMessageResponse (
 
     @SerialName("msg")
     val msg: String,

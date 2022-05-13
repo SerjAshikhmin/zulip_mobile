@@ -85,6 +85,15 @@ internal class ChatActor(
                 { ChatEvent.Internal.MessageDeleted(command.messageId) },
                 { error -> ChatEvent.Internal.MessageDeletingError(error) }
             )
+        is ChatCommand.EditMessage -> chatInteractor.editMessage(
+            command.messageId,
+            command.topicName,
+            command.content
+        )
+            .mapEvents(
+                { ChatEvent.Internal.MessageEdited(command.messageId) },
+                { error -> ChatEvent.Internal.MessageEditingError(error) }
+            )
     }
 
 }
