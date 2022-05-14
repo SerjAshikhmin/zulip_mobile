@@ -5,6 +5,7 @@ internal data class Message(
     val userId: Long,
     val userFullName: String,
     val topicName: String,
+    val streamId: Long,
     val avatarUrl: String?,
     val content: String,
     val emojis: MutableList<EmojiWithCount>,

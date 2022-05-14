@@ -62,7 +62,9 @@ internal abstract class StreamsListFragment
     }
 
     override fun render(state: StreamsState) {
-        if (!state.isLoading) binding.swipeRefreshLayout.isRefreshing = false
+        if (!state.isLoading) {
+            binding.swipeRefreshLayout.isRefreshing = false
+        }
         with(adapter) {
             showShimmer = state.isLoading && !binding.swipeRefreshLayout.isRefreshing
             streams = state.items

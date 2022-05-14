@@ -10,7 +10,7 @@ import ru.tinkoff.android.coursework.domain.model.Message
 
 internal interface ChatRepository {
 
-    fun loadMessagesFromDb(topicName: String): Single<List<Message>>
+    fun loadMessagesFromDb(streamName: String, topicName: String): Single<List<Message>>
 
     fun loadMessagesFromApi(
         streamName: String,

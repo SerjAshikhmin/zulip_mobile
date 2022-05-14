@@ -24,6 +24,7 @@ internal object MessageMapper {
             userId = message.userId,
             userFullName = message.userFullName,
             topicName = message.topicName,
+            streamId = message.streamId,
             avatarUrl = message.avatarUrl,
             content = message.content,
             emojis = EmojiMapper.emojisToEmojisDbList(message.emojis),
@@ -37,6 +38,7 @@ internal object MessageMapper {
             userId = messageDb.userId,
             userFullName = messageDb.userFullName,
             topicName = messageDb.topicName,
+            streamId = messageDb.streamId,
             avatarUrl = messageDb.avatarUrl,
             content = messageDb.content,
             emojis = EmojiMapper.emojisDbToEmojisList(messageDb.emojis) as MutableList<EmojiWithCount>,
@@ -50,6 +52,7 @@ internal object MessageMapper {
             userId = messageDto.userId,
             userFullName = messageDto.userFullName,
             topicName = messageDto.topicName,
+            streamId = messageDto.streamId,
             avatarUrl = messageDto.avatarUrl,
             content = messageDto.content,
             emojis = getEmojisWithCountList(messageDto.reactions) as? MutableList<EmojiWithCount>

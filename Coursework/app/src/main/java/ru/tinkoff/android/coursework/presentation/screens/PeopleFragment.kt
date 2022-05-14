@@ -51,7 +51,6 @@ internal class PeopleFragment
         store.accept(PeopleEvent.Ui.LoadPeopleList)
         binding.swipeRefreshLayout.setOnRefreshListener {
             store.accept(PeopleEvent.Ui.LoadPeopleList)
-            binding.swipeRefreshLayout.isRefreshing = true
         }
 
         adapter = PeopleListAdapter(this)
@@ -67,7 +66,9 @@ internal class PeopleFragment
     }
 
     override fun render(state: PeopleState) {
-        if (!state.isLoading) binding.swipeRefreshLayout.isRefreshing = false
+        if (!state.isLoading) {
+            binding.swipeRefreshLayout.isRefreshing = false
+        }
         with(adapter) {
             showShimmer = state.isLoading && !binding.swipeRefreshLayout.isRefreshing
             users = state.items

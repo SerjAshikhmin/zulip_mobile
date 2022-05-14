@@ -287,14 +287,14 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
         chatRecycler.layoutManager = layoutManager
         adapter = ChatMessagesAdapter(actionsDialog, emojisDialog, chatRecycler, this, this)
 
-        topicName = intent.getStringExtra(TOPIC_NAME_KEY)?.lowercase() ?: ""
+        topicName = intent.getStringExtra(TOPIC_NAME_KEY) ?: ""
         adapter.topicNameValue = topicName
         adapter.topicNameText = resources.getString(
             R.string.topic_name_text,
             topicName
         )
 
-        streamName = intent.getStringExtra(STREAM_NAME_KEY)?.lowercase() ?: ""
+        streamName = intent.getStringExtra(STREAM_NAME_KEY) ?: ""
         adapter.streamNameValue = streamName
         adapter.streamNameText = resources.getString(
             R.string.stream_name_text,

@@ -31,6 +31,7 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
 
     override var initEvent: StreamsEvent = StreamsEvent.Ui.SubscribeOnSearchStreamsEvents
     private lateinit var binding: FragmentChannelsBinding
+    private lateinit var streamsListPagerAdapter: StreamsListPagerAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,6 +45,7 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         configureViewPager()
+        streamsListPagerAdapter = (binding.pager.adapter as StreamsListPagerAdapter)
 
         // задержка, чтобы листенер не отрабатывал на пустом запросе при создании фрагмента
         Handler(Looper.getMainLooper()).postDelayed({
@@ -52,6 +54,9 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
                 allStreamsTab?.select()
                 val query = text?.toString().orEmpty()
                 store.accept(StreamsEvent.Ui.SearchStreamsByQuery(query))
+                if (streamsListPagerAdapter.isAllStreamsListFragment()) {
+                    streamsListPagerAdapter.allStreamsListFragment.searchQuery = query
+                }
             }
         }, 100)
 
@@ -71,9 +76,8 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
     }
 
     override fun render(state: StreamsState) {
-        val streamsListPagerAdapter = (binding.pager.adapter as? StreamsListPagerAdapter)
-
-        if (streamsListPagerAdapter?.isAllStreamsListFragment() == true) {
+        if (streamsListPagerAdapter.isAllStreamsListFragment()
+            && streamsListPagerAdapter.allStreamsListFragment.searchQuery.isNotEmpty()) {
             streamsListPagerAdapter.allStreamsListFragment.updateStreams(
                 state.items
             )

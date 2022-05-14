@@ -364,7 +364,10 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
         event: ChatEvent.Internal.MessagesLoadingError
     ) {
         state {
-            copy(error = event.error)
+            copy(
+                isLoading = false,
+                error = event.error
+            )
         }
         effects { +ChatEffect.MessagesLoadingError(event.error) }
     }

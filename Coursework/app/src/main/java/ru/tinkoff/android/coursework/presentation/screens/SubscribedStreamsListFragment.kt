@@ -29,7 +29,6 @@ internal class SubscribedStreamsListFragment: StreamsListFragment() {
         store.accept(StreamsEvent.Ui.LoadSubscribedStreamsList)
         binding.swipeRefreshLayout.setOnRefreshListener {
             store.accept(StreamsEvent.Ui.LoadSubscribedStreamsList)
-            binding.swipeRefreshLayout.isRefreshing = true
         }
     }
 

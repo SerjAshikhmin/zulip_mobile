@@ -26,8 +26,13 @@ internal class ChatRepositoryImpl @Inject constructor(
     private val db: AppDatabase
 ) : ChatRepository {
 
-    override fun loadMessagesFromDb(topicName: String): Single<List<Message>> {
-        return db.messageDao().getAllByTopic(topicName)
+    override fun loadMessagesFromDb(streamName: String, topicName: String): Single<List<Message>> {
+        val messagesList = if (topicName == ALL_TOPICS_IN_STREAM) {
+            db.messageDao().getAllByStream(streamName)
+        } else {
+            db.messageDao().getAllByTopic(topicName)
+        }
+        return messagesList
             .onErrorReturn {
                 Log.e(TAG, "Loading messages from db error", it)
                 emptyList()

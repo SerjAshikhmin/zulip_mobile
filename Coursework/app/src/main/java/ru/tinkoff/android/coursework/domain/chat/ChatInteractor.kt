@@ -22,7 +22,7 @@ internal class ChatInteractor(
         anchor: Long
     ): Observable<List<Message>> {
         return Observable.merge(
-            chatRepository.loadMessagesFromDb(topicName)
+            chatRepository.loadMessagesFromDb(streamName, topicName)
                 .toObservable(),
             chatRepository.loadMessagesFromApi(
                 streamName,

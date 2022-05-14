@@ -102,6 +102,7 @@ internal class StreamsListAdapter(
                     with(topItemAdapter) {
                         showShimmer = false
                         topics = stream.topics
+                        streamName = stream.name
                     }
                     arrowIcon.setImageResource(R.drawable.ic_arrow_up)
                     stream.isOpenedInChannelsList = true

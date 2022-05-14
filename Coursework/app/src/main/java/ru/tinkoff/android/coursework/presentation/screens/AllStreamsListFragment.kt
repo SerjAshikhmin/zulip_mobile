@@ -12,6 +12,7 @@ import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
 internal class AllStreamsListFragment: StreamsListFragment() {
 
     override var initEvent: StreamsEvent = StreamsEvent.Ui.InitEvent
+    var searchQuery: String = ""
 
     override fun handleEffect(effect: StreamsEffect) {
         super.handleEffect(effect)
@@ -29,8 +30,11 @@ internal class AllStreamsListFragment: StreamsListFragment() {
         super.onViewCreated(view, savedInstanceState)
         store.accept(StreamsEvent.Ui.LoadAllStreamsList)
         binding.swipeRefreshLayout.setOnRefreshListener {
-            store.accept(StreamsEvent.Ui.LoadAllStreamsList)
-            binding.swipeRefreshLayout.isRefreshing = true
+            if (searchQuery.isEmpty()) {
+                store.accept(StreamsEvent.Ui.LoadAllStreamsList)
+            } else {
+                binding.swipeRefreshLayout.isRefreshing = false
+            }
         }
     }
 
