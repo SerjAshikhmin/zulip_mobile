@@ -6,16 +6,18 @@ import ru.tinkoff.android.coursework.domain.model.Stream
 
 internal interface StreamsRepository {
 
-    fun loadStreamsFromDb(): Single<List<Stream>>
+    fun loadStreamsFromDb(isSubscribedStreams: Boolean): Single<List<Stream>>
 
     fun loadStreamsFromApi(isSubscribedStreams: Boolean): Single<List<Stream>>
 
-    fun saveStreamsToDb(streams: List<Stream>)
+    fun saveStreamsToDb(streams: List<Stream>, isSubscribedStreams: Boolean)
 
     fun createStream(
         name: String,
         description: String,
         isPrivate: Boolean
     ): Single<SubscribeToStreamResponse>
+
+    fun deleteStreamsFromDb(isSubscribedStreams: Boolean)
 
 }

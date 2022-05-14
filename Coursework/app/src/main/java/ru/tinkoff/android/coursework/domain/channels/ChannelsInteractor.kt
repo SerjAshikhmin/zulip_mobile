@@ -18,13 +18,20 @@ internal class ChannelsInteractor(
 
     fun loadStreams(isSubscribedStreams: Boolean): Observable<List<Stream>> {
         return Single.merge(
-            streamsRepository.loadStreamsFromDb(),
+            streamsRepository.loadStreamsFromDb(isSubscribedStreams),
             streamsRepository.loadStreamsFromApi(isSubscribedStreams)
                 .doOnSuccess {
-                    streamsRepository.saveStreamsToDb(it)
+                    if (it.isNotEmpty()) {
+                        cacheStreams(it, isSubscribedStreams)
+                    }
                 }
         ).toObservable()
             .subscribeOn(Schedulers.io())
+    }
+
+    private fun cacheStreams(streams: List<Stream>, isSubscribedStreams: Boolean) {
+        streamsRepository.deleteStreamsFromDb(isSubscribedStreams)
+        streamsRepository.saveStreamsToDb(streams, isSubscribedStreams)
     }
 
     fun processSearchQuery(query: String) = queryEvents.onNext(query)

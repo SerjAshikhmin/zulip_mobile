@@ -4,5 +4,6 @@ internal data class Stream(
     val streamId: Long = 0,
     val name: String,
     var topics: List<Topic>,
-    var isOpened: Boolean = false
+    var isSubscribed: Boolean = false,
+    var isOpenedInChannelsList: Boolean = false
 )

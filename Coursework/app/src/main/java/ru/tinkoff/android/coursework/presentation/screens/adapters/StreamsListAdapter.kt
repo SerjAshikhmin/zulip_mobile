@@ -83,7 +83,7 @@ internal class StreamsListAdapter(
                 topItemAdapter = TopicItemAdapter(this@StreamsListAdapter.topicItemClickListener)
             } else {
                 topItemAdapter = binding.topicsList.adapter as TopicItemAdapter
-                if (stream.isOpened) {
+                if (stream.isOpenedInChannelsList) {
                     with(topItemAdapter) {
                         topics = stream.topics
                         streamName = stream.name
@@ -98,20 +98,20 @@ internal class StreamsListAdapter(
             }
 
             binding.arrowIcon.setOnClickListener {
-                if (!stream.isOpened) {
+                if (!stream.isOpenedInChannelsList) {
                     with(topItemAdapter) {
                         showShimmer = false
                         topics = stream.topics
                     }
                     arrowIcon.setImageResource(R.drawable.ic_arrow_up)
-                    stream.isOpened = true
+                    stream.isOpenedInChannelsList = true
                 } else {
                     with(topItemAdapter) {
                         showShimmer = false
                         topics = listOf()
                     }
                     arrowIcon.setImageResource(R.drawable.ic_arrow_down)
-                    stream.isOpened = false
+                    stream.isOpenedInChannelsList = false
                 }
             }
 

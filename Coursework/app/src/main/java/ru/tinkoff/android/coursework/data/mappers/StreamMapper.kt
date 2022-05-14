@@ -16,7 +16,8 @@ internal object StreamMapper {
         return Stream(
             streamId = streamDto.streamId,
             name = streamDto.name,
-            topics = TopicMapper.topicsDtoToTopicsList(streamDto.topics)
+            topics = TopicMapper.topicsDtoToTopicsList(streamDto.topics),
+            isSubscribed = streamDto.isSubscribed
         )
     }
 
@@ -24,7 +25,8 @@ internal object StreamMapper {
         return StreamDb(
             streamId = stream.streamId,
             name = stream.name,
-            topics = TopicMapper.topicsToTopicsDtoList(stream.topics)
+            topics = TopicMapper.topicsToTopicsDtoList(stream.topics),
+            isSubscribed = stream.isSubscribed
         )
     }
 
@@ -32,7 +34,8 @@ internal object StreamMapper {
         return Stream(
             streamId = streamDb.streamId,
             name = streamDb.name,
-            topics = TopicMapper.topicsDtoToTopicsList(streamDb.topics)
+            topics = TopicMapper.topicsDtoToTopicsList(streamDb.topics),
+            isSubscribed = streamDb.isSubscribed
         )
     }
 

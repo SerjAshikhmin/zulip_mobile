@@ -55,7 +55,7 @@ internal class PeopleFragment
         }
 
         adapter = PeopleListAdapter(this)
-        binding.peopleList.adapter = adapter
+        binding.peopleListRecycler.adapter = adapter
     }
 
     override fun createStore(): Store<PeopleEvent, PeopleEffect, PeopleState> {
@@ -69,7 +69,7 @@ internal class PeopleFragment
     override fun render(state: PeopleState) {
         if (!state.isLoading) binding.swipeRefreshLayout.isRefreshing = false
         with(adapter) {
-            showShimmer = state.isLoading
+            showShimmer = state.isLoading && !binding.swipeRefreshLayout.isRefreshing
             users = state.items
             notifyDataSetChanged()
         }

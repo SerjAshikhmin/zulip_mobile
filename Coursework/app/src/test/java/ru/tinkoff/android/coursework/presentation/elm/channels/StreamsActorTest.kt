@@ -37,7 +37,8 @@ internal class StreamsActorTest {
                         name = "first test stream",
                         topics = listOf(
                             Topic("first test topic")
-                        )
+                        ),
+                        isSubscribed = true
                     ),
                     Stream(
                         streamId = 2L,
@@ -45,7 +46,8 @@ internal class StreamsActorTest {
                         topics = listOf(
                             Topic("second test topic"),
                             Topic("third test topic")
-                        )
+                        ),
+                        isSubscribed = true
                     )
                 )
             )
@@ -60,7 +62,8 @@ internal class StreamsActorTest {
                         name = "first test stream",
                         topics = listOf(
                             Topic("first test topic")
-                        )
+                        ),
+                        isSubscribed = true
                     ),
                     Stream(
                         streamId = 2L,
@@ -68,12 +71,14 @@ internal class StreamsActorTest {
                         topics = listOf(
                             Topic("second test topic"),
                             Topic("third test topic")
-                        )
+                        ),
+                        isSubscribed = true
                     ),
                     Stream(
                         streamId = 3L,
                         name = "third test stream",
-                        topics = listOf()
+                        topics = listOf(),
+                        isSubscribed = true
                     )
                 )
             )

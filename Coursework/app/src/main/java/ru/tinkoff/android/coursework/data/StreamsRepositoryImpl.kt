@@ -19,8 +19,13 @@ internal class StreamsRepositoryImpl @Inject constructor(
     private val db: AppDatabase
 ) : StreamsRepository {
 
-    override fun loadStreamsFromDb(): Single<List<Stream>> {
-        return db.streamDao().getAll()
+    override fun loadStreamsFromDb(isSubscribedStreams: Boolean): Single<List<Stream>> {
+        val streamsList = if (isSubscribedStreams) {
+            db.streamDao().getAllSubscribed()
+        } else {
+            db.streamDao().getAll()
+        }
+        return streamsList
             .map { StreamMapper.streamsDbToStreamsList(it) }
             .onErrorReturn {
                 Log.e(TAG, "Loading streams from db error", it)
@@ -31,10 +36,16 @@ internal class StreamsRepositoryImpl @Inject constructor(
     override fun loadStreamsFromApi(isSubscribedStreams: Boolean): Single<List<Stream>> {
         val baseStream = if (isSubscribedStreams) {
             zulipJsonApi.getSubscribedStreams()
-                .flattenAsObservable { it.subscriptions }
+                .flattenAsObservable {
+                    it.subscriptions.forEach { stream -> stream.isSubscribed = true }
+                    it.subscriptions
+                }
         } else {
             zulipJsonApi.getAllStreams()
-                .flattenAsObservable { it.streams }
+                .flattenAsObservable {
+                    it.streams.forEach { stream -> stream.isSubscribed = false }
+                    it.streams
+                }
         }
         return baseStream
             .flatMapSingle { getTopicsInStream(it) }
@@ -44,8 +55,18 @@ internal class StreamsRepositoryImpl @Inject constructor(
             .toList()
     }
 
-    override fun saveStreamsToDb(streams: List<Stream>) {
-        db.streamDao().saveAll(StreamMapper.streamsToStreamsDbList(streams))
+    override fun saveStreamsToDb(streams: List<Stream>, isSubscribedStreams: Boolean) {
+        val savedStreams = if (isSubscribedStreams) {
+            streams.forEach { it.isSubscribed = isSubscribedStreams }
+            db.streamDao().saveAllReplaceConflicts(
+                StreamMapper.streamsToStreamsDbList(streams)
+            )
+        } else {
+            db.streamDao().saveAllIgnoreConflicts(
+                StreamMapper.streamsToStreamsDbList(streams)
+            )
+        }
+        savedStreams
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .onErrorReturn {
@@ -83,6 +104,17 @@ internal class StreamsRepositoryImpl @Inject constructor(
                 TopicsListResponse(emptyList())
             }
             .map { StreamMapper.streamDtoToStream(stream) }
+    }
+
+    override fun deleteStreamsFromDb(isSubscribedStreams: Boolean) {
+        db.streamDao().deleteAllBySubscribedSign(isSubscribedStreams)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .onErrorComplete {
+                Log.e(TAG, "Deleting streams from db error", it)
+                true
+            }
+            .subscribe()
     }
 
     companion object {

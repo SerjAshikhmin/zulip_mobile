@@ -3,6 +3,7 @@ package ru.tinkoff.android.coursework.stub
 import androidx.room.DatabaseConfiguration
 import androidx.room.InvalidationTracker
 import androidx.sqlite.db.SupportSQLiteOpenHelper
+import io.reactivex.Completable
 import io.reactivex.Single
 import org.mockito.Mockito
 import org.mockito.Mockito.anyList
@@ -28,6 +29,7 @@ internal class AppDatabaseStub : AppDatabase() {
         val streamDaoMock = mock(StreamDao::class.java)
         mockStreamDaoGetAllCall(streamDaoMock)
         mockStreamDaoSaveAllCall(streamDaoMock)
+        mockStreamDaoDeleteAllBySubscribedSign(streamDaoMock)
         return streamDaoMock
     }
 
@@ -42,11 +44,12 @@ internal class AppDatabaseStub : AppDatabase() {
     override fun clearAllTables() { }
 
     private fun mockStreamDaoSaveAllCall(streamDaoMock: StreamDao) {
-        Mockito.`when`(streamDaoMock.saveAll(anyList())).thenReturn(Single.just(emptyList()))
+        Mockito.`when`(streamDaoMock.saveAllReplaceConflicts(anyList()))
+            .thenReturn(Single.just(emptyList()))
     }
 
     private fun mockStreamDaoGetAllCall(streamDaoMock: StreamDao) {
-        Mockito.`when`(streamDaoMock.getAll()).thenReturn(
+        Mockito.`when`(streamDaoMock.getAllSubscribed()).thenReturn(
             Single.just(
                 listOf(
                     StreamDb(
@@ -54,7 +57,8 @@ internal class AppDatabaseStub : AppDatabase() {
                         name = "first test stream",
                         topics = listOf(
                             TopicDto("first test topic")
-                        )
+                        ),
+                        isSubscribed = true
                     ),
                     StreamDb(
                         streamId = 2L,
@@ -62,11 +66,17 @@ internal class AppDatabaseStub : AppDatabase() {
                         topics = listOf(
                             TopicDto("second test topic"),
                             TopicDto("third test topic")
-                        )
+                        ),
+                        isSubscribed = true
                     )
                 )
             )
         )
+    }
+
+    private fun mockStreamDaoDeleteAllBySubscribedSign(streamDaoMock: StreamDao) {
+        Mockito.`when`(streamDaoMock.deleteAllBySubscribedSign(isSubscribedStreams = true))
+            .thenReturn(Completable.complete())
     }
 
 }

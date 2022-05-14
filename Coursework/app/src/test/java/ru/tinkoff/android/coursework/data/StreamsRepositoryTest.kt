@@ -21,7 +21,7 @@ internal class StreamsRepositoryTest {
             AppDatabaseStub()
         )
 
-        val testObserver = repository.loadStreamsFromDb().test()
+        val testObserver = repository.loadStreamsFromDb(isSubscribedStreams = true).test()
 
         testObserver.assertValue(
             listOf(
@@ -30,7 +30,8 @@ internal class StreamsRepositoryTest {
                     name = "first test stream",
                     topics = listOf(
                         Topic("first test topic")
-                    )
+                    ),
+                    isSubscribed = true
                 ),
                 Stream(
                     streamId = 2L,
@@ -38,7 +39,8 @@ internal class StreamsRepositoryTest {
                     topics = listOf(
                         Topic("second test topic"),
                         Topic("third test topic")
-                    )
+                    ),
+                    isSubscribed = true
                 )
             )
         )

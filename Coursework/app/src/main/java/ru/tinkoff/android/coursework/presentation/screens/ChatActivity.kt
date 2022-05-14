@@ -323,8 +323,8 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
-                val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
-                if (lastVisibleItemPosition == SCROLL_POSITION_FOR_NEXT_PORTION_LOADING
+                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+                if (firstVisibleItemPosition == SCROLL_POSITION_FOR_NEXT_PORTION_LOADING
                     && !isNewPortionLoading) {
                         isNewPortionLoading = true
                         store.accept(ChatEvent.Ui.LoadPortionOfMessages(anchor = adapter.anchor))
@@ -475,10 +475,10 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
                 when (val parentViewGroup = selectedView.parent.parent) {
                     is MessageViewGroup -> parentViewGroup.messageId
                     is SelfMessageViewGroup -> parentViewGroup.messageId
-                    else -> 0L
+                    else -> ILLEGAL_MESSAGE_ID_FOR_UNKNOWN_VIEW_TYPE
                 }
             }
-            else -> 0L
+            else -> ILLEGAL_MESSAGE_ID_FOR_UNKNOWN_VIEW_TYPE
         }
         if (emojiBox != null) {
             val emojiView = EmojiWithCountView.createEmojiWithCountView(
@@ -541,7 +541,8 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
         internal const val NO_TOPIC_STRING_VALUE = "(no topic)"
         private const val SCROLL_POSITION_FOR_NEXT_PORTION_LOADING = 5
         private const val CLIP_DATA_TEXT_LABEL = "text"
-        private const val NO_EDITED_MESSAGE_ID = 0L
+        private const val NO_EDITED_MESSAGE_ID = -1L
+        private const val ILLEGAL_MESSAGE_ID_FOR_UNKNOWN_VIEW_TYPE = -1L
     }
 
 }

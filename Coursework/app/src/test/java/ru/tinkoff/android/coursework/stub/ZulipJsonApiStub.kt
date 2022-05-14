@@ -25,17 +25,20 @@ internal object ZulipJsonApiStub {
                         StreamDto(
                             streamId = 1L,
                             name = "first test stream",
-                            topics = listOf()
+                            topics = listOf(),
+                            isSubscribed = true
                         ),
                         StreamDto(
                             streamId = 2L,
                             name = "second test stream",
-                            topics = listOf()
+                            topics = listOf(),
+                            isSubscribed = true
                         ),
                         StreamDto(
                             streamId = 3L,
                             name = "third test stream",
-                            topics = listOf()
+                            topics = listOf(),
+                            isSubscribed = true
                         )
                     )
                 )

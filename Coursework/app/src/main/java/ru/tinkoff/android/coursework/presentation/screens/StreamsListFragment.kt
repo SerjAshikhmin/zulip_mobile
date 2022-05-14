@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.findFragment
 import androidx.navigation.fragment.NavHostFragment
+import androidx.recyclerview.widget.DefaultItemAnimator
 import ru.tinkoff.android.coursework.App
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.FragmentStreamsListBinding
@@ -46,7 +47,7 @@ internal abstract class StreamsListFragment
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         adapter = StreamsListAdapter(this, this)
-        binding.streamsList.adapter = adapter
+        binding.streamsListRecycler.adapter = adapter
         binding.createChannel.setOnClickListener {
             store.accept(StreamsEvent.Ui.CreateStreamInit)
         }
@@ -63,7 +64,7 @@ internal abstract class StreamsListFragment
     override fun render(state: StreamsState) {
         if (!state.isLoading) binding.swipeRefreshLayout.isRefreshing = false
         with(adapter) {
-            showShimmer = state.isLoading
+            showShimmer = state.isLoading && !binding.swipeRefreshLayout.isRefreshing
             streams = state.items
             notifyDataSetChanged()
         }
