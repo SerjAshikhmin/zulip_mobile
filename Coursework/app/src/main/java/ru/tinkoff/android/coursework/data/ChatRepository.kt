@@ -23,6 +23,8 @@ internal interface ChatRepository {
 
     fun removeAllMessagesInTopicFromDb(topicName: String)
 
+    fun removeAllMessagesInStreamFromDb(streamName: String)
+
     fun sendMessage(
         topic: String,
         stream: String,

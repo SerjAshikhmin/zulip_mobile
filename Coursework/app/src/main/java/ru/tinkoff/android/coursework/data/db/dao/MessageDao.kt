@@ -24,4 +24,8 @@ internal interface MessageDao {
     @Query("DELETE FROM message WHERE topic_name == :topic")
     fun removeAllFromTopic(topic: String): Completable
 
+    @Query("DELETE FROM message WHERE message.stream_id = " +
+            "(SELECT streamId FROM stream WHERE name = :streamName)")
+    fun removeAllFromStream(streamName: String): Completable
+
 }

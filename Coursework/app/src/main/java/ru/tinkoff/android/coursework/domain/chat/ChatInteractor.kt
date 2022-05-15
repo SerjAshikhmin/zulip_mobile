@@ -11,6 +11,7 @@ import ru.tinkoff.android.coursework.data.api.model.response.ReactionResponse
 import ru.tinkoff.android.coursework.data.api.model.response.SendMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.UploadFileResponse
 import ru.tinkoff.android.coursework.domain.model.Message
+import ru.tinkoff.android.coursework.presentation.screens.StreamsListFragment
 
 internal class ChatInteractor(
     private val chatRepository: ChatRepository
@@ -32,7 +33,7 @@ internal class ChatInteractor(
             )
                 .doOnSuccess {
                     if (it.isNotEmpty()) {
-                        cacheMessages(it, topicName)
+                        cacheMessages(it, streamName, topicName)
                     }
                 }
                 .toObservable()
@@ -113,9 +114,14 @@ internal class ChatInteractor(
 
     private fun cacheMessages(
         messages: List<Message>,
+        streamName: String,
         topicName: String
     ) {
-        chatRepository.removeAllMessagesInTopicFromDb(topicName)
+        if (topicName == StreamsListFragment.ALL_TOPICS_IN_STREAM) {
+            chatRepository.removeAllMessagesInStreamFromDb(streamName)
+        } else {
+            chatRepository.removeAllMessagesInTopicFromDb(topicName)
+        }
         chatRepository.saveMessagesToDb(messages.takeLast(MAX_NUMBER_OF_MESSAGES_IN_CACHE))
     }
 

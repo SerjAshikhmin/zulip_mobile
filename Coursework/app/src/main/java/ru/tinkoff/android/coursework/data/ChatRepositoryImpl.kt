@@ -84,6 +84,17 @@ internal class ChatRepositoryImpl @Inject constructor(
             .subscribe()
     }
 
+    override fun removeAllMessagesInStreamFromDb(streamName: String) {
+        db.messageDao().removeAllFromStream(streamName)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .onErrorComplete {
+                Log.e(TAG, "Removing messages from db error", it)
+                true
+            }
+            .subscribe()
+    }
+
     override fun saveMessagesToDb(messages: List<Message>) {
         db.messageDao().saveAll(MessageMapper.toDbMessagesList(messages))
             .subscribeOn(Schedulers.io())
