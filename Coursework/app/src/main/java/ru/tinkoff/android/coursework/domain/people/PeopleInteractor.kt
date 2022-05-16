@@ -21,4 +21,13 @@ internal class PeopleInteractor (
             .subscribeOn(Schedulers.io())
     }
 
+    fun updateUsers(): Observable<List<User>> {
+        return peopleRepository.loadUsersFromApi()
+            .doOnSuccess {
+                peopleRepository.saveUsersToDb(it)
+            }
+            .toObservable()
+            .subscribeOn(Schedulers.io())
+    }
+
 }

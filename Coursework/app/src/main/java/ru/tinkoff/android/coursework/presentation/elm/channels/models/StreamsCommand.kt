@@ -4,6 +4,8 @@ internal sealed class StreamsCommand {
 
     data class LoadStreamsList(val isSubscribedStreams: Boolean = false) : StreamsCommand()
 
+    data class UpdateStreamsList(val isSubscribedStreams: Boolean = false) : StreamsCommand()
+
     object SubscribeOnSearchStreamsEvents : StreamsCommand()
 
     data class SearchStreamsByQuery(val query: String) : StreamsCommand()

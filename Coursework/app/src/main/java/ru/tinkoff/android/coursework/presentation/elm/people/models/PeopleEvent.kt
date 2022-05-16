@@ -11,6 +11,8 @@ internal sealed class PeopleEvent {
 
         object LoadPeopleList : Ui()
 
+        object UpdatePeopleList : Ui()
+
         data class LoadProfile(val bundle: Bundle) : Ui()
 
     }

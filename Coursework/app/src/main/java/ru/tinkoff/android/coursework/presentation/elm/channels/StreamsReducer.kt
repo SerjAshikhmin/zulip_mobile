@@ -28,6 +28,15 @@ internal class StreamsReducer
                 }
                 commands { +StreamsCommand.LoadStreamsList() }
             }
+            is StreamsEvent.Ui.UpdateAllStreamsList -> {
+                state {
+                    copy(
+                        isLoading = true,
+                        error = null
+                    )
+                }
+                commands { +StreamsCommand.UpdateStreamsList() }
+            }
             is StreamsEvent.Ui.LoadSubscribedStreamsList -> {
                 state {
                     copy(
@@ -36,6 +45,15 @@ internal class StreamsReducer
                     )
                 }
                 commands { +StreamsCommand.LoadStreamsList(isSubscribedStreams = true) }
+            }
+            is StreamsEvent.Ui.UpdateSubscribedStreamsList -> {
+                state {
+                    copy(
+                        isLoading = true,
+                        error = null
+                    )
+                }
+                commands { +StreamsCommand.UpdateStreamsList(isSubscribedStreams = true) }
             }
             is StreamsEvent.Ui.LoadChat-> {
                 state {

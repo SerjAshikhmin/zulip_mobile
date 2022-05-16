@@ -29,6 +29,17 @@ internal class ChannelsInteractor(
             .subscribeOn(Schedulers.io())
     }
 
+    fun updateStreams(isSubscribedStreams: Boolean): Observable<List<Stream>> {
+        return streamsRepository.loadStreamsFromApi(isSubscribedStreams)
+                .doOnSuccess {
+                    if (it.isNotEmpty()) {
+                        cacheStreams(it, isSubscribedStreams)
+                    }
+                }
+            .toObservable()
+            .subscribeOn(Schedulers.io())
+    }
+
     private fun cacheStreams(streams: List<Stream>, isSubscribedStreams: Boolean) {
         streamsRepository.deleteStreamsFromDb(isSubscribedStreams)
         streamsRepository.saveStreamsToDb(streams, isSubscribedStreams)

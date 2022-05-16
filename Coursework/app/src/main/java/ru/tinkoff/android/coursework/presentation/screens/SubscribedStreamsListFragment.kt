@@ -27,8 +27,9 @@ internal class SubscribedStreamsListFragment: StreamsListFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         store.accept(StreamsEvent.Ui.LoadSubscribedStreamsList)
+
         binding.swipeRefreshLayout.setOnRefreshListener {
-            store.accept(StreamsEvent.Ui.LoadSubscribedStreamsList)
+            store.accept(StreamsEvent.Ui.UpdateSubscribedStreamsList)
         }
     }
 

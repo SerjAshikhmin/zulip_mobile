@@ -27,6 +27,15 @@ internal class PeopleReducer : DslReducer<PeopleEvent, PeopleState, PeopleEffect
                 }
                 commands { +PeopleCommand.LoadPeopleList }
             }
+            is PeopleEvent.Ui.UpdatePeopleList -> {
+                state {
+                    copy(
+                        isLoading = true,
+                        error = null
+                    )
+                }
+                commands { +PeopleCommand.UpdatePeopleList }
+            }
             is PeopleEvent.Ui.LoadProfile -> {
                 state {
                     copy(

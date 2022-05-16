@@ -29,9 +29,10 @@ internal class AllStreamsListFragment: StreamsListFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         store.accept(StreamsEvent.Ui.LoadAllStreamsList)
+
         binding.swipeRefreshLayout.setOnRefreshListener {
             if (searchQuery.isEmpty()) {
-                store.accept(StreamsEvent.Ui.LoadAllStreamsList)
+                store.accept(StreamsEvent.Ui.UpdateAllStreamsList)
             } else {
                 binding.swipeRefreshLayout.isRefreshing = false
             }

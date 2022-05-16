@@ -17,6 +17,12 @@ internal class StreamsActor(
                     { streams -> StreamsEvent.Internal.StreamsListLoaded(items = streams) },
                     { error -> StreamsEvent.Internal.StreamsListLoadingError(error) }
                 )
+        is StreamsCommand.UpdateStreamsList ->
+            channelsInteractor.updateStreams(command.isSubscribedStreams)
+                .mapEvents(
+                    { streams -> StreamsEvent.Internal.StreamsListLoaded(items = streams) },
+                    { error -> StreamsEvent.Internal.StreamsListLoadingError(error) }
+                )
         is StreamsCommand.SubscribeOnSearchStreamsEvents ->
             channelsInteractor.subscribeOnSearchStreamsEvents()
                 .mapEvents(

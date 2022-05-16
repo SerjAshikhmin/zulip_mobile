@@ -11,7 +11,11 @@ internal sealed class StreamsEvent {
 
         object LoadAllStreamsList : Ui()
 
+        object UpdateAllStreamsList : Ui()
+
         object LoadSubscribedStreamsList : Ui()
+
+        object UpdateSubscribedStreamsList : Ui()
 
         data class LoadChat(val bundle: Bundle) : Ui()
 

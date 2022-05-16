@@ -49,8 +49,9 @@ internal class PeopleFragment
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         store.accept(PeopleEvent.Ui.LoadPeopleList)
+
         binding.swipeRefreshLayout.setOnRefreshListener {
-            store.accept(PeopleEvent.Ui.LoadPeopleList)
+            store.accept(PeopleEvent.Ui.UpdatePeopleList)
         }
 
         adapter = PeopleListAdapter(this)
