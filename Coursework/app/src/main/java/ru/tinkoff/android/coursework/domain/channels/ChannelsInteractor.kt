@@ -41,8 +41,10 @@ internal class ChannelsInteractor(
     }
 
     private fun cacheStreams(streams: List<Stream>, isSubscribedStreams: Boolean) {
-        streamsRepository.deleteStreamsFromDb(isSubscribedStreams)
-        streamsRepository.saveStreamsToDb(streams, isSubscribedStreams)
+        if (streams.isNotEmpty()) {
+            streamsRepository.deleteStreamsFromDb(isSubscribedStreams)
+            streamsRepository.saveStreamsToDb(streams, isSubscribedStreams)
+        }
     }
 
     fun processSearchQuery(query: String) = queryEvents.onNext(query)

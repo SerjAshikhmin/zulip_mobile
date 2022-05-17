@@ -90,6 +90,9 @@ internal class StreamsRepositoryImpl @Inject constructor(
                 )
             ).contentToString()
         )
+            .doOnError {
+                Log.e(TAG, "Stream creation error", it)
+            }
     }
 
     private fun getTopicsInStream(stream: StreamDto): Single<Stream> {

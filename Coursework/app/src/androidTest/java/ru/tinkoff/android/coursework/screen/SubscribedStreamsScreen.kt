@@ -15,7 +15,7 @@ internal object SubscribedStreamsScreen : KScreen<SubscribedStreamsScreen>() {
     override val viewClass: Class<*> = SubscribedStreamsListFragment::class.java
 
     val streamsList = KRecyclerView(
-        { withId(R.id.streams_list) },
+        { withId(R.id.streams_list_recycler) },
         { itemType { StreamItem(it) } }
     )
 

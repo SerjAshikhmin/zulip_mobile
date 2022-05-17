@@ -29,8 +29,8 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
     internal lateinit var streamsElmStoreFactory: StreamsElmStoreFactory
 
     override var initEvent: StreamsEvent = StreamsEvent.Ui.SubscribeOnSearchStreamsEvents
+    private var streamsListPagerAdapter: StreamsListPagerAdapter? = null
     private lateinit var binding: FragmentChannelsBinding
-    private lateinit var streamsListPagerAdapter: StreamsListPagerAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,8 +53,8 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
                 allStreamsTab?.select()
                 val query = text?.toString().orEmpty()
                 store.accept(StreamsEvent.Ui.SearchStreamsByQuery(query))
-                if (streamsListPagerAdapter.isAllStreamsListFragment()) {
-                    streamsListPagerAdapter.allStreamsListFragment.searchQuery = query
+                if (streamsListPagerAdapter?.isAllStreamsListFragment() == true) {
+                    streamsListPagerAdapter?.allStreamsListFragment?.searchQuery = query
                 }
             }
         }, 100)
@@ -66,6 +66,12 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        configureViewPager()
+        streamsListPagerAdapter = (binding.pager.adapter as StreamsListPagerAdapter)
+    }
+
     override fun createStore(): Store<StreamsEvent, StreamsEffect, StreamsState> {
         val streamsComponent = DaggerStreamsComponent.factory().create(
             (activity?.application as App).applicationComponent
@@ -75,9 +81,10 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
     }
 
     override fun render(state: StreamsState) {
-        if (streamsListPagerAdapter.isAllStreamsListFragment()
-            && streamsListPagerAdapter.allStreamsListFragment.searchQuery.isNotEmpty()) {
-            streamsListPagerAdapter.allStreamsListFragment.updateStreams(
+        if (streamsListPagerAdapter?.isAllStreamsListFragment() == true
+            && streamsListPagerAdapter?.allStreamsListFragment?.searchQuery?.isNotEmpty() == true
+        ) {
+            streamsListPagerAdapter?.allStreamsListFragment?.updateStreams(
                 state.items
             )
         }
@@ -86,7 +93,7 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
     override fun handleEffect(effect: StreamsEffect) {
         when(effect) {
             is StreamsEffect.StreamsListLoadError -> {
-                if (streamsListPagerAdapter.isAllStreamsListFragment()) {
+                if (streamsListPagerAdapter?.isAllStreamsListFragment() == true) {
                     (binding.pager.adapter as? StreamsListPagerAdapter)
                         ?.allStreamsListFragment?.updateStreams(listOf())
                 }
