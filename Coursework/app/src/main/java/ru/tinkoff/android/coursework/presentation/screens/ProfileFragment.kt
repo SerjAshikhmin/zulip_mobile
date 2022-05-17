@@ -1,7 +1,6 @@
 package ru.tinkoff.android.coursework.presentation.screens
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,6 +16,8 @@ import ru.tinkoff.android.coursework.presentation.elm.profile.ProfileElmStoreFac
 import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileEffect
 import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileEvent
 import ru.tinkoff.android.coursework.presentation.elm.profile.models.ProfileState
+import ru.tinkoff.android.coursework.utils.checkHttpTooManyRequestsException
+import ru.tinkoff.android.coursework.utils.checkUnknownHostException
 import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
 import vivid.money.elmslie.android.base.ElmFragment
 import vivid.money.elmslie.core.store.Store
@@ -68,11 +69,14 @@ internal class ProfileFragment : ElmFragment<ProfileEvent, ProfileEffect, Profil
     override fun handleEffect(effect: ProfileEffect) {
         when(effect) {
             is ProfileEffect.ProfileLoadError -> {
-                Log.e(TAG, resources.getString(R.string.user_not_found_error_text), effect.error)
-                binding.root.showSnackBarWithRetryAction(
-                    resources.getString(R.string.user_not_found_error_text),
-                    Snackbar.LENGTH_LONG
-                ) { store.accept(ProfileEvent.Ui.LoadOwnProfile) }
+                if (!requireContext().checkUnknownHostException(effect.error)
+                    && !requireContext().checkHttpTooManyRequestsException(effect.error)
+                ) {
+                    binding.root.showSnackBarWithRetryAction(
+                        resources.getString(R.string.user_not_found_error_text),
+                        Snackbar.LENGTH_LONG
+                    ) { store.accept(ProfileEvent.Ui.LoadOwnProfile) }
+                }
             }
         }
     }
@@ -117,8 +121,6 @@ internal class ProfileFragment : ElmFragment<ProfileEvent, ProfileEffect, Profil
         const val ACTIVE_PRESENCE_COLOR = R.color.green_500
         const val IDLE_PRESENCE_COLOR = R.color.orange_500
         const val OFFLINE_PRESENCE_COLOR = R.color.red_500
-
-        private const val TAG = "ProfileFragment"
     }
 
 }

@@ -1,12 +1,10 @@
 package ru.tinkoff.android.coursework.data
 
-import android.content.Context
 import android.util.Log
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import okhttp3.MultipartBody
-import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.api.ZulipJsonApi
 import ru.tinkoff.android.coursework.data.api.model.request.NarrowRequest
 import ru.tinkoff.android.coursework.data.api.model.response.ActionWithMessageResponse
@@ -21,7 +19,6 @@ import ru.tinkoff.android.coursework.presentation.screens.StreamsListFragment.Co
 import javax.inject.Inject
 
 internal class ChatRepositoryImpl @Inject constructor(
-    private val applicationContext: Context,
     private val zulipJsonApi: ZulipJsonApi,
     private val db: AppDatabase
 ) : ChatRepository {
@@ -71,6 +68,9 @@ internal class ChatRepositoryImpl @Inject constructor(
             narrow = narrow
         )
             .map { MessageMapper.messagesDtoToMessagesList(it.messages) }
+            .doOnError {
+                Log.e(TAG, "Loading messages from api error", it)
+            }
     }
 
     override fun removeAllMessagesInTopicFromDb(topicName: String) {
@@ -116,6 +116,9 @@ internal class ChatRepositoryImpl @Inject constructor(
             content = content,
             topic = topic
         )
+            .doOnError {
+                Log.e(TAG, "Sending message error", it)
+            }
     }
 
     override fun addReaction(messageId: Long, emojiName: String): Single<ReactionResponse> {
@@ -123,6 +126,9 @@ internal class ChatRepositoryImpl @Inject constructor(
             messageId = messageId,
             emojiName = emojiName
         )
+            .doOnError {
+                Log.e(TAG, "Adding reaction error", it)
+            }
     }
 
     override fun removeReaction(messageId: Long, emojiName: String): Single<ReactionResponse> {
@@ -130,22 +136,31 @@ internal class ChatRepositoryImpl @Inject constructor(
             messageId = messageId,
             emojiName = emojiName
         )
+            .doOnError {
+                Log.e(TAG, "Removing reaction error", it)
+            }
     }
 
     override fun uploadFile(fileBody: MultipartBody.Part): Single<UploadFileResponse> {
         return zulipJsonApi.uploadFile(fileBody)
             .doOnError {
-                Log.e(TAG, applicationContext.resources.getString(R.string.uploading_file_error_text), it)
+                Log.e(TAG, "Uploading file error", it)
             }
     }
 
     override fun loadSingleMessageFromApi(messageId: Long): Single<Message> {
         return zulipJsonApi.loadSingleMessage(messageId)
             .map { MessageMapper.messageDtoToMessage(it.message) }
+            .doOnError {
+                Log.e(TAG, "Loading message from api error", it)
+            }
     }
 
     override fun deleteMessage(messageId: Long): Single<ActionWithMessageResponse> {
         return zulipJsonApi.deleteMessage(messageId)
+            .doOnError {
+                Log.e(TAG, "Deleting message error", it)
+            }
     }
 
     override fun editMessage(
@@ -154,6 +169,9 @@ internal class ChatRepositoryImpl @Inject constructor(
         content: String
     ): Single<ActionWithMessageResponse> {
         return zulipJsonApi.editMessage(messageId, topicName, content)
+            .doOnError {
+                Log.e(TAG, "Editing message error", it)
+            }
     }
 
     companion object {

@@ -23,6 +23,8 @@
     <string name="editing_message_error_text">Editing message error</string>
     <string name="uploading_file_error_text">Uploading file error</string>
     <string name="stream_creation_error_text">Stream creation error</string>
+    <string name="too_many_requests_error_text">Too many requests, please try again later</string>
+    <string name="connection_error_text">Error loading. Check your connection and try again</string>
     <string name="retry_action_snack_bar_text">Retry</string>
     <string name="profile_toolbar_title">Profile</string>
     <string name="create_new_channel_text">Create new channel</string>

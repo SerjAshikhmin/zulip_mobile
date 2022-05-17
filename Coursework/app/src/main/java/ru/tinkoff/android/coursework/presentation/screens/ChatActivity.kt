@@ -38,13 +38,10 @@ import ru.tinkoff.android.coursework.presentation.screens.StreamsListFragment.Co
 import ru.tinkoff.android.coursework.presentation.screens.adapters.ChatMessagesAdapter
 import ru.tinkoff.android.coursework.presentation.screens.listeners.*
 import ru.tinkoff.android.coursework.utils.*
-import ru.tinkoff.android.coursework.utils.copy
-import ru.tinkoff.android.coursework.utils.getFileNameFromContentUri
-import ru.tinkoff.android.coursework.utils.hasPermissions
-import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
 import vivid.money.elmslie.android.base.ElmActivity
 import vivid.money.elmslie.core.store.Store
-import java.io.*
+import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 
 @ActivityScope
@@ -102,69 +99,31 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
                 binding.enterMessage.text.clear()
             }
             is ChatEffect.FileUploadedEffect -> {
-                binding.enterMessage.text.append("[${effect.fileName}](${effect.fileUri})\n\n")
-                binding.sendButton.showActionIcon(R.drawable.ic_send, R.color.teal_500)
+                processFileUploadedEffect(effect)
             }
             is ChatEffect.StartEditMessageEffect -> {
-                with(binding) {
-                    topicEditText.visibility = View.VISIBLE
-                    topicEditText.setText(effect.message.topicName)
-                    enterMessage.setText(getFormattedContentFromHtml(effect.message.content)?.trim())
-                    sendButton.showActionIcon(R.drawable.ic_confirm_edit, R.color.teal_500)
-                }
-                editedMessageId = effect.message.id
+                processStartEditMessageEffect(effect)
             }
             is ChatEffect.MessageEditedEffect -> {
-                with(binding) {
-                    sendButton.showActionIcon(R.drawable.ic_add, R.color.grey_500)
-                    enterMessage.text.clear()
-                    if (topicName != ALL_TOPICS_IN_STREAM) {
-                        topicEditText.visibility = View.GONE
-                    } else {
-                        topicEditText.text.clear()
-                    }
-                }
-                editedMessageId = NO_EDITED_MESSAGE_ID
+                processMessageEditedEffect()
             }
             is ChatEffect.NavigateToChat -> {
-                val intent = Intent(this, ChatActivity::class.java)
-                intent.putExtra(STREAM_NAME_KEY, streamName)
-                intent.putExtra(TOPIC_NAME_KEY, effect.topicName)
-                startActivity(intent)
+                processNavigateToChatEffect(effect)
             }
             is ChatEffect.MessagesLoadingError -> {
-                binding.root.showSnackBarWithRetryAction(
-                    resources.getString(R.string.messages_not_found_error_text),
-                    Snackbar.LENGTH_LONG
-                ) { configureChatRecycler() }
+                processMessageLoadingError(effect)
             }
             is ChatEffect.MessageSendingError -> {
-                binding.root.showSnackBarWithRetryAction(
-                    resources.getString(R.string.sending_message_error_text),
-                    Snackbar.LENGTH_LONG
-                ) { }
+                processMessageSendingError(effect)
             }
             is ChatEffect.MessageDeletingError -> {
-                Toast.makeText(
-                    this,
-                    resources.getString(R.string.deleting_message_error_text),
-                    Toast.LENGTH_LONG
-                )
-                    .show()
+                processMessageDeletingError(effect)
             }
             is ChatEffect.MessageEditingError -> {
-                Toast.makeText(
-                    this,
-                    resources.getString(R.string.editing_message_error_text),
-                    Toast.LENGTH_LONG
-                )
-                    .show()
+                processMessageEditingError(effect)
             }
             is ChatEffect.FileUploadingError -> {
-                binding.root.showSnackBarWithRetryAction(
-                    resources.getString(R.string.uploading_file_error_text),
-                    Snackbar.LENGTH_LONG
-                ) { store.accept(ChatEvent.Ui.UploadFile(effect.fileName, effect.fileBody)) }
+                processFileUploadingError(effect)
             }
         }
     }
@@ -360,37 +319,42 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
             }
         }
 
-        sendButton.setOnClickListener {
-            if (enterMessage.text.isNotEmpty()) {
-                if (editedMessageId != NO_EDITED_MESSAGE_ID) {
-                    store.accept(
-                        ChatEvent.Ui.EditMessage(
-                            messageId = editedMessageId,
-                            topicName = binding.topicEditText.text.toString(),
-                            content = enterMessage.text.toString()
-                        )
+        sendButton.setOnClickListener { sendButtonOnClickFunc(enterMessage, topicEditText) }
+    }
+
+    private fun sendButtonOnClickFunc(
+        enterMessage: EditText,
+        topicEditText: AutoCompleteTextView
+    ) {
+        if (enterMessage.text.isNotEmpty()) {
+            if (editedMessageId != NO_EDITED_MESSAGE_ID) {
+                store.accept(
+                    ChatEvent.Ui.EditMessage(
+                        messageId = editedMessageId,
+                        topicName = binding.topicEditText.text.toString(),
+                        content = enterMessage.text.toString()
                     )
-                } else {
-                    val topicName = getTopicNameForSendingMessage(topicEditText)
-                    store.accept(
-                        ChatEvent.Ui.SendMessage(
-                            topicName = topicName,
-                            streamName = streamName,
-                            content = enterMessage.text.toString()
-                        )
-                    )
-                }
-                hideKeyboard(enterMessage)
+                )
             } else {
-                if (!hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    ActivityCompat.requestPermissions(
-                        this,
-                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                        1
+                val topicName = getTopicNameForSendingMessage(topicEditText)
+                store.accept(
+                    ChatEvent.Ui.SendMessage(
+                        topicName = topicName,
+                        streamName = streamName,
+                        content = enterMessage.text.toString()
                     )
-                } else {
-                    selectFileResultLauncher.launch("*/*")
-                }
+                )
+            }
+            hideKeyboard(enterMessage)
+        } else {
+            if (!hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    1
+                )
+            } else {
+                selectFileResultLauncher.launch("*/*")
             }
         }
     }
@@ -402,7 +366,6 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
                 topicEditText.showDropDown()
             }
         }
-
         topicEditText.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus && (view as? EditText)?.text?.isEmpty() == true) {
                 updateTopicsAdapter(topicEditText)
@@ -497,6 +460,99 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
                     )
                 )
             }
+        }
+    }
+
+    private fun processFileUploadedEffect(effect: ChatEffect.FileUploadedEffect) {
+        binding.enterMessage.text.append("[${effect.fileName}](${effect.fileUri})\n\n")
+        binding.sendButton.showActionIcon(R.drawable.ic_send, R.color.teal_500)
+    }
+
+    private fun processStartEditMessageEffect(effect: ChatEffect.StartEditMessageEffect) {
+        with(binding) {
+            topicEditText.visibility = View.VISIBLE
+            topicEditText.setText(effect.message.topicName)
+            enterMessage.setText(getFormattedContentFromHtml(effect.message.content)?.trim())
+            sendButton.showActionIcon(R.drawable.ic_confirm_edit, R.color.teal_500)
+        }
+        editedMessageId = effect.message.id
+    }
+
+    private fun processMessageEditedEffect() {
+        with(binding) {
+            sendButton.showActionIcon(R.drawable.ic_add, R.color.grey_500)
+            enterMessage.text.clear()
+            if (topicName != ALL_TOPICS_IN_STREAM) {
+                topicEditText.visibility = View.GONE
+            } else {
+                topicEditText.text.clear()
+            }
+        }
+        editedMessageId = NO_EDITED_MESSAGE_ID
+    }
+
+    private fun processNavigateToChatEffect(effect: ChatEffect.NavigateToChat) {
+        val intent = Intent(this, ChatActivity::class.java)
+        intent.putExtra(STREAM_NAME_KEY, streamName)
+        intent.putExtra(TOPIC_NAME_KEY, effect.topicName)
+        startActivity(intent)
+    }
+
+    private fun processMessageLoadingError(effect: ChatEffect.MessagesLoadingError) {
+        if (!checkUnknownHostException(effect.error)
+            && !checkHttpTooManyRequestsException(effect.error)
+        ) {
+            binding.root.showSnackBarWithRetryAction(
+                resources.getString(R.string.messages_not_found_error_text),
+                Snackbar.LENGTH_LONG
+            ) { configureChatRecycler() }
+        }
+    }
+
+    private fun processMessageSendingError(effect: ChatEffect.MessageSendingError) {
+        if (!checkUnknownHostException(effect.error)
+            && !checkHttpTooManyRequestsException(effect.error)
+        ) {
+            Toast.makeText(
+                this,
+                resources.getString(R.string.sending_message_error_text),
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    private fun processMessageDeletingError(effect: ChatEffect.MessageDeletingError) {
+        if (!checkUnknownHostException(effect.error)
+            && !checkHttpTooManyRequestsException(effect.error)
+        ) {
+            Toast.makeText(
+                this,
+                resources.getString(R.string.deleting_message_error_text),
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    private fun processMessageEditingError(effect: ChatEffect.MessageEditingError) {
+        if (!checkUnknownHostException(effect.error)
+            && !checkHttpTooManyRequestsException(effect.error)
+        ) {
+            Toast.makeText(
+                this,
+                resources.getString(R.string.editing_message_error_text),
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    private fun processFileUploadingError(effect: ChatEffect.FileUploadingError) {
+        if (!checkUnknownHostException(effect.error)
+            && !checkHttpTooManyRequestsException(effect.error)
+        ) {
+            binding.root.showSnackBarWithRetryAction(
+                resources.getString(R.string.uploading_file_error_text),
+                Snackbar.LENGTH_LONG
+            ) { store.accept(ChatEvent.Ui.UploadFile(effect.fileName, effect.fileBody)) }
         }
     }
 

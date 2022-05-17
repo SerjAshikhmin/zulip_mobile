@@ -6,6 +6,8 @@ import com.google.android.material.snackbar.Snackbar
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEffect
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEvent
+import ru.tinkoff.android.coursework.utils.checkHttpTooManyRequestsException
+import ru.tinkoff.android.coursework.utils.checkUnknownHostException
 import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
 
 internal class SubscribedStreamsListFragment: StreamsListFragment() {
@@ -16,10 +18,14 @@ internal class SubscribedStreamsListFragment: StreamsListFragment() {
         super.handleEffect(effect)
         when(effect) {
             is StreamsEffect.StreamsListLoadError -> {
-                binding.root.showSnackBarWithRetryAction(
-                    resources.getString(R.string.streams_not_found_error_text),
-                    Snackbar.LENGTH_LONG
-                ) { store.accept(StreamsEvent.Ui.LoadSubscribedStreamsList) }
+                if (!requireContext().checkUnknownHostException(effect.error)
+                    && !requireContext().checkHttpTooManyRequestsException(effect.error)
+                ) {
+                    binding.root.showSnackBarWithRetryAction(
+                        resources.getString(R.string.streams_not_found_error_text),
+                        Snackbar.LENGTH_LONG
+                    ) { store.accept(StreamsEvent.Ui.LoadSubscribedStreamsList) }
+                }
             }
         }
     }

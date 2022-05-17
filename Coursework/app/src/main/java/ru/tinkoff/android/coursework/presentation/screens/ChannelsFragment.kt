@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import com.google.android.material.tabs.TabLayoutMediator
 import ru.tinkoff.android.coursework.App
@@ -87,17 +86,11 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
     override fun handleEffect(effect: StreamsEffect) {
         when(effect) {
             is StreamsEffect.StreamsListLoadError -> {
-                (binding.pager.adapter as? StreamsListPagerAdapter)
-                    ?.allStreamsListFragment?.updateStreams(listOf())
-
+                if (streamsListPagerAdapter.isAllStreamsListFragment()) {
+                    (binding.pager.adapter as? StreamsListPagerAdapter)
+                        ?.allStreamsListFragment?.updateStreams(listOf())
+                }
                 store.accept(StreamsEvent.Ui.SubscribeOnSearchStreamsEvents)
-
-                Toast.makeText(
-                    context,
-                    resources.getString(R.string.search_streams_error_text),
-                    Toast.LENGTH_LONG
-                )
-                    .show()
             }
         }
     }

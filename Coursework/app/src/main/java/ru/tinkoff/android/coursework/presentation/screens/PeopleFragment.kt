@@ -1,7 +1,6 @@
 package ru.tinkoff.android.coursework.presentation.screens
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,15 +11,17 @@ import com.google.android.material.snackbar.Snackbar
 import ru.tinkoff.android.coursework.App
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.FragmentPeopleBinding
-import ru.tinkoff.android.coursework.di.*
+import ru.tinkoff.android.coursework.di.ActivityScope
 import ru.tinkoff.android.coursework.di.people.DaggerPeopleComponent
 import ru.tinkoff.android.coursework.domain.model.User
 import ru.tinkoff.android.coursework.presentation.elm.people.PeopleElmStoreFactory
 import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleEffect
 import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleEvent
 import ru.tinkoff.android.coursework.presentation.elm.people.models.PeopleState
-import ru.tinkoff.android.coursework.presentation.screens.listeners.OnUserItemClickListener
 import ru.tinkoff.android.coursework.presentation.screens.adapters.PeopleListAdapter
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnUserItemClickListener
+import ru.tinkoff.android.coursework.utils.checkHttpTooManyRequestsException
+import ru.tinkoff.android.coursework.utils.checkUnknownHostException
 import ru.tinkoff.android.coursework.utils.showSnackBarWithRetryAction
 import vivid.money.elmslie.android.base.ElmFragment
 import vivid.money.elmslie.core.store.Store
@@ -80,11 +81,14 @@ internal class PeopleFragment
     override fun handleEffect(effect: PeopleEffect) {
         when(effect) {
             is PeopleEffect.PeopleListLoadError -> {
-                Log.e(TAG, resources.getString(R.string.people_not_found_error_text), effect.error)
-                binding.root.showSnackBarWithRetryAction(
-                    resources.getString(R.string.people_not_found_error_text),
-                    Snackbar.LENGTH_LONG
-                ) { store.accept(PeopleEvent.Ui.LoadPeopleList) }
+                if (!requireContext().checkUnknownHostException(effect.error)
+                    && !requireContext().checkHttpTooManyRequestsException(effect.error)
+                ) {
+                    binding.root.showSnackBarWithRetryAction(
+                        resources.getString(R.string.people_not_found_error_text),
+                        Snackbar.LENGTH_LONG
+                    ) { store.accept(PeopleEvent.Ui.LoadPeopleList) }
+                }
             }
             is PeopleEffect.NavigateToProfile -> {
                 NavHostFragment.findNavController(binding.root.findFragment())
@@ -107,7 +111,6 @@ internal class PeopleFragment
     companion object {
 
         const val NOT_FOUND_PRESENCE_KEY = "not found"
-        private const val TAG = "PeopleFragment"
     }
 
 }
