@@ -64,7 +64,8 @@ dependencies {
     implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
     implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofitVersion"
     implementation "com.squareup.okhttp3:logging-interceptor:$loggingInterceptorVersion"
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationJsonVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:" +
+            "$kotlinxSerializationJsonVersion"
     implementation "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:" +
             "$kotlinxSerializationConverterVersion"
 
