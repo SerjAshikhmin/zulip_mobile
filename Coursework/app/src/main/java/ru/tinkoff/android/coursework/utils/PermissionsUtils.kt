@@ -10,3 +10,7 @@ internal fun hasPermissions(
 ): Boolean = permissions.all {
     ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
 }
+
+internal fun permissionGranted(
+    grantResults: IntArray
+) = (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)

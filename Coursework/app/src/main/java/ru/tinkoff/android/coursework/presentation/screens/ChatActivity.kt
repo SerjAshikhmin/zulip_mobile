@@ -230,6 +230,19 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
         }
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == READ_EXTERNAL_STORAGE_REQUEST_CODE) {
+            if (permissionGranted(grantResults)) {
+                selectFileResultLauncher.launch("*/*")
+            }
+        }
+    }
+
     private fun configureToolbar() {
         with(binding) {
             backIcon.setOnClickListener {
@@ -347,11 +360,11 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
             }
             hideKeyboard(enterMessage)
         } else {
-            if (!hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            if (!hasPermissions(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 ActivityCompat.requestPermissions(
                     this,
-                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    1
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                    READ_EXTERNAL_STORAGE_REQUEST_CODE
                 )
             } else {
                 selectFileResultLauncher.launch("*/*")
@@ -599,6 +612,7 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
         private const val CLIP_DATA_TEXT_LABEL = "text"
         private const val NO_EDITED_MESSAGE_ID = -1L
         private const val ILLEGAL_MESSAGE_ID_FOR_UNKNOWN_VIEW_TYPE = -1L
+        private const val READ_EXTERNAL_STORAGE_REQUEST_CODE = 81
     }
 
 }
