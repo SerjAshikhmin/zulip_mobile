@@ -5,7 +5,7 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import okhttp3.MultipartBody
-import ru.tinkoff.android.coursework.data.ChatRepository
+import ru.tinkoff.android.coursework.domain.interfaces.ChatRepository
 import ru.tinkoff.android.coursework.data.api.model.response.ActionWithMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.ReactionResponse
 import ru.tinkoff.android.coursework.data.api.model.response.SendMessageResponse

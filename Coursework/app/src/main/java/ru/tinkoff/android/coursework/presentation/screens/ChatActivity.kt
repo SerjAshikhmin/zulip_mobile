@@ -335,10 +335,7 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
         sendButton.setOnClickListener { sendButtonOnClickFunc(enterMessage, topicEditText) }
     }
 
-    private fun sendButtonOnClickFunc(
-        enterMessage: EditText,
-        topicEditText: AutoCompleteTextView
-    ) {
+    private val sendButtonOnClickFunc: (EditText, AutoCompleteTextView) -> (Unit) = { enterMessage, topicEditText ->
         if (enterMessage.text.isNotEmpty()) {
             if (editedMessageId != NO_EDITED_MESSAGE_ID) {
                 store.accept(

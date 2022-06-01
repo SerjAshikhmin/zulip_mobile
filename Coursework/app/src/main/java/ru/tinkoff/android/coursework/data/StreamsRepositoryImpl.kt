@@ -11,6 +11,7 @@ import ru.tinkoff.android.coursework.data.api.model.response.SubscribeToStreamRe
 import ru.tinkoff.android.coursework.data.api.model.response.TopicsListResponse
 import ru.tinkoff.android.coursework.data.db.AppDatabase
 import ru.tinkoff.android.coursework.data.mappers.StreamMapper
+import ru.tinkoff.android.coursework.domain.interfaces.StreamsRepository
 import ru.tinkoff.android.coursework.domain.model.Stream
 import javax.inject.Inject
 

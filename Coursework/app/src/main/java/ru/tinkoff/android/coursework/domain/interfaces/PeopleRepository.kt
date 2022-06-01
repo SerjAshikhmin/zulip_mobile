@@ -1,4 +1,4 @@
-package ru.tinkoff.android.coursework.data
+package ru.tinkoff.android.coursework.domain.interfaces
 
 import android.os.Bundle
 import io.reactivex.Single

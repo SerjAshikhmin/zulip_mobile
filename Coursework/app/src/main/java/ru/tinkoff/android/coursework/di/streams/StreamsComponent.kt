@@ -1,7 +1,7 @@
 package ru.tinkoff.android.coursework.di.streams
 
 import dagger.Component
-import ru.tinkoff.android.coursework.data.StreamsRepository
+import ru.tinkoff.android.coursework.domain.interfaces.StreamsRepository
 import ru.tinkoff.android.coursework.di.ActivityScope
 import ru.tinkoff.android.coursework.di.ApplicationComponent
 import ru.tinkoff.android.coursework.domain.channels.ChannelsInteractor

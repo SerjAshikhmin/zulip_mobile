@@ -52,8 +52,9 @@
 
     <ru.tinkoff.android.coursework.presentation.customviews.FlexBoxLayout
         android:id="@+id/emoji_box"
+        android:animateLayoutChanges="true"
         android:layout_width="wrap_content"
-        app:flexBoxMaxWidth="250dp"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        app:flexBoxMaxWidth="250dp" />
 
 </merge>

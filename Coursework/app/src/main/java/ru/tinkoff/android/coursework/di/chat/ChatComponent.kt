@@ -1,7 +1,7 @@
 package ru.tinkoff.android.coursework.di.chat
 
 import dagger.Component
-import ru.tinkoff.android.coursework.data.ChatRepository
+import ru.tinkoff.android.coursework.domain.interfaces.ChatRepository
 import ru.tinkoff.android.coursework.di.ActivityScope
 import ru.tinkoff.android.coursework.di.ApplicationComponent
 import ru.tinkoff.android.coursework.domain.chat.ChatInteractor

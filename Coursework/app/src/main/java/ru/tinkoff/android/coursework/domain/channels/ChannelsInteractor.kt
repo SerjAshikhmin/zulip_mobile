@@ -5,7 +5,7 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
-import ru.tinkoff.android.coursework.data.StreamsRepository
+import ru.tinkoff.android.coursework.domain.interfaces.StreamsRepository
 import ru.tinkoff.android.coursework.data.api.model.response.SubscribeToStreamResponse
 import ru.tinkoff.android.coursework.domain.model.Stream
 import java.util.concurrent.TimeUnit

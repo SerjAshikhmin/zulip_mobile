@@ -2,7 +2,7 @@ package ru.tinkoff.android.coursework.di.profile
 
 import dagger.Module
 import dagger.Provides
-import ru.tinkoff.android.coursework.data.PeopleRepository
+import ru.tinkoff.android.coursework.domain.interfaces.PeopleRepository
 import ru.tinkoff.android.coursework.di.ActivityScope
 import ru.tinkoff.android.coursework.di.people.PeopleModule
 import ru.tinkoff.android.coursework.domain.profile.ProfileInteractor

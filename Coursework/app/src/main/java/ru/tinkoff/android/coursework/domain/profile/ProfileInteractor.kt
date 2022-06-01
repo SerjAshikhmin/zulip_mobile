@@ -4,7 +4,7 @@ import android.os.Bundle
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
-import ru.tinkoff.android.coursework.data.PeopleRepository
+import ru.tinkoff.android.coursework.domain.interfaces.PeopleRepository
 import ru.tinkoff.android.coursework.data.api.model.SELF_USER_ID
 import ru.tinkoff.android.coursework.domain.model.User
 

@@ -1,5 +1,7 @@
 package ru.tinkoff.android.coursework.presentation.screens.adapters
 
+import android.animation.LayoutTransition
+import android.os.Build
 import android.util.LayoutDirection
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -110,6 +112,10 @@ internal class ChatMessagesAdapter(
                 messageView.layoutParams = layoutParams
                 messageView.setOnLongClickListener {
                     return@setOnLongClickListener messageOnClickFunc(actionsDialog, messageView)
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    (messageView.binding.emojiBox as ViewGroup).layoutTransition
+                        .enableTransitionType(LayoutTransition.CHANGING)
                 }
                 MessageViewHolder(messageView)
             }

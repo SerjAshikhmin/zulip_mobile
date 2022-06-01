@@ -1,4 +1,4 @@
-package ru.tinkoff.android.coursework.data
+package ru.tinkoff.android.coursework.domain.interfaces
 
 import io.reactivex.Single
 import ru.tinkoff.android.coursework.data.api.model.response.SubscribeToStreamResponse

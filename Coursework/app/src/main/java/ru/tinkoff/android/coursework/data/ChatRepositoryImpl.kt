@@ -14,6 +14,7 @@ import ru.tinkoff.android.coursework.data.api.model.response.UploadFileResponse
 import ru.tinkoff.android.coursework.data.db.AppDatabase
 import ru.tinkoff.android.coursework.data.mappers.MessageMapper
 import ru.tinkoff.android.coursework.domain.chat.ChatInteractor
+import ru.tinkoff.android.coursework.domain.interfaces.ChatRepository
 import ru.tinkoff.android.coursework.domain.model.Message
 import ru.tinkoff.android.coursework.presentation.screens.StreamsListFragment.Companion.ALL_TOPICS_IN_STREAM
 import javax.inject.Inject

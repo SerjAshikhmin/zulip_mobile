@@ -1,11 +1,17 @@
 package ru.tinkoff.android.coursework.presentation.screens.adapters
 
+import android.animation.LayoutTransition
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.AutoTransition
+import androidx.transition.Transition
+import androidx.transition.TransitionManager
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.ItemStreamInListBinding
 import ru.tinkoff.android.coursework.domain.model.Stream
@@ -39,6 +45,10 @@ internal class StreamsListAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StreamListViewHolder {
         val streamItemBinding = ItemStreamInListBinding
             .inflate(LayoutInflater.from(parent.context), parent, false)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            (streamItemBinding.streamItem).layoutTransition
+                .enableTransitionType(LayoutTransition.CHANGING)
+        }
         return StreamListViewHolder(streamItemBinding)
     }
 
