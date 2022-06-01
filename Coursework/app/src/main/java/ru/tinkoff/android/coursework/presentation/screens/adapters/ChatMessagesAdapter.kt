@@ -1,5 +1,7 @@
 package ru.tinkoff.android.coursework.presentation.screens.adapters
 
+import android.animation.LayoutTransition
+import android.os.Build
 import android.util.LayoutDirection
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -16,6 +18,10 @@ import ru.tinkoff.android.coursework.data.api.ZulipJsonApi.Companion.LAST_MESSAG
 import ru.tinkoff.android.coursework.data.api.model.SELF_USER_ID
 import ru.tinkoff.android.coursework.domain.model.Message
 import ru.tinkoff.android.coursework.presentation.customviews.*
+import ru.tinkoff.android.coursework.presentation.screens.ChatActivity.Companion.NO_TOPIC_STRING_VALUE
+import ru.tinkoff.android.coursework.presentation.screens.StreamsListFragment.Companion.ALL_TOPICS_IN_STREAM
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnEmojiClickListener
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnTopicItemClickListener
 import ru.tinkoff.android.coursework.utils.dpToPx
 import ru.tinkoff.android.coursework.utils.getDateTimeFromTimestamp
 import ru.tinkoff.android.coursework.utils.getFormattedContentFromHtml
@@ -23,21 +29,25 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 internal class ChatMessagesAdapter(
-    private val dialog: EmojiBottomSheetDialog,
+    private var actionsDialog: ChatActionsBottomSheetDialog,
+    private val emojisDialog: EmojiBottomSheetDialog,
     private val chatRecycler: RecyclerView,
     private val emojiClickListener: OnEmojiClickListener,
+    private val topicItemClickListener: OnTopicItemClickListener
 ) : RecyclerView.Adapter<ChatMessagesAdapter.BaseViewHolder>() {
 
-    var streamName = ""
-    var topicName = ""
+    var streamNameValue = ""
+    var topicNameValue = ""
+    var streamNameText = ""
+    var topicNameText = ""
 
     var anchor = LAST_MESSAGE_ANCHOR
 
-    private var messagesWithDateSeparators: List<Any>
+    private var items: List<Any>
         set(value) {
             // переходим на последнее сообщение в чате, если было добавлено новое сообщение
-            if (messages.isNotEmpty() && value.isNotEmpty() && messagesWithDateSeparators.isNotEmpty()
-                && messagesWithDateSeparators.last() != value.last()) {
+            if (messages.isNotEmpty() && value.isNotEmpty() && items.isNotEmpty()
+                && items.last() != value.last()) {
                 differ.submitList(value) {
                     chatRecycler.scrollToPosition(value.size - 1)
                 }
@@ -50,8 +60,10 @@ internal class ChatMessagesAdapter(
     var messages: List<Message> = mutableListOf()
         set(value) {
             field = value
-            messagesWithDateSeparators = insertDateSeparators(value)
+            items = insertDateSeparatorsAndTopicNames(value)
         }
+
+    var topics: MutableSet<TopicName> = mutableSetOf()
 
     private val differ = AsyncListDiffer(this, DiffCallback())
 
@@ -79,10 +91,11 @@ internal class ChatMessagesAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        val message = messagesWithDateSeparators[position]
+        val item = items[position]
         return when {
-            message is LocalDate -> TYPE_SEND_DATE
-            message is Message && message.userId == SELF_USER_ID -> TYPE_SELF_MESSAGE
+            item is TopicName -> TYPE_TOPIC_NAME
+            item is LocalDate -> TYPE_SEND_DATE
+            item is Message && item.userId == SELF_USER_ID -> TYPE_SELF_MESSAGE
             else -> TYPE_MESSAGE
         }
     }
@@ -98,7 +111,11 @@ internal class ChatMessagesAdapter(
                 layoutParams.setMargins(parent.context.dpToPx(DEFAULT_MARGIN_DP))
                 messageView.layoutParams = layoutParams
                 messageView.setOnLongClickListener {
-                    return@setOnLongClickListener messageOnClickFunc(dialog, messageView)
+                    return@setOnLongClickListener messageOnClickFunc(actionsDialog, messageView)
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    (messageView.binding.emojiBox as ViewGroup).layoutTransition
+                        .enableTransitionType(LayoutTransition.CHANGING)
                 }
                 MessageViewHolder(messageView)
             }
@@ -113,7 +130,7 @@ internal class ChatMessagesAdapter(
                 parent.layoutParams.resolveLayoutDirection(LayoutDirection.RTL)
                 selfMessageView.layoutParams = layoutParams
                 selfMessageView.setOnLongClickListener {
-                    return@setOnLongClickListener messageOnClickFunc(dialog, selfMessageView)
+                    return@setOnLongClickListener messageOnClickFunc(actionsDialog, selfMessageView)
                 }
                 SelfMessageViewHolder(selfMessageView)
             }
@@ -125,19 +142,28 @@ internal class ChatMessagesAdapter(
                 ) as FrameLayout
                 SendDateViewHolder(sendDateView)
             }
+            TYPE_TOPIC_NAME -> {
+                val topicNameView = LayoutInflater.from(parent.context).inflate(
+                    R.layout.view_topic_name_in_chat,
+                    parent,
+                    false
+                ) as TextView
+                TopicNameViewHolder(topicNameView)
+            }
             else -> throw IllegalStateException("Wrong view type")
         }
     }
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         return when (holder) {
-            is MessageViewHolder -> holder.bind(messagesWithDateSeparators[position] as Message)
-            is SelfMessageViewHolder -> holder.bind(messagesWithDateSeparators[position] as Message)
-            is SendDateViewHolder -> holder.bind(messagesWithDateSeparators[position] as LocalDate)
+            is MessageViewHolder -> holder.bind(items[position] as? Message)
+            is SelfMessageViewHolder -> holder.bind(items[position] as? Message)
+            is SendDateViewHolder -> holder.bind(items[position] as? LocalDate)
+            is TopicNameViewHolder -> holder.bind(items[position] as? TopicName)
         }
     }
 
-    override fun getItemCount(): Int = messagesWithDateSeparators.size
+    override fun getItemCount(): Int = items.size
 
     sealed class BaseViewHolder(view: View) : RecyclerView.ViewHolder(view)
 
@@ -153,7 +179,7 @@ internal class ChatMessagesAdapter(
             message?.let {
                 messageView.messageId = message.id
                 username.text = it.userFullName
-                messageTextView.text = getFormattedContentFromHtml(it.content)
+                messageTextView.text = getFormattedContentFromHtml(it.content)?.trim()
 
                 if (it.avatarUrl != null) {
                     Glide.with(messageTextView)
@@ -179,13 +205,14 @@ internal class ChatMessagesAdapter(
         fun bind(message: Message?) {
             message?.let {
                 selfMessageView.messageId = message.id
-                messageTextView.text = getFormattedContentFromHtml(it.content)
+                messageTextView.text = getFormattedContentFromHtml(it.content)?.trim()
                 fillEmojiBox(it, emojiBox)
             }
         }
     }
 
-    class SendDateViewHolder(private val sendDateView: FrameLayout) : BaseViewHolder(sendDateView) {
+    class SendDateViewHolder(private val sendDateView: FrameLayout)
+        : BaseViewHolder(sendDateView) {
 
         fun bind(sendDate: LocalDate?) {
             var sendDateStr =
@@ -196,28 +223,58 @@ internal class ChatMessagesAdapter(
                     it.length - 2, it[it.length - 3].uppercaseChar().toString()
                 )
             }
-            (sendDateView.getChildAt(0) as TextView).text = sendDateStr
+            (sendDateView.getChildAt(0) as? TextView)?.text = sendDateStr
         }
     }
 
-    private fun insertDateSeparators(messages: List<Message>): List<Any> {
-        val messagesWithDateSeparators = mutableListOf<Any>()
-        for (curIndex in messages.indices) {
-            val curDate = getDateTimeFromTimestamp(messages[curIndex].timestamp).toLocalDate()
-            if (curIndex == 0) {
-                messagesWithDateSeparators.add(curDate)
+    inner class TopicNameViewHolder(private val topicNameView: TextView)
+        : BaseViewHolder(topicNameView) {
+
+        fun bind(topicName: TopicName?) {
+            topicNameView.text = if (topicName?.name != NO_TOPIC_STRING_VALUE) {
+                topicNameView.resources.getString(
+                    R.string.topic_name_text,
+                    topicName?.name
+                )
             } else {
-                val prevDate = getDateTimeFromTimestamp(messages[curIndex - 1].timestamp).toLocalDate()
-                if (prevDate != curDate) {
-                    messagesWithDateSeparators.add(curDate)
+                topicName.name
+            }
+            if (this@ChatMessagesAdapter.topicNameValue == ALL_TOPICS_IN_STREAM) {
+                topicNameView.setOnClickListener {
+                    topicItemClickListener.onTopicItemClick(topicName?.name, streamNameValue)
                 }
             }
-            messagesWithDateSeparators.add(messages[curIndex])
         }
-        return messagesWithDateSeparators
     }
 
-    private fun messageOnClickFunc(dialog: EmojiBottomSheetDialog, view: View): Boolean {
+    private fun insertDateSeparatorsAndTopicNames(messages: List<Message>): List<Any> {
+        val items = mutableListOf<Any>()
+        for (curIndex in messages.indices) {
+            val curTopic = messages[curIndex].topicName
+            val curDate = getDateTimeFromTimestamp(messages[curIndex].timestamp).toLocalDate()
+            if (curIndex == 0) {
+                val topic = TopicName(curTopic)
+                items.add(topic)
+                items.add(curDate)
+                topics.add(topic)
+            } else {
+                val prevTopic = messages[curIndex - 1].topicName
+                val prevDate = getDateTimeFromTimestamp(messages[curIndex - 1].timestamp).toLocalDate()
+                if (prevTopic != curTopic) {
+                    val topic = TopicName(curTopic)
+                    items.add(topic)
+                    topics.add(topic)
+                }
+                if (prevDate != curDate) {
+                    items.add(curDate)
+                }
+            }
+            items.add(messages[curIndex])
+        }
+        return items
+    }
+
+    private fun messageOnClickFunc(dialog: ChatActionsBottomSheetDialog, view: View): Boolean {
         dialog.show(view)
         return true
     }
@@ -230,7 +287,7 @@ internal class ChatMessagesAdapter(
             false
         ) as ImageView
         addEmojiView.setOnClickListener {
-            this@ChatMessagesAdapter.dialog.show(addEmojiView)
+            this@ChatMessagesAdapter.emojisDialog.show(addEmojiView)
         }
         emojiBox.addView(addEmojiView)
 
@@ -245,7 +302,7 @@ internal class ChatMessagesAdapter(
                 if (emoji.selectedByCurrentUser) emojiView.isSelected = true
                 emojiBox.addView(emojiView, emojiBox.childCount - 1)
             }
-            addEmojiView?.visibility = View.VISIBLE
+            addEmojiView.visibility = View.VISIBLE
         }
     }
 
@@ -255,6 +312,7 @@ internal class ChatMessagesAdapter(
         private const val TYPE_MESSAGE = 0
         private const val TYPE_SELF_MESSAGE = 1
         private const val TYPE_SEND_DATE = 2
+        private const val TYPE_TOPIC_NAME = 3
     }
 
 }

@@ -9,15 +9,16 @@ import androidx.recyclerview.widget.RecyclerView
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.ItemTopicInListBinding
 import ru.tinkoff.android.coursework.domain.model.Topic
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnTopicItemClickListener
 
 internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemClickListener)
     : RecyclerView.Adapter<TopicItemAdapter.TopicItemViewHolder>() {
 
-    var showShimmer = true
+    var showShimmer = false
     var streamName = ""
 
     var topics: List<Topic>
-        set(value) = differ.submitList(value)
+        set(value) = differ.submitList(value.sortedBy { it.name })
         get() = differ.currentList
 
     private val differ = AsyncListDiffer(this, DiffCallback())
@@ -71,7 +72,7 @@ internal class TopicItemAdapter(private val topicItemClickListener: OnTopicItemC
                 )
             )
             binding.root.setOnClickListener {
-                this@TopicItemAdapter.topicItemClickListener.onTopicItemClick(topic, streamName)
+                topicItemClickListener.onTopicItemClick(topic.name, streamName)
             }
         }
     }

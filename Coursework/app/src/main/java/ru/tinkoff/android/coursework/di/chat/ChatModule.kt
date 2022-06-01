@@ -3,7 +3,7 @@ package ru.tinkoff.android.coursework.di.chat
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
-import ru.tinkoff.android.coursework.data.ChatRepository
+import ru.tinkoff.android.coursework.domain.interfaces.ChatRepository
 import ru.tinkoff.android.coursework.data.ChatRepositoryImpl
 import ru.tinkoff.android.coursework.di.ActivityScope
 import ru.tinkoff.android.coursework.domain.chat.ChatInteractor
@@ -15,7 +15,7 @@ internal class ChatModule {
 
     @Provides
     @ActivityScope
-    fun provideChatUseCases(repository: ChatRepository): ChatInteractor {
+    fun provideChatInteractor(repository: ChatRepository): ChatInteractor {
         return ChatInteractor(repository)
     }
 

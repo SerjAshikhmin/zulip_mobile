@@ -21,28 +21,32 @@ class SecondActivity : AppCompatActivity() {
 
         override fun onServiceDisconnected(name: ComponentName) { }
     }
+    private lateinit var contactsReceiver: BroadcastReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_second)
 
-        val contactsReceiver = object: BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                val contactList = intent?.getSerializableExtra(CONTRACT_LIST_EXTRA) as ArrayList<*>?
-                val firstActivityIntent = Intent(context, FirstActivity::class.java)
-                firstActivityIntent.putExtra(CONTRACT_LIST_EXTRA, contactList)
-                setResult(Activity.RESULT_OK, firstActivityIntent)
-                finish()
+        contactsReceiver = object: BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent) {
+                if (intent.hasExtra(CONTRACT_LIST_EXTRA)) {
+                    val contactList =
+                        intent.getSerializableExtra(CONTRACT_LIST_EXTRA) as ArrayList<*>?
+                    val firstActivityIntent = Intent(context, FirstActivity::class.java)
+                    firstActivityIntent.putExtra(CONTRACT_LIST_EXTRA, contactList)
+                    setResult(Activity.RESULT_OK, firstActivityIntent)
+                    finish()
+                }
             }
         }
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-            contactsReceiver, IntentFilter(CONTACT_READ)
-        )
     }
 
     override fun onStart() {
         super.onStart()
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            contactsReceiver, IntentFilter(CONTACT_READ)
+        )
+
         if (ContextCompat.checkSelfPermission(this, PERMISSION_READ_CONTACTS)
             != PackageManager.PERMISSION_GRANTED)
         {
@@ -54,6 +58,11 @@ class SecondActivity : AppCompatActivity() {
         } else {
             bindContactListService()
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(contactsReceiver)
     }
 
     override fun onRequestPermissionsResult(

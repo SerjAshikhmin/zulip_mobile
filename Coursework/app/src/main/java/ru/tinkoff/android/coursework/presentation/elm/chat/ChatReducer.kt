@@ -34,6 +34,18 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
             is ChatEvent.Ui.UploadFile -> {
                 processFileUploadEvent(event)
             }
+            is ChatEvent.Ui.LoadChat -> {
+                processLoadChatEvent(event)
+            }
+            is ChatEvent.Ui.DeleteMessage -> {
+                processDeleteMessageEvent(event)
+            }
+            is ChatEvent.Ui.StartEditMessage -> {
+                processStartEditMessageEvent(event)
+            }
+            is ChatEvent.Ui.EditMessage -> {
+                processEditMessageEvent(event)
+            }
 
             is ChatEvent.Internal.LastMessagesLoaded -> {
                 processLastMessagesLoadedEvent(event)
@@ -56,6 +68,12 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
             is ChatEvent.Internal.FileUploaded -> {
                 processFileUploadedEvent(event)
             }
+            is ChatEvent.Internal.MessageDeleted -> {
+                processMessageDeletedEvent(event)
+            }
+            is ChatEvent.Internal.MessageEdited -> {
+                processMessageEditedEvent(event)
+            }
 
             is ChatEvent.Internal.MessagesLoadingError -> {
                 processMessagesLoadingError(event)
@@ -66,35 +84,47 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
             is ChatEvent.Internal.FileUploadingError -> {
                 processFileUploadingError(event)
             }
+            is ChatEvent.Internal.MessageDeletingError -> {
+                processMessageDeletingError(event)
+            }
+            is ChatEvent.Internal.MessageEditingError -> {
+                processMessageEditingError(event)
+            }
         }
     }
 
     private fun Result.processInitEvent() {
         state {
             copy(
-                isLoading = true,
+                isLoading = false,
                 error = null
             )
         }
     }
 
-    private fun Result.processLoadLastMessagesEvent(event: ChatEvent.Ui.LoadLastMessages) {
+    private fun Result.processLoadLastMessagesEvent(
+        event: ChatEvent.Ui.LoadLastMessages
+    ) {
         state {
             copy(
                 isLoading = true,
                 error = null,
+                streamName = event.streamName,
                 topicName = event.topicName
             )
         }
         commands {
             +ChatCommand.LoadLastMessages(
-                topicName = event.topicName,
+                streamName = state.streamName,
+                topicName = state.topicName,
                 anchor = event.anchor
             )
         }
     }
 
-    private fun Result.processLoadLastMessagesEvent(event: ChatEvent.Ui.LoadPortionOfMessages) {
+    private fun Result.processLoadLastMessagesEvent(
+        event: ChatEvent.Ui.LoadPortionOfMessages
+    ) {
         state {
             copy(
                 isLoading = true,
@@ -103,13 +133,16 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
         }
         commands {
             +ChatCommand.LoadPortionOfMessages(
-                topicName = event.topicName,
+                streamName = state.streamName,
+                topicName = state.topicName,
                 anchor = event.anchor
             )
         }
     }
 
-    private fun Result.processSendMessageEvent(event: ChatEvent.Ui.SendMessage) {
+    private fun Result.processSendMessageEvent(
+        event: ChatEvent.Ui.SendMessage
+    ) {
         commands {
             +ChatCommand.SendMessage(
                 topicName = event.topicName,
@@ -119,7 +152,9 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
         }
     }
 
-    private fun Result.processAddReactionEvent(event: ChatEvent.Ui.AddReaction) {
+    private fun Result.processAddReactionEvent(
+        event: ChatEvent.Ui.AddReaction
+    ) {
         val itemsInState = state.items.toMutableList()
         val itemForUpdate = itemsInState.find { it.id == event.messageId }
         val emojiForUpdate = itemForUpdate?.emojis?.find {
@@ -145,7 +180,9 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
         }
     }
 
-    private fun Result.processRemoveReactionEvent(event: ChatEvent.Ui.RemoveReaction) {
+    private fun Result.processRemoveReactionEvent(
+        event: ChatEvent.Ui.RemoveReaction
+    ) {
         val itemsInState = state.items.toMutableList()
         val itemForUpdate = itemsInState.find { it.id == event.messageId }
         val emojiForUpdate = itemForUpdate?.emojis?.find {
@@ -167,6 +204,57 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
             +ChatCommand.RemoveReaction(
                 messageId = event.messageId,
                 emojiName = event.emojiName
+            )
+        }
+    }
+
+    private fun Result.processFileUploadEvent(
+        event: ChatEvent.Ui.UploadFile
+    ) {
+        commands {
+            +ChatCommand.UploadFile(
+                event.fileName,
+                event.fileBody
+            )
+        }
+    }
+
+    private fun Result.processLoadChatEvent(
+        event: ChatEvent.Ui.LoadChat
+    ) {
+        state {
+            copy(
+                isLoading = false,
+                error = null
+            )
+        }
+        effects { +ChatEffect.NavigateToChat(event.topicName) }
+    }
+
+    private fun Result.processDeleteMessageEvent(
+        event: ChatEvent.Ui.DeleteMessage
+    ) {
+        commands {
+            +ChatCommand.DeleteMessage(
+                messageId = event.messageId
+            )
+        }
+    }
+
+    private fun Result.processStartEditMessageEvent(
+        event: ChatEvent.Ui.StartEditMessage
+    ) {
+        effects { +ChatEffect.StartEditMessageEffect(event.message) }
+    }
+
+    private fun Result.processEditMessageEvent(
+        event: ChatEvent.Ui.EditMessage
+    ) {
+        commands {
+            +ChatCommand.EditMessage(
+                messageId = event.messageId,
+                topicName = event.topicName,
+                content = event.content
             )
         }
     }
@@ -215,34 +303,19 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
     }
 
     private fun Result.processMessageSentEvent() {
-        state {
-            copy(error = null)
-        }
+        state { copy(error = null) }
         commands { +ChatCommand.LoadLastMessages(
+            streamName = state.streamName,
             topicName = state.topicName,
-            anchor = LAST_MESSAGE_ANCHOR,
-            isFirstPosition = true
+            anchor = LAST_MESSAGE_ANCHOR
         ) }
         effects { +ChatEffect.MessageSentEffect }
-    }
-
-    private fun Result.processFileUploadEvent(
-        event: ChatEvent.Ui.UploadFile
-    ) {
-        commands {
-            +ChatCommand.UploadFile(
-                event.fileName,
-                event.fileBody
-            )
-        }
     }
 
     private fun Result.processReactionAddedEvent(
         event: ChatEvent.Internal.ReactionAdded
     ) {
-        state {
-            copy(error = null)
-        }
+        state { copy(error = null) }
         commands {
             +ChatCommand.LoadMessage(
                 messageId = event.messageId
@@ -253,9 +326,7 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
     private fun Result.processReactionRemovedEvent(
         event: ChatEvent.Internal.ReactionRemoved
     ) {
-        state {
-            copy(error = null)
-        }
+        state { copy(error = null) }
         commands {
             +ChatCommand.LoadMessage(
                 messageId = event.messageId
@@ -266,16 +337,38 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
     private fun Result.processFileUploadedEvent(
         event: ChatEvent.Internal.FileUploaded
     ) {
-        state {
-            copy(error = null)
-        }
+        state { copy(error = null) }
         effects { +ChatEffect.FileUploadedEffect(event.fileName, event.fileUri) }
+    }
+
+    private fun Result.processMessageDeletedEvent(event: ChatEvent.Internal.MessageDeleted) {
+        val newItems = state.items.toMutableList()
+        newItems.removeIf { it.id == event.messageId }
+        state { copy(
+            items = newItems,
+            error = null
+        ) }
+    }
+
+    private fun Result.processMessageEditedEvent(event: ChatEvent.Internal.MessageEdited) {
+        state { copy(error = null) }
+        commands {
+            +ChatCommand.LoadMessage(
+                messageId = event.messageId
+            )
+        }
+        effects { +ChatEffect.MessageEditedEffect }
     }
 
     private fun Result.processMessagesLoadingError(
         event: ChatEvent.Internal.MessagesLoadingError
     ) {
-        state { copy(error = event.error) }
+        state {
+            copy(
+                isLoading = false,
+                error = event.error
+            )
+        }
         effects { +ChatEffect.MessagesLoadingError(event.error) }
     }
 
@@ -297,6 +390,20 @@ internal class ChatReducer : DslReducer<ChatEvent, ChatState, ChatEffect, ChatCo
                 fileBody = event.fileBody
             )
         }
+    }
+
+    private fun Result.processMessageDeletingError(
+        event: ChatEvent.Internal.MessageDeletingError
+    ) {
+        state { copy(error = event.error) }
+        effects { +ChatEffect.MessageDeletingError(event.error) }
+    }
+
+    private fun Result.processMessageEditingError(
+        event: ChatEvent.Internal.MessageEditingError
+    ) {
+        state { copy(error = event.error) }
+        effects { +ChatEffect.MessageEditingError(event.error) }
     }
 
 }

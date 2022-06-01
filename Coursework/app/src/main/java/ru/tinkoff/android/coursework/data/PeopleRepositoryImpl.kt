@@ -10,6 +10,7 @@ import ru.tinkoff.android.coursework.data.api.model.UserDto
 import ru.tinkoff.android.coursework.data.api.model.response.UserPresenceResponse
 import ru.tinkoff.android.coursework.data.db.AppDatabase
 import ru.tinkoff.android.coursework.data.mappers.UserMapper
+import ru.tinkoff.android.coursework.domain.interfaces.PeopleRepository
 import ru.tinkoff.android.coursework.domain.model.User
 import ru.tinkoff.android.coursework.presentation.screens.PeopleFragment
 import ru.tinkoff.android.coursework.presentation.screens.ProfileFragment

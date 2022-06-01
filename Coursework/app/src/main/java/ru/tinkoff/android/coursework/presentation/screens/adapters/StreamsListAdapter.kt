@@ -1,26 +1,33 @@
 package ru.tinkoff.android.coursework.presentation.screens.adapters
 
+import android.animation.LayoutTransition
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import io.reactivex.disposables.CompositeDisposable
+import androidx.transition.AutoTransition
+import androidx.transition.Transition
+import androidx.transition.TransitionManager
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.ItemStreamInListBinding
 import ru.tinkoff.android.coursework.domain.model.Stream
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnStreamItemClickListener
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnTopicItemClickListener
 
-internal class StreamsListAdapter(private val topicItemClickListener: OnTopicItemClickListener)
-    : RecyclerView.Adapter<StreamsListAdapter.StreamListViewHolder>() {
+internal class StreamsListAdapter(
+    private val streamItemClickListener: OnStreamItemClickListener,
+    private val topicItemClickListener: OnTopicItemClickListener
+) : RecyclerView.Adapter<StreamsListAdapter.StreamListViewHolder>() {
 
     var showShimmer = true
 
     var streams: List<Stream>
-        set(value) = differ.submitList(value)
+        set(value) = differ.submitList(value.sortedBy { it.name })
         get() = differ.currentList
-
-    private var compositeDisposable = CompositeDisposable()
 
     private val differ = AsyncListDiffer(this, DiffCallback())
 
@@ -38,6 +45,10 @@ internal class StreamsListAdapter(private val topicItemClickListener: OnTopicIte
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StreamListViewHolder {
         val streamItemBinding = ItemStreamInListBinding
             .inflate(LayoutInflater.from(parent.context), parent, false)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            (streamItemBinding.streamItem).layoutTransition
+                .enableTransitionType(LayoutTransition.CHANGING)
+        }
         return StreamListViewHolder(streamItemBinding)
     }
 
@@ -49,10 +60,10 @@ internal class StreamsListAdapter(private val topicItemClickListener: OnTopicIte
             holder.shimmerFrameLayout.stopShimmer()
             holder.shimmerFrameLayout.setShimmer(null)
             holder.shimmedText.visibility = View.GONE
-            holder.streamName.visibility = View.VISIBLE
+            holder.streamNameTextView.visibility = View.VISIBLE
 
             val stream = streams[position]
-            holder.initStreamListener(stream)
+            holder.initOpenIconClickListener(stream)
             holder.bind(stream)
         }
     }
@@ -61,57 +72,67 @@ internal class StreamsListAdapter(private val topicItemClickListener: OnTopicIte
         return if (showShimmer) SHIMMER_ITEM_COUNT else streams.size
     }
 
-    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
-        super.onDetachedFromRecyclerView(recyclerView)
-        compositeDisposable.dispose()
-    }
-
     inner class StreamListViewHolder(private val binding: ItemStreamInListBinding)
         : RecyclerView.ViewHolder(binding.root) {
 
-        internal val streamName = binding.streamName
+        internal val streamNameTextView = binding.streamName
         internal val shimmedText = binding.shimmedText
         internal val shimmerFrameLayout = binding.shimmerLayout
         private val arrowIcon = binding.arrowIcon
-        private var isOpened = false
+        private lateinit var streamName: String
 
         fun bind(stream: Stream) {
-            streamName.text =
+            streamNameTextView.text =
                 binding.root.resources.getString(R.string.stream_name_text, stream.name)
+            streamName = stream.name
         }
 
-        fun initStreamListener(stream: Stream) {
-            binding.root.setOnClickListener {
-                configureTopicItemAdapter(stream)
-            }
-        }
-
-        private fun configureTopicItemAdapter(stream: Stream) {
-            val topItemAdapter = TopicItemAdapter(this@StreamsListAdapter.topicItemClickListener)
-
-            if (!isOpened) {
-                with(topItemAdapter) {
-                    showShimmer = false
-                    topics = stream.topics
-                    streamName = stream.name
-                }
-                arrowIcon.setImageResource(R.drawable.ic_arrow_up)
-                isOpened = true
+        fun initOpenIconClickListener(stream: Stream) {
+            val topItemAdapter: TopicItemAdapter
+            if (binding.topicsList.adapter == null) {
+                topItemAdapter = TopicItemAdapter(this@StreamsListAdapter.topicItemClickListener)
             } else {
-                with(topItemAdapter) {
-                    showShimmer = false
-                    topics = listOf()
+                topItemAdapter = binding.topicsList.adapter as TopicItemAdapter
+                if (stream.isOpenedInChannelsList) {
+                    with(topItemAdapter) {
+                        topics = stream.topics
+                        streamName = stream.name
+                    }
+                } else {
+                    topItemAdapter.topics = listOf()
                 }
-                arrowIcon.setImageResource(R.drawable.ic_arrow_down)
-                isOpened = false
             }
+
+            binding.root.setOnClickListener {
+                this@StreamsListAdapter.streamItemClickListener.onStreamItemClick(streamName)
+            }
+
+            binding.arrowIcon.setOnClickListener {
+                if (!stream.isOpenedInChannelsList) {
+                    with(topItemAdapter) {
+                        showShimmer = false
+                        topics = stream.topics
+                        streamName = stream.name
+                    }
+                    arrowIcon.setImageResource(R.drawable.ic_arrow_up)
+                    stream.isOpenedInChannelsList = true
+                } else {
+                    with(topItemAdapter) {
+                        showShimmer = false
+                        topics = listOf()
+                    }
+                    arrowIcon.setImageResource(R.drawable.ic_arrow_down)
+                    stream.isOpenedInChannelsList = false
+                }
+            }
+
             binding.topicsList.adapter = topItemAdapter
         }
     }
 
     companion object {
 
-        const val SHIMMER_ITEM_COUNT = 4
+        const val SHIMMER_ITEM_COUNT = 3
     }
 
 }

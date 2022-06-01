@@ -1,36 +1,39 @@
 package ru.tinkoff.android.coursework.domain.chat
 
-import android.util.Log
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import okhttp3.MultipartBody
-import ru.tinkoff.android.coursework.data.ChatRepository
+import ru.tinkoff.android.coursework.domain.interfaces.ChatRepository
+import ru.tinkoff.android.coursework.data.api.model.response.ActionWithMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.ReactionResponse
 import ru.tinkoff.android.coursework.data.api.model.response.SendMessageResponse
 import ru.tinkoff.android.coursework.data.api.model.response.UploadFileResponse
 import ru.tinkoff.android.coursework.domain.model.Message
+import ru.tinkoff.android.coursework.presentation.screens.StreamsListFragment
 
 internal class ChatInteractor(
     private val chatRepository: ChatRepository
 ) {
 
     fun loadLastMessages(
+        streamName: String,
         topicName: String,
         anchor: Long
     ): Observable<List<Message>> {
         return Observable.merge(
-            chatRepository.loadMessagesFromDb(topicName)
+            chatRepository.loadMessagesFromDb(streamName, topicName)
                 .toObservable(),
             chatRepository.loadMessagesFromApi(
+                streamName,
                 topicName,
                 anchor,
                 NUMBER_OF_MESSAGES_IN_LAST_PORTION
             )
                 .doOnSuccess {
                     if (it.isNotEmpty()) {
-                        cacheMessages(it, topicName)
+                        cacheMessages(it, streamName, topicName)
                     }
                 }
                 .toObservable()
@@ -39,10 +42,12 @@ internal class ChatInteractor(
     }
 
     fun loadPortionOfMessages(
+        streamName: String,
         topicName: String,
         anchor: Long
     ): Observable<List<Message>> {
         return chatRepository.loadMessagesFromApi(
+            streamName,
             topicName,
             anchor,
             NUMBER_OF_MESSAGES_PER_PORTION
@@ -74,9 +79,6 @@ internal class ChatInteractor(
         return chatRepository.addReaction(messageId, emojiName)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnError {
-                Log.e(TAG, "Adding emoji error", it)
-            }
     }
 
     fun removeReaction(
@@ -86,9 +88,6 @@ internal class ChatInteractor(
         return chatRepository.removeReaction(messageId, emojiName)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnError {
-                Log.e(TAG, "Removing emoji error", it)
-            }
     }
 
     fun uploadFile(fileBody: MultipartBody.Part): Single<UploadFileResponse> {
@@ -97,17 +96,38 @@ internal class ChatInteractor(
             .observeOn(AndroidSchedulers.mainThread())
     }
 
+    fun deleteMessage(messageId: Long): Single<ActionWithMessageResponse> {
+        return chatRepository.deleteMessage(messageId)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+    }
+
+    fun editMessage(
+        messageId: Long,
+        topicName: String,
+        content: String
+    ): Single<ActionWithMessageResponse> {
+        return chatRepository.editMessage(messageId, topicName, content)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+    }
+
     private fun cacheMessages(
         messages: List<Message>,
+        streamName: String,
         topicName: String
     ) {
-        chatRepository.removeAllMessagesInTopicFromDb(topicName)
+        if (topicName == StreamsListFragment.ALL_TOPICS_IN_STREAM) {
+            chatRepository.removeAllMessagesInStreamFromDb(streamName)
+        } else {
+            chatRepository.removeAllMessagesInTopicFromDb(topicName)
+        }
         chatRepository.saveMessagesToDb(messages.takeLast(MAX_NUMBER_OF_MESSAGES_IN_CACHE))
     }
 
     companion object {
 
-        private const val TAG = "ChatUseCases"
+        internal const val LAST_MESSAGE_ANCHOR = 10000000000000000L
         private const val MAX_NUMBER_OF_MESSAGES_IN_CACHE = 50
         private const val NUMBER_OF_MESSAGES_PER_PORTION = 20
         private const val NUMBER_OF_MESSAGES_IN_LAST_PORTION = MAX_NUMBER_OF_MESSAGES_IN_CACHE

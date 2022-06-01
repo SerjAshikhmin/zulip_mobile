@@ -3,7 +3,7 @@ package ru.tinkoff.android.coursework.di.streams
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
-import ru.tinkoff.android.coursework.data.StreamsRepository
+import ru.tinkoff.android.coursework.domain.interfaces.StreamsRepository
 import ru.tinkoff.android.coursework.data.StreamsRepositoryImpl
 import ru.tinkoff.android.coursework.di.ActivityScope
 import ru.tinkoff.android.coursework.domain.channels.ChannelsInteractor
@@ -15,7 +15,7 @@ internal class StreamsModule {
 
     @Provides
     @ActivityScope
-    fun provideChannelsUseCases(repository: StreamsRepository): ChannelsInteractor {
+    fun provideChannelsInteractor(repository: StreamsRepository): ChannelsInteractor {
         return ChannelsInteractor(repository)
     }
 

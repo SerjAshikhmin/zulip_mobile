@@ -11,7 +11,7 @@ import androidx.core.widget.NestedScrollView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.data.EmojiCodes
-import ru.tinkoff.android.coursework.presentation.screens.adapters.OnBottomSheetChooseEmojiListener
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnBottomSheetChooseEmojiListener
 
 internal class EmojiBottomSheetDialog(
     context: Context,
@@ -46,15 +46,15 @@ internal class EmojiBottomSheetDialog(
     private fun createEmojiViews() {
         EmojiCodes.emojiMap.forEach { emoji ->
             val emojiView = LayoutInflater.from(context).inflate(
-                R.layout.layout_bottom_sheet_emoji, null
-            ) as TextView
-            emojiView.text = emoji.key
-            emojiView.setOnClickListener {
+                R.layout.view_bottom_sheet_emoji, null
+            ) as? TextView
+            emojiView?.text = emoji.key
+            emojiView?.setOnClickListener {
                 chosenEmojiCode = emojiView.text.toString()
                 dismiss()
             }
-            ((bottomSheet.getChildAt(1) as NestedScrollView)
-                .getChildAt(0) as FlexBoxLayout).addView(emojiView)
+            ((bottomSheet.getChildAt(1) as? NestedScrollView)
+                ?.getChildAt(0) as? FlexBoxLayout)?.addView(emojiView)
         }
     }
 

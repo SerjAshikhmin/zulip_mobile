@@ -15,5 +15,8 @@ internal class StreamDb (
     val name: String,
 
     @ColumnInfo(name = "topics")
-    var topics: List<TopicDto>
+    var topics: List<TopicDto>,
+
+    @ColumnInfo(name = "is_subscribed")
+    var isSubscribed: Boolean = false
 )

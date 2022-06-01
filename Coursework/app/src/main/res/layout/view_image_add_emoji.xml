@@ -5,7 +5,7 @@
     android:layout_width="40dp"
     android:layout_height="28dp"
     android:layout_marginStart="8dp"
-    android:layout_marginEnd="4dp"
+    android:layout_marginEnd="2dp"
     android:layout_marginTop="6dp"
     android:background="@drawable/bg_emoji_with_count"
     android:padding="5dp"

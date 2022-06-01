@@ -14,7 +14,7 @@ import ru.tinkoff.android.coursework.presentation.screens.ProfileFragment
 )
 internal interface ProfileComponent {
 
-    fun getProfileUseCases(): ProfileInteractor
+    fun getProfileInteractor(): ProfileInteractor
 
     fun getProfileActor(): ProfileActor
 
@@ -27,4 +27,5 @@ internal interface ProfileComponent {
             applicationComponent: ApplicationComponent
         ): ProfileComponent
     }
+
 }

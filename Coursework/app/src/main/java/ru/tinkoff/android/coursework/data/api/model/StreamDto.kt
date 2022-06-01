@@ -12,5 +12,6 @@ internal data class StreamDto (
     @SerialName("name")
     val name: String,
 
-    var topics: List<TopicDto> = listOf()
+    var topics: List<TopicDto> = listOf(),
+    var isSubscribed: Boolean = false
 )

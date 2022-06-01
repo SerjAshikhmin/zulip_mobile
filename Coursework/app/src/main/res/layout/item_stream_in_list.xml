@@ -7,6 +7,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/stream_item"
+        android:animateLayoutChanges="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -45,7 +46,7 @@
 
         <include
             android:id="@+id/separator"
-            layout="@layout/fragment_item_in_list_separator"
+            layout="@layout/view_item_in_list_separator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/stream_name" />

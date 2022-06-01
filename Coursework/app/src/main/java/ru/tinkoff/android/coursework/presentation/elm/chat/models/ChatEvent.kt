@@ -10,12 +10,12 @@ internal sealed class ChatEvent {
         object InitEvent : ChatEvent.Ui()
 
         data class LoadLastMessages(
+            val streamName: String,
             val topicName: String,
             val anchor: Long
         ) : ChatEvent.Ui()
 
         data class LoadPortionOfMessages(
-            val topicName: String,
             val anchor: Long
         ) : ChatEvent.Ui()
 
@@ -41,6 +41,24 @@ internal sealed class ChatEvent {
             val fileName: String,
             val fileBody: MultipartBody.Part
         ) : ChatEvent.Ui()
+
+        data class LoadChat(
+            val topicName: String
+        ) : Ui()
+
+        data class DeleteMessage(
+            val messageId: Long
+        ) : Ui()
+
+        data class StartEditMessage(
+            val message: Message
+        ) : Ui()
+
+        data class EditMessage(
+            val messageId: Long,
+            val topicName: String,
+            val content: String
+        ) : Ui()
 
     }
 
@@ -75,9 +93,29 @@ internal sealed class ChatEvent {
             val fileUri: String
         ) : Internal()
 
-        data class MessagesLoadingError(val error: Throwable) : Internal()
+        data class MessageDeleted(
+            val messageId: Long
+        ) : Internal()
 
-        data class MessageSendingError(val error: Throwable) : Internal()
+        data class MessageEdited(
+            val messageId: Long
+        ) : Internal()
+
+        data class MessagesLoadingError(
+            val error: Throwable
+        ) : Internal()
+
+        data class MessageSendingError(
+            val error: Throwable
+        ) : Internal()
+
+        data class MessageDeletingError(
+            val error: Throwable
+        ) : Internal()
+
+        data class MessageEditingError(
+            val error: Throwable
+        ) : Internal()
 
         data class FileUploadingError(
             val error: Throwable,

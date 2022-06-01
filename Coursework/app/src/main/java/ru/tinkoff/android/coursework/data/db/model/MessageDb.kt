@@ -16,6 +16,9 @@ internal data class MessageDb (
     @ColumnInfo(name = "user_full_name")
     val userFullName: String,
 
+    @ColumnInfo(name = "stream_id")
+    val streamId: Long = 0,
+
     @ColumnInfo(name = "topic_name")
     val topicName: String,
 

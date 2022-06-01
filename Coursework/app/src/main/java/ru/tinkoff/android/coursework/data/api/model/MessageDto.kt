@@ -15,6 +15,9 @@ internal data class MessageDto (
     @SerialName("sender_full_name")
     val userFullName: String,
 
+    @SerialName("stream_id")
+    val streamId: Long,
+
     @SerialName("subject")
     val topicName: String,
 

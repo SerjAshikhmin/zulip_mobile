@@ -7,25 +7,27 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.findFragment
 import androidx.navigation.fragment.NavHostFragment
+import androidx.recyclerview.widget.DefaultItemAnimator
 import ru.tinkoff.android.coursework.App
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.FragmentStreamsListBinding
 import ru.tinkoff.android.coursework.di.ActivityScope
 import ru.tinkoff.android.coursework.di.streams.DaggerStreamsComponent
-import ru.tinkoff.android.coursework.domain.model.Topic
 import ru.tinkoff.android.coursework.presentation.elm.channels.StreamsElmStoreFactory
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEffect
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsEvent
 import ru.tinkoff.android.coursework.presentation.elm.channels.models.StreamsState
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnStreamItemClickListener
 import ru.tinkoff.android.coursework.presentation.screens.adapters.StreamsListAdapter
-import ru.tinkoff.android.coursework.presentation.screens.adapters.OnTopicItemClickListener
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnTopicItemClickListener
 import vivid.money.elmslie.android.base.ElmFragment
 import vivid.money.elmslie.core.store.Store
 import javax.inject.Inject
 
 @ActivityScope
 internal abstract class StreamsListFragment
-    : ElmFragment<StreamsEvent, StreamsEffect, StreamsState>(), OnTopicItemClickListener {
+    : ElmFragment<StreamsEvent, StreamsEffect, StreamsState>(),
+    OnStreamItemClickListener, OnTopicItemClickListener {
 
     @Inject
     internal lateinit var streamsElmStoreFactory: StreamsElmStoreFactory
@@ -44,8 +46,11 @@ internal abstract class StreamsListFragment
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        adapter = StreamsListAdapter(this)
-        binding.streamsList.adapter = adapter
+        adapter = StreamsListAdapter(this, this)
+        binding.streamsListRecycler.adapter = adapter
+        binding.createChannel.setOnClickListener {
+            store.accept(StreamsEvent.Ui.CreateStreamInit)
+        }
     }
 
     override fun createStore(): Store<StreamsEvent, StreamsEffect, StreamsState> {
@@ -57,8 +62,11 @@ internal abstract class StreamsListFragment
     }
 
     override fun render(state: StreamsState) {
+        if (!state.isLoading) {
+            binding.swipeRefreshLayout.isRefreshing = false
+        }
         with(adapter) {
-            showShimmer = state.isLoading
+            showShimmer = state.isLoading && !binding.swipeRefreshLayout.isRefreshing
             streams = state.items
             notifyDataSetChanged()
         }
@@ -71,15 +79,32 @@ internal abstract class StreamsListFragment
                 NavHostFragment.findNavController(binding.root.findFragment())
                     .navigate(R.id.action_nav_channels_to_nav_chat, effect.bundle)
             }
+            is StreamsEffect.NavigateToCreateStream -> {
+                NavHostFragment.findNavController(binding.root.findFragment())
+                    .navigate(R.id.action_nav_channels_to_nav_create_stream)
+            }
         }
     }
 
-    override fun onTopicItemClick(topic: Topic, streamName: String) {
+    override fun onTopicItemClick(topicName: String?, streamName: String?) {
         val bundle = bundleOf(
             ChatActivity.STREAM_NAME_KEY to streamName,
-            ChatActivity.TOPIC_NAME_KEY to topic.name
+            ChatActivity.TOPIC_NAME_KEY to topicName
         )
         store.accept(StreamsEvent.Ui.LoadChat(bundle))
+    }
+
+    override fun onStreamItemClick(streamName: String) {
+        val bundle = bundleOf(
+            ChatActivity.STREAM_NAME_KEY to streamName,
+            ChatActivity.TOPIC_NAME_KEY to ALL_TOPICS_IN_STREAM
+        )
+        store.accept(StreamsEvent.Ui.LoadChat(bundle))
+    }
+
+    companion object {
+
+        internal const val ALL_TOPICS_IN_STREAM = "allstreamtopics"
     }
 
 }

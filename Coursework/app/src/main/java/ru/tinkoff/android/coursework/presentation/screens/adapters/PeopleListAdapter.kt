@@ -15,6 +15,7 @@ import ru.tinkoff.android.coursework.presentation.screens.ProfileFragment.Compan
 import ru.tinkoff.android.coursework.presentation.screens.ProfileFragment.Companion.IDLE_PRESENCE_COLOR
 import ru.tinkoff.android.coursework.presentation.screens.ProfileFragment.Companion.IDLE_PRESENCE_KEY
 import ru.tinkoff.android.coursework.presentation.screens.ProfileFragment.Companion.OFFLINE_PRESENCE_COLOR
+import ru.tinkoff.android.coursework.presentation.screens.listeners.OnUserItemClickListener
 
 internal class PeopleListAdapter(private val userItemClickListener: OnUserItemClickListener)
     : RecyclerView.Adapter<PeopleListAdapter.PeopleListViewHolder>() {
@@ -22,7 +23,7 @@ internal class PeopleListAdapter(private val userItemClickListener: OnUserItemCl
     var showShimmer = true
 
     var users: List<User>
-        set(value) = differ.submitList(value)
+        set(value) = differ.submitList(value.sortedBy { it.fullName })
         get() = differ.currentList
 
     private val differ = AsyncListDiffer(this, DiffCallback())

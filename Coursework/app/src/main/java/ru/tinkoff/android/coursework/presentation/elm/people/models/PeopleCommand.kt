@@ -4,4 +4,6 @@ internal sealed class PeopleCommand {
 
     object LoadPeopleList : PeopleCommand()
 
+    object UpdatePeopleList : PeopleCommand()
+
 }

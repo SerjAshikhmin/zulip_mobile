@@ -17,6 +17,12 @@ internal class StreamsActor(
                     { streams -> StreamsEvent.Internal.StreamsListLoaded(items = streams) },
                     { error -> StreamsEvent.Internal.StreamsListLoadingError(error) }
                 )
+        is StreamsCommand.UpdateStreamsList ->
+            channelsInteractor.updateStreams(command.isSubscribedStreams)
+                .mapEvents(
+                    { streams -> StreamsEvent.Internal.StreamsListLoaded(items = streams) },
+                    { error -> StreamsEvent.Internal.StreamsListLoadingError(error) }
+                )
         is StreamsCommand.SubscribeOnSearchStreamsEvents ->
             channelsInteractor.subscribeOnSearchStreamsEvents()
                 .mapEvents(
@@ -27,6 +33,16 @@ internal class StreamsActor(
             channelsInteractor.processSearchQuery(command.query)
             Observable.empty()
         }
+        is StreamsCommand.CreateStream ->
+            channelsInteractor.createStream(
+                name = command.name,
+                description = command.description,
+                isPrivate = command.isPrivate
+            )
+                .mapEvents(
+                    { StreamsEvent.Internal.StreamCreated },
+                    { error -> StreamsEvent.Internal.StreamCreationError(error) }
+                )
     }
 
 }

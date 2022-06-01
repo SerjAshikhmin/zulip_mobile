@@ -14,7 +14,7 @@ internal class ProfileReducer
             is ProfileEvent.Ui.InitEvent -> {
                 state {
                     copy(
-                        isLoading = true,
+                        isLoading = false,
                         error = null
                     )
                 }

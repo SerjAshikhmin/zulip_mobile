@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import com.google.android.material.tabs.TabLayoutMediator
 import ru.tinkoff.android.coursework.App
@@ -30,6 +29,7 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
     internal lateinit var streamsElmStoreFactory: StreamsElmStoreFactory
 
     override var initEvent: StreamsEvent = StreamsEvent.Ui.SubscribeOnSearchStreamsEvents
+    private var streamsListPagerAdapter: StreamsListPagerAdapter? = null
     private lateinit var binding: FragmentChannelsBinding
 
     override fun onCreateView(
@@ -44,6 +44,7 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         configureViewPager()
+        streamsListPagerAdapter = (binding.pager.adapter as StreamsListPagerAdapter)
 
         // задержка, чтобы листенер не отрабатывал на пустом запросе при создании фрагмента
         Handler(Looper.getMainLooper()).postDelayed({
@@ -52,6 +53,9 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
                 allStreamsTab?.select()
                 val query = text?.toString().orEmpty()
                 store.accept(StreamsEvent.Ui.SearchStreamsByQuery(query))
+                if (streamsListPagerAdapter?.isAllStreamsListFragment() == true) {
+                    streamsListPagerAdapter?.allStreamsListFragment?.searchQuery = query
+                }
             }
         }, 100)
 
@@ -60,6 +64,12 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
             val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(binding.searchEditText, InputMethodManager.SHOW_IMPLICIT)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        configureViewPager()
+        streamsListPagerAdapter = (binding.pager.adapter as StreamsListPagerAdapter)
     }
 
     override fun createStore(): Store<StreamsEvent, StreamsEffect, StreamsState> {
@@ -71,10 +81,10 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
     }
 
     override fun render(state: StreamsState) {
-        val streamsListPagerAdapter = (binding.pager.adapter as StreamsListPagerAdapter)
-
-        if (streamsListPagerAdapter.isAllStreamsListFragment()) {
-            streamsListPagerAdapter.allStreamsListFragment.updateStreams(
+        if (streamsListPagerAdapter?.isAllStreamsListFragment() == true
+            && streamsListPagerAdapter?.allStreamsListFragment?.searchQuery?.isNotEmpty() == true
+        ) {
+            streamsListPagerAdapter?.allStreamsListFragment?.updateStreams(
                 state.items
             )
         }
@@ -83,17 +93,11 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
     override fun handleEffect(effect: StreamsEffect) {
         when(effect) {
             is StreamsEffect.StreamsListLoadError -> {
-                (binding.pager.adapter as StreamsListPagerAdapter)
-                    .allStreamsListFragment.updateStreams(listOf())
-
+                if (streamsListPagerAdapter?.isAllStreamsListFragment() == true) {
+                    (binding.pager.adapter as? StreamsListPagerAdapter)
+                        ?.allStreamsListFragment?.updateStreams(listOf())
+                }
                 store.accept(StreamsEvent.Ui.SubscribeOnSearchStreamsEvents)
-
-                Toast.makeText(
-                    context,
-                    resources.getString(R.string.search_streams_error_text),
-                    Toast.LENGTH_LONG
-                )
-                    .show()
             }
         }
     }

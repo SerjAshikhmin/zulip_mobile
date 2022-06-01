@@ -10,6 +10,14 @@ internal class PeopleReducer : DslReducer<PeopleEvent, PeopleState, PeopleEffect
 
     override fun Result.reduce(event: PeopleEvent): Any {
         return when (event) {
+            is PeopleEvent.Ui.InitEvent -> {
+                state {
+                    copy(
+                        isLoading = false,
+                        error = null
+                    )
+                }
+            }
             is PeopleEvent.Ui.LoadPeopleList -> {
                 state {
                     copy(
@@ -18,6 +26,15 @@ internal class PeopleReducer : DslReducer<PeopleEvent, PeopleState, PeopleEffect
                     )
                 }
                 commands { +PeopleCommand.LoadPeopleList }
+            }
+            is PeopleEvent.Ui.UpdatePeopleList -> {
+                state {
+                    copy(
+                        isLoading = true,
+                        error = null
+                    )
+                }
+                commands { +PeopleCommand.UpdatePeopleList }
             }
             is PeopleEvent.Ui.LoadProfile -> {
                 state {

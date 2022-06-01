@@ -7,15 +7,29 @@ internal sealed class StreamsEvent {
 
     sealed class Ui : StreamsEvent() {
 
+        object InitEvent : Ui()
+
         object LoadAllStreamsList : Ui()
 
+        object UpdateAllStreamsList : Ui()
+
         object LoadSubscribedStreamsList : Ui()
+
+        object UpdateSubscribedStreamsList : Ui()
 
         data class LoadChat(val bundle: Bundle) : Ui()
 
         object SubscribeOnSearchStreamsEvents : Ui()
 
         data class SearchStreamsByQuery(val query: String) : Ui()
+
+        data class CreateStreamRequest(
+            val name: String,
+            val description: String,
+            val isPrivate: Boolean
+        ) : Ui()
+
+        object CreateStreamInit : Ui()
 
     }
 
@@ -26,6 +40,10 @@ internal sealed class StreamsEvent {
         data class StreamsWithSearchLoaded(val items: List<Stream>) : Internal()
 
         data class StreamsListLoadingError(val error: Throwable) : Internal()
+
+        object StreamCreated : Internal()
+
+        data class StreamCreationError(val error: Throwable) : Internal()
 
     }
 

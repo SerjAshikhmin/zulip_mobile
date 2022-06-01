@@ -16,6 +16,11 @@ internal class PeopleActor (
                 { list -> PeopleEvent.Internal.PeopleListLoaded(list) },
                 { error -> PeopleEvent.Internal.PeopleListLoadingError(error) }
             )
+        is PeopleCommand.UpdatePeopleList -> peopleInteractor.updateUsers()
+            .mapEvents(
+                { list -> PeopleEvent.Internal.PeopleListLoaded(list) },
+                { error -> PeopleEvent.Internal.PeopleListLoadingError(error) }
+            )
     }
 
 }

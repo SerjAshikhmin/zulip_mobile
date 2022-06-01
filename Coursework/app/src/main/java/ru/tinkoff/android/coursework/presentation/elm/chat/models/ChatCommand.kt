@@ -5,12 +5,13 @@ import okhttp3.MultipartBody
 internal sealed class ChatCommand {
 
     data class LoadLastMessages(
+        val streamName: String,
         val topicName: String,
-        val anchor: Long,
-        val isFirstPosition: Boolean = false
+        val anchor: Long
     ) : ChatCommand()
 
     data class LoadPortionOfMessages(
+        val streamName: String,
         val topicName: String,
         val anchor: Long
     ) : ChatCommand()
@@ -38,6 +39,16 @@ internal sealed class ChatCommand {
     data class UploadFile(
         val fileName: String,
         val fileBody: MultipartBody.Part
+    ) : ChatCommand()
+
+    data class DeleteMessage(
+        val messageId: Long
+    ) : ChatCommand()
+
+    data class EditMessage(
+        val messageId: Long,
+        val topicName: String,
+        val content: String
     ) : ChatCommand()
 
 }

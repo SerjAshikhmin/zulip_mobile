@@ -13,6 +13,7 @@ internal class ChatActor(
     override fun execute(command: ChatCommand): Observable<ChatEvent> = when (command) {
         is ChatCommand.LoadLastMessages ->
             chatInteractor.loadLastMessages(
+                command.streamName,
                 command.topicName,
                 command.anchor
             )
@@ -25,6 +26,7 @@ internal class ChatActor(
                 )
         is ChatCommand.LoadPortionOfMessages ->
             chatInteractor.loadPortionOfMessages(
+                command.streamName,
                 command.topicName,
                 command.anchor
             )
@@ -70,13 +72,27 @@ internal class ChatActor(
             .mapEvents(
                 { response -> ChatEvent.Internal.FileUploaded(
                     command.fileName,
-                    response.uri)
-                },
+                    response.uri
+                ) },
                 { error -> ChatEvent.Internal.FileUploadingError(
                     error,
                     command.fileName,
                     command.fileBody
                 ) }
+            )
+        is ChatCommand.DeleteMessage -> chatInteractor.deleteMessage(command.messageId)
+            .mapEvents(
+                { ChatEvent.Internal.MessageDeleted(command.messageId) },
+                { error -> ChatEvent.Internal.MessageDeletingError(error) }
+            )
+        is ChatCommand.EditMessage -> chatInteractor.editMessage(
+            command.messageId,
+            command.topicName,
+            command.content
+        )
+            .mapEvents(
+                { ChatEvent.Internal.MessageEdited(command.messageId) },
+                { error -> ChatEvent.Internal.MessageEditingError(error) }
             )
     }
 

@@ -44,6 +44,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_marginEnd="12dp"
+            android:paddingBottom="8dp"
             android:textColor="@color/whiteVariant"
             android:textSize="16sp" />
 
@@ -51,8 +52,9 @@
 
     <ru.tinkoff.android.coursework.presentation.customviews.FlexBoxLayout
         android:id="@+id/emoji_box"
+        android:animateLayoutChanges="true"
         android:layout_width="wrap_content"
-        app:flexBoxMaxWidth="250dp"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        app:flexBoxMaxWidth="250dp" />
 
 </merge>

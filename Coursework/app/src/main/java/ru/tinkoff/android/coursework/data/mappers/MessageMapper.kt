@@ -18,12 +18,13 @@ internal object MessageMapper {
     fun messagesDtoToMessagesList(messagesDto: List<MessageDto>): List<Message> =
         messagesDto.map { messageDto -> messageDtoToMessage(messageDto) }
 
-    private fun messageToMessageDb(message: Message): MessageDb {
+    fun messageToMessageDb(message: Message): MessageDb {
         return MessageDb(
             id = message.id,
             userId = message.userId,
             userFullName = message.userFullName,
             topicName = message.topicName,
+            streamId = message.streamId,
             avatarUrl = message.avatarUrl,
             content = message.content,
             emojis = EmojiMapper.emojisToEmojisDbList(message.emojis),
@@ -31,12 +32,13 @@ internal object MessageMapper {
         )
     }
 
-    private fun messageDbToMessage(messageDb: MessageDb): Message {
+    fun messageDbToMessage(messageDb: MessageDb): Message {
         return Message(
             id = messageDb.id,
             userId = messageDb.userId,
             userFullName = messageDb.userFullName,
             topicName = messageDb.topicName,
+            streamId = messageDb.streamId,
             avatarUrl = messageDb.avatarUrl,
             content = messageDb.content,
             emojis = EmojiMapper.emojisDbToEmojisList(messageDb.emojis) as MutableList<EmojiWithCount>,
@@ -50,9 +52,11 @@ internal object MessageMapper {
             userId = messageDto.userId,
             userFullName = messageDto.userFullName,
             topicName = messageDto.topicName,
+            streamId = messageDto.streamId,
             avatarUrl = messageDto.avatarUrl,
             content = messageDto.content,
-            emojis = getEmojisWithCountList(messageDto.reactions) as MutableList<EmojiWithCount>,
+            emojis = getEmojisWithCountList(messageDto.reactions) as? MutableList<EmojiWithCount>
+                ?: mutableListOf(),
             timestamp = messageDto.timestamp
         )
     }
