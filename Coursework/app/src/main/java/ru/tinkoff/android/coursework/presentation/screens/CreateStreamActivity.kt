@@ -53,7 +53,8 @@ internal class CreateStreamActivity : ElmActivity<StreamsEvent, StreamsEffect, S
 
     override fun createStore(): Store<StreamsEvent, StreamsEffect, StreamsState> {
         val streamsComponent = DaggerStreamsComponent.factory().create(
-            (this.application as App).applicationComponent
+            (this.application as App).applicationComponent,
+            (this.application as App).networkComponent
         )
         streamsComponent.inject(this)
         return streamsElmStoreFactory.provide()

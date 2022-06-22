@@ -56,7 +56,7 @@ internal class ChannelsInteractor(
             .debounce(DELAY_BETWEEN_ENTERING_CHARACTERS, TimeUnit.MILLISECONDS)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .flatMap { query ->
+            .switchMap { query ->
                 searchStreamsByQuery(query)
             }
     }

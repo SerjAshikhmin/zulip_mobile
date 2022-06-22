@@ -37,4 +37,20 @@
     <string name="delete_message_action_text">Delete message</string>
     <string name="edit_message_action_text">Edit message</string>
     <string name="copy_to_clipboard_action_text">Copy to clipboard</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="prompt_server_url">Zulip server URL</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="use_test_account_text">Test account</string>
+    <string name="test_server_url">https://tinkoff-android-spring-2022.zulipchat.com/</string>
+   <!-- <string name="test_server_url">https://test-chat-organization.zulipchat.com/</string>-->
+    <string name="test_account_login">serashihmin@yandex.ru</string>
+    <string name="test_account_password">mAyQnzu2YiCtBHk</string>
+    <!--<string name="test_account_password">mAyQnzu2YiCtBHk11</string>-->
 </resources>

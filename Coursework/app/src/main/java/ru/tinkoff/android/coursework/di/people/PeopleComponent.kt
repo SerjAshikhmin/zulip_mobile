@@ -4,6 +4,7 @@ import dagger.Component
 import ru.tinkoff.android.coursework.domain.interfaces.PeopleRepository
 import ru.tinkoff.android.coursework.di.ActivityScope
 import ru.tinkoff.android.coursework.di.ApplicationComponent
+import ru.tinkoff.android.coursework.di.NetworkComponent
 import ru.tinkoff.android.coursework.domain.people.PeopleInteractor
 import ru.tinkoff.android.coursework.presentation.elm.people.PeopleActor
 import ru.tinkoff.android.coursework.presentation.screens.PeopleFragment
@@ -11,7 +12,7 @@ import ru.tinkoff.android.coursework.presentation.screens.PeopleFragment
 @ActivityScope
 @Component(
     modules = [PeopleModule::class],
-    dependencies = [ApplicationComponent::class]
+    dependencies = [ApplicationComponent::class, NetworkComponent::class]
 )
 internal interface PeopleComponent {
 
@@ -27,7 +28,8 @@ internal interface PeopleComponent {
     interface Factory {
 
         fun create(
-            applicationComponent: ApplicationComponent
+            applicationComponent: ApplicationComponent,
+            networkComponent: NetworkComponent
         ): PeopleComponent
     }
 

@@ -8,6 +8,8 @@ import androidx.core.view.children
 import androidx.core.view.marginBottom
 import androidx.core.view.marginEnd
 import ru.tinkoff.android.coursework.databinding.LayoutSelfMessageViewGroupBinding
+import ru.tinkoff.android.coursework.utils.measuredHeightWithMargins
+import ru.tinkoff.android.coursework.utils.measuredWidthWithMargins
 
 internal class SelfMessageViewGroup @JvmOverloads constructor(
     context: Context,

@@ -79,7 +79,8 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
 
     override fun createStore(): Store<ChatEvent, ChatEffect, ChatState> {
         val chatComponent = DaggerChatComponent.factory().create(
-            (this.application as App).applicationComponent
+            (this.application as App).applicationComponent,
+            (this.application as App).networkComponent
         )
         chatComponent.inject(this)
         return chatElmStoreFactory.provide()
@@ -502,10 +503,10 @@ internal class ChatActivity : ElmActivity<ChatEvent, ChatEffect, ChatState>(), O
     }
 
     private fun processNavigateToChatEffect(effect: ChatEffect.NavigateToChat) {
-        val intent = Intent(this, ChatActivity::class.java)
-        intent.putExtra(STREAM_NAME_KEY, streamName)
-        intent.putExtra(TOPIC_NAME_KEY, effect.topicName)
-        startActivity(intent)
+        startActivity<ChatActivity>(
+            Pair(STREAM_NAME_KEY, streamName),
+            Pair(TOPIC_NAME_KEY, effect.topicName)
+        )
     }
 
     private fun processMessageLoadingError(effect: ChatEffect.MessagesLoadingError) {

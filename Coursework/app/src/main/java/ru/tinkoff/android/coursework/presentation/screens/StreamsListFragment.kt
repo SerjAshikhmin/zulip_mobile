@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.findFragment
 import androidx.navigation.fragment.NavHostFragment
-import androidx.recyclerview.widget.DefaultItemAnimator
 import ru.tinkoff.android.coursework.App
 import ru.tinkoff.android.coursework.R
 import ru.tinkoff.android.coursework.databinding.FragmentStreamsListBinding
@@ -55,7 +54,8 @@ internal abstract class StreamsListFragment
 
     override fun createStore(): Store<StreamsEvent, StreamsEffect, StreamsState> {
         val streamsComponent = DaggerStreamsComponent.factory().create(
-            (activity?.application as App).applicationComponent
+            (activity?.application as App).applicationComponent,
+            (activity?.application as App).networkComponent
         )
         streamsComponent.inject(this)
         return streamsElmStoreFactory.provide()

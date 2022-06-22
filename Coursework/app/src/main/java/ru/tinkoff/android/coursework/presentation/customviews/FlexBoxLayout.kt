@@ -6,6 +6,8 @@ import android.util.AttributeSet
 import android.view.ViewGroup
 import androidx.core.view.*
 import ru.tinkoff.android.coursework.R
+import ru.tinkoff.android.coursework.utils.measuredHeightWithMargins
+import ru.tinkoff.android.coursework.utils.measuredWidthWithMargins
 
 internal class FlexBoxLayout @JvmOverloads constructor(
     context: Context,

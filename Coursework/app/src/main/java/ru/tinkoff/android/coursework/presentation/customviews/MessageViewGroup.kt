@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.*
 import ru.tinkoff.android.coursework.databinding.LayoutMessageViewGroupBinding
+import ru.tinkoff.android.coursework.utils.measuredHeightWithMargins
+import ru.tinkoff.android.coursework.utils.measuredWidthWithMargins
 
 internal class MessageViewGroup @JvmOverloads constructor(
     context: Context,
