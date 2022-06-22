@@ -61,7 +61,8 @@ internal class PeopleFragment
 
     override fun createStore(): Store<PeopleEvent, PeopleEffect, PeopleState> {
         val peopleComponent = DaggerPeopleComponent.factory().create(
-            (activity?.application as App).applicationComponent
+            (activity?.application as App).applicationComponent,
+            (activity?.application as App).networkComponent
         )
         peopleComponent.inject(this)
         return peopleElmStoreFactory.provide()

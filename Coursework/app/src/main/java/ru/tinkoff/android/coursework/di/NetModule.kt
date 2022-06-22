@@ -4,40 +4,40 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import dagger.Module
 import dagger.Provides
 import kotlinx.serialization.json.Json
-import okhttp3.Interceptor
-import okhttp3.MediaType
+import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
+import ru.tinkoff.android.coursework.data.LoginRepositoryImpl
 import ru.tinkoff.android.coursework.data.api.ZulipJsonApi
 import java.util.concurrent.TimeUnit
-import javax.inject.Singleton
 
 @Module
-internal class NetModule {
+internal class NetModule(private val baseUrl: String) {
 
     @Provides
-    @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    @RootScope
+    fun provideOkHttpClient(loginRepository: LoginRepositoryImpl): OkHttpClient {
         return OkHttpClient.Builder()
             .connectTimeout(5, TimeUnit.SECONDS)
             .callTimeout(5, TimeUnit.SECONDS)
             .readTimeout(2, TimeUnit.SECONDS)
             .writeTimeout(2, TimeUnit.SECONDS)
             .addInterceptor(HttpLoggingInterceptor())
-            .addInterceptor(AuthInterceptor())
+            .addInterceptor(AuthInterceptor(loginRepository))
             .build()
     }
 
     @Provides
-    @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient, converterFactory: Converter.Factory): Retrofit {
+    @RootScope
+    fun provideRetrofit(
+        okHttpClient: OkHttpClient,
+        converterFactory: Converter.Factory
+    ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .client(okHttpClient)
             .addConverterFactory(converterFactory)
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
@@ -45,46 +45,60 @@ internal class NetModule {
     }
 
     @Provides
-    @Singleton
+    @RootScope
     fun provideConverterFactory(json: Json, contentType: MediaType): Converter.Factory {
         return json.asConverterFactory(contentType)
     }
 
     @Provides
-    @Singleton
+    @RootScope
     fun provideJson(): Json {
         return Json { ignoreUnknownKeys = true }
     }
 
     @Provides
-    @Singleton
+    @RootScope
     fun provideContentType(): MediaType {
         return "application/json".toMediaType()
     }
 
     @Provides
-    @Singleton
+    @RootScope
     fun provideZulipJsonApi(retrofit: Retrofit): ZulipJsonApi {
         return retrofit.create(ZulipJsonApi::class.java)
     }
 
-    class AuthInterceptor : Interceptor {
+    @Provides
+    @RootScope
+    fun provideLoginRepository(): LoginRepositoryImpl {
+        return LoginRepositoryImpl()
+    }
+
+    inner class AuthInterceptor(private val loginRepository: LoginRepositoryImpl) : Interceptor {
 
         override fun intercept(chain: Interceptor.Chain): Response {
             val request = chain.request()
-            val authenticatedRequest = request.newBuilder()
-                .header(AUTH_HEADER_NAME, AUTH_TOKEN_VALUE)
-                .build()
-
+            val loggedInUser = loginRepository.user
+            val authenticatedRequest = if (
+                loggedInUser != null
+                && loggedInUser.userName.isNotBlank()
+                && loggedInUser.apiKey.isNotBlank()
+            ) {
+                val authToken = Credentials.basic(loggedInUser.userName, loggedInUser.apiKey)
+                request.newBuilder()
+                    .header(AUTH_HEADER_NAME, authToken)
+                    .build()
+            } else {
+                request.newBuilder()
+                    .build()
+            }
             return chain.proceed(authenticatedRequest)
         }
     }
 
     companion object {
 
-        private const val BASE_URL = "https://tinkoff-android-spring-2022.zulipchat.com/"
         private const val AUTH_HEADER_NAME = "Authorization"
-        private const val AUTH_TOKEN_VALUE = "Basic c2VyYXNoaWhtaW5AeWFuZGV4LnJ1OnZ2RUJwcFRwRTVvWmg2dVZCRDJ0WEFoY05sdjl1dXlK"
     }
 
 }

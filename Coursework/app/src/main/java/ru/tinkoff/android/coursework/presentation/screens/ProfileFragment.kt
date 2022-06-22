@@ -56,7 +56,8 @@ internal class ProfileFragment : ElmFragment<ProfileEvent, ProfileEffect, Profil
 
     override fun createStore(): Store<ProfileEvent, ProfileEffect, ProfileState> {
         val profileComponent = DaggerProfileComponent.factory().create(
-            (activity?.application as App).applicationComponent
+            (activity?.application as App).applicationComponent,
+            (activity?.application as App).networkComponent
         )
         profileComponent.inject(this)
         return profileElmStoreFactory.provide()

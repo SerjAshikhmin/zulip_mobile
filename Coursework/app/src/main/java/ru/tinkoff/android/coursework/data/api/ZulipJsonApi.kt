@@ -4,20 +4,21 @@ import io.reactivex.Single
 import okhttp3.MultipartBody
 import retrofit2.http.*
 import ru.tinkoff.android.coursework.data.api.model.UserDto
-import ru.tinkoff.android.coursework.data.api.model.response.AllStreamsListResponse
-import ru.tinkoff.android.coursework.data.api.model.response.AllUsersListResponse
-import ru.tinkoff.android.coursework.data.api.model.response.ActionWithMessageResponse
-import ru.tinkoff.android.coursework.data.api.model.response.LoadSingleMessageResponse
-import ru.tinkoff.android.coursework.data.api.model.response.MessagesListResponse
-import ru.tinkoff.android.coursework.data.api.model.response.ReactionResponse
-import ru.tinkoff.android.coursework.data.api.model.response.SendMessageResponse
-import ru.tinkoff.android.coursework.data.api.model.response.SubscribeToStreamResponse
-import ru.tinkoff.android.coursework.data.api.model.response.SubscribedStreamsListResponse
-import ru.tinkoff.android.coursework.data.api.model.response.TopicsListResponse
-import ru.tinkoff.android.coursework.data.api.model.response.UploadFileResponse
-import ru.tinkoff.android.coursework.data.api.model.response.UserPresenceResponse
+import ru.tinkoff.android.coursework.data.api.model.response.*
 
 internal interface ZulipJsonApi {
+
+    @POST("api/v1/fetch_api_key")
+    suspend fun fetchApiKey(
+        @Query("username") userName: String,
+        @Query("password") password: String
+    ): FetchApiKeyResponse
+
+    /*@POST("api/v1/fetch_api_key")
+    fun fetchApiKey(
+        @Query("username") userName: String,
+        @Query("password") password: String
+    ): Single<FetchApiKeyResponse>*/
 
     @GET("api/v1/streams")
     fun getAllStreams(): Single<AllStreamsListResponse>

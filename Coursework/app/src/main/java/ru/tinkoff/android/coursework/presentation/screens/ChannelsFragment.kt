@@ -74,7 +74,8 @@ internal class ChannelsFragment: ElmFragment<StreamsEvent, StreamsEffect, Stream
 
     override fun createStore(): Store<StreamsEvent, StreamsEffect, StreamsState> {
         val streamsComponent = DaggerStreamsComponent.factory().create(
-            (activity?.application as App).applicationComponent
+            (activity?.application as App).applicationComponent,
+            (activity?.application as App).networkComponent
         )
         streamsComponent.inject(this)
         return streamsElmStoreFactory.provide()
